@@ -1,12 +1,16 @@
-import { ARGS } from "./config";
+import { readFileSync } from "fs";
+
+import { ARGS, POOLS_PATH } from "./config";
 import { LANGUAGE } from "./language";
 
+const POOLS = JSON.parse(readFileSync(POOLS_PATH).toString());
+
 function createPool() {
-    console.log("Create Pool");
+    console.log(POOLS);
 }
 
 function mineArtifacts() {
-    console.log("Mine Artifacts");
+    console.log(POOLS);
 }
 
 switch (process.argv[2]) {
