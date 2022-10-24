@@ -1,0 +1,13 @@
+{
+    "name": "arc-pools",
+    "version": "1.0.0",
+    "main": "index.ts",
+    "repository": "https://github.com/ArweaveAlex/arc-pools.git",
+    "author": "NickJ202",
+    "scripts": {
+        "start": "ts-node src/index.ts"
+    },
+    "devDependencies": {
+        "@types/node": "^18.11.4"
+    }
+}
