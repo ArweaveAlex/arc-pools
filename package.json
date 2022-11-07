@@ -7,7 +7,22 @@
     "scripts": {
         "start": "ts-node src/index.ts"
     },
+    "dependencies": {
+        "@bundlr-network/client": "^0.5.12",
+        "@types/fs-extra": "^8.1.0",
+        "arweave": "=1.11.4",
+        "axios": "^0.26.0",
+        "fs-extra": "^10.1.0",
+        "hast-util-from-html": "^1.0.0",
+        "hast-util-to-html": "^8.0.3",
+        "hastscript": "^7.1.0",
+        "node-tweet-stream": "^2.1.0",
+        "unist-util-map": "^3.1.2",
+        "warp-contracts": "=1.1.5",
+        "wikijs": "^6.3.3"
+    },
     "devDependencies": {
-        "@types/node": "^18.11.4"
+        "@types/mime-types": "^2.1.1",
+        "@types/node": "^18.11.9"
     }
 }

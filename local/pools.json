@@ -1,0 +1,165 @@
+{
+    "russia-ukraine": {
+        "keywords": [
+            "Ukraine",
+            "ukraine",
+            "Russia",
+            "russia",
+            "#UkraineInvasion",
+            "Donetsk",
+            "Luhansk",
+            "Donbas",
+            "Донецьк",
+            "Луганськ",
+            "Донба́с"
+        ],
+        "keywordListID": "ukraine-russia-war",
+        "keywordListVersion": 1,
+        "userIDs": [
+            "718916004072570880",
+            "2315512764"
+        ],
+        "instances": 1,
+        "query": "ukraine",
+        "walletPath": "./local/wallets/wallet.json",
+        "bundlrNode": "https://node2.bundlr.network",
+        "difference": 0.02,
+        "refreshPeriod": "-4 hours",
+        "pool": {
+            "transferable": false,
+            "contract": "8Y9XTSDkdNVylhuDwdosZhvFFKr1hrhYjf3Vw-mQII0"
+        },
+        "nftContractSrc": "TYwOwE2Oy45i9tXJmYGDe_U65-8aQjTTVc1taY22hOI"
+    },
+    "shanghai-lockdown": {
+        "keywords": [
+            "Shanghai",
+            "shanghai",
+            "China",
+            "china",
+            "#ShanghaiLockdown",
+            "上海",
+            "Covid",
+            "Shanghai Lockdown",
+            "Shanghai Covid Lockdown",
+            "上海封城"
+        ],
+        "keywordListID": "shanghai-lockdown",
+        "keywordListVersion": 1,
+        "userIDs": [
+            "243983947",
+            "1350431993289347073"
+        ],
+        "instances": 1,
+        "query": "shanghai",
+        "walletPath": "./local/wallets/wallet.json",
+        "bundlrNode": "https://node2.bundlr.network",
+        "difference": 0.02,
+        "refreshPeriod": "-4 hours",
+        "pool": {
+            "transferable": false,
+            "contract": "CbX34uhYDBGV5U0xg8_iOZJrcXLkvG2q06KvaXB2BDw"
+        },
+        "nftContractSrc": "QKTk9R9rz1SnwYrHsXIdABt9hB8M7ZSUH_USyjngSWA"
+    },
+    "iranian-protests": {
+        "keywords": [
+            "Iran",
+            "iran",
+            "#IranProtests",
+            "#IranianProtests",
+            "#iranprotests2022",
+            "اعتراضات ایرانیان",
+            "اعتراضات",
+            "Mahsa Amini protests",
+            "Mahsa Amini",
+            "Iran Hijab",
+            "Mashhad",
+            "Qom",
+            "قم",
+            "مشهد"
+    
+        ],
+        "keywordListID": "iranian-protests",
+        "keywordListVersion": 1,
+        "userIDs": [
+            "983978676",
+            "22899683",
+            "19119226",
+            "37196329"
+        ],
+        "instances": 1,
+        "query": "iran",
+        "walletPath": "./local/wallets/wallet.json",
+        "bundlrNode": "https://node2.bundlr.network",
+        "difference": 0.02,
+        "refreshPeriod": "-4 hours",
+        "pool": {
+            "transferable": false,
+            "contract": "dOtmD-p-5QUm9bJdhIgJDOu0ItMWZ3qFUSPhzk924mQ"
+        },
+        "nftContractSrc": "8nMcFTBKJOtGBkrl0Mn5REVab6x3LNjg-9Hnz_hUj0c"
+    },
+    "musk-twitter": {
+        "keywords": [
+            "Elon Musk Taking over Twitter",
+            "Elon Musk",
+            "Twitter",
+            "Elon Musk Twitter",
+            "#ELONMUSK",
+            "#ELON",
+            "#TwitterTakeover",
+            "#twitterlayoffs",
+            "Twitter Takeover",
+            "Twitter de Elon Musk",
+            "toma de control de twitter"
+        ],
+        "keywordListID": "musk-twitter",
+        "keywordListVersion": 1,
+        "userIDs": [
+            "44196397",
+            "26053643"
+        ],
+        "instances": 1,
+        "query": "twitter",
+        "walletPath": "./local/wallets/wallet.json",
+        "bundlrNode": "https://node2.bundlr.network",
+        "difference": 0.02,
+        "refreshPeriod": "-4 hours",
+        "pool": {
+            "transferable": false,
+            "contract": "NIrXqLVeD8hDAFIaTakQo79oc3ueMbJ08T16k__Ls7Q"
+        },
+        "nftContractSrc": "QWyiw_xmigPqyCZ_Wf7D3A2dtdWgJGKRxZBUuP1_Gb8"
+    },
+    "us-midterm" : {
+        "keywords": [
+            "US Midterm Elections",
+            "US Midterms",
+            "US Elections",
+            "United States Midterm Elections",
+            "#usmidterms",
+            "Midterm Elections",
+            "United States",
+            "Donald Trump",
+            "United States of America"
+        ],
+        "keywordListID": "us-midterm",
+        "keywordListVersion": 1,
+        "userIDs": [
+            "759251",
+            "1377340265283870731"
+        ],
+        "instances": 1,
+        "query": "shanghai",
+        "walletPath": "./local/wallets/wallet.json",
+        "bundlrNode": "https://node2.bundlr.network",
+        "difference": 0.02,
+        "refreshPeriod": "-4 hours",
+        "pool": {
+            "transferable": false,
+            "contract": "Vv5Q72guzHXplcsNTNfwd8I_AWTlryEDwzI4KqhHH5g"
+        },
+        "nftContractSrc": "f_VfU2fOy1eiBNDtxWs513x0djmZj7WdWAy--tD1nZw"
+    }
+}

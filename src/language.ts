@@ -1,5 +1,5 @@
 import { ARGS } from "./config";
 
 export const LANGUAGE = {
-    invalidArgs: () => (`Invalid args\nRequired args include:\n  ${Object.keys(ARGS).map((key) => { return (ARGS as any)[key] }).join("\n  ")}\n`)
+    invalidArgs: () => (`Invalid args\nRequired args include:\n  create-pool\n  mine <pool-tag>`)
 }
