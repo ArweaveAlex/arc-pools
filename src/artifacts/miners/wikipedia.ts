@@ -3,16 +3,16 @@ import WikiJS from 'wikijs';
 import fs from 'fs';
 
 import { fromHtml } from "hast-util-from-html";
-import { toHtml } from "hast-util-to-html";
-import { map } from 'unist-util-map';
-import { h } from 'hastscript';
+// import { toHtml } from "hast-util-to-html";
+// import { map } from 'unist-util-map';
+// import { h } from 'hastscript';
 
 import { createAsset } from "../assets";
 import { Config, POOLS_PATH } from "../../config";
 import Arweave from "arweave";
 
 let config:Config;
-const jwk = JSON.parse(fs.readFileSync("wallet.json").toString());
+const jwk = JSON.parse(fs.readFileSync("local/wallets/wallet.json").toString());
 const arweave = Arweave.init({
   host: 'arweave.net',
   port: '443',
@@ -39,27 +39,27 @@ const getPage = async (query: string) => {
 }
 
 export const parseHTML = (content: any, title: any) => {
-    const tree = fromHtml(content)
-    const newTree = map(tree, node => {
-      if (node.type === 'element' && node.tagName === 'head') {
-        node.children =
-          [
-            h('link', { rel: 'stylesheet', href: 'https://arweave.net/zeD-oNKfwNXE4k4-QeCAR3UZIfLXA7ettyi8qGZqd7g' }),
-            h('title', title),
-            h('meta', { charset: 'UTF-8' }),
-            h('meta', { name: "description", content: `${title} Permaweb Page` })
-          ]
-      }
-      if (node.type === 'element' && ['a', 'img'].includes(node.tagName)) {
-        if (node?.properties?.href && typeof node?.properties?.href == 'string' && node?.properties?.href.match("\^/wiki{0,}")) {
-          node.properties.href = "https://wikipedia.org" + node.properties.href;
-        }
-      }
+    // const tree = fromHtml(content)
+    // const newTree = map(tree, node => {
+    //   if (node.type === 'element' && node.tagName === 'head') {
+    //     node.children =
+    //       [
+    //         h('link', { rel: 'stylesheet', href: 'https://arweave.net/zeD-oNKfwNXE4k4-QeCAR3UZIfLXA7ettyi8qGZqd7g' }),
+    //         h('title', title),
+    //         h('meta', { charset: 'UTF-8' }),
+    //         h('meta', { name: "description", content: `${title} Permaweb Page` })
+    //       ]
+    //   }
+    //   if (node.type === 'element' && ['a', 'img'].includes(node.tagName)) {
+    //     if (node?.properties?.href && typeof node?.properties?.href == 'string' && node?.properties?.href.match("\^/wiki{0,}")) {
+    //       node.properties.href = "https://wikipedia.org" + node.properties.href;
+    //     }
+    //   }
   
-      return node
-    })
+    //   return node
+    // })
   
-    return toHtml(newTree)
+    // return toHtml(newTree)
   }
 
 const scrapePage = async (query: string) => {
