@@ -145,9 +145,17 @@ export async function dispatchToBundler(
   contentType: string
 ) {
   let { data, tags } = dataAndTags;
-  const tx = bundlr.createTransaction(data, { tags: tags })
-  await tx.sign()
-  const id = tx.id
+  const tx = bundlr.createTransaction(data, { tags: tags });
+  await tx.sign();
+  const id = tx.id;
+  const cost = await bundlr.getPrice(tx.size);
+  console.log("Upload costs", bundlr.utils.unitConverter(cost).toString());
+  try{
+      await bundlr.fund(cost.multipliedBy(1.1).integerValue());
+  } catch (e: any){
+      console.log(`Error funding bundlr, probably not enough funds in arweave wallet stopping process...\n ${e}`);
+      process.exit(1);
+  }
   await tx.upload()
   console.log("BUNDLR ATOMIC ID", id)
   return id

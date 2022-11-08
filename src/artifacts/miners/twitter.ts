@@ -52,7 +52,9 @@ export async function mineTweets(poolSlug: string) {
         token_secret: keys.tkeys.token_secret,
         tweet_mode: "extended"
     })
-    bundlr = new Bundlr(config.bundlrNode, "arweave", keys.arweave)
+    bundlr = new Bundlr(config.bundlrNode, "arweave", keys.arweave);
+
+    console.log("Bundlr balance", (await bundlr.getLoadedBalance()).toString());
 
     console.log(`Loaded with account address: ${bundlr.address}`)
     arweave = Arweave.init({
@@ -162,12 +164,24 @@ async function processTweet(tweet: any) {
             const relPath = p.relative(tmpdir.path, f)
             try {
                 const mimeType = mime.contentType(mime.lookup(relPath) || "application/octet-stream") as string;
-                const res = await bundlr.uploader.upload(
-                    await promises.readFile(p.resolve(f)),
-                    [...subTags, { name: "Content-Type", value: mimeType }]
-                );
-                if (!res?.data?.id) { throw new Error("Upload Error") }
-                additionalPaths[relPath] = { id: res?.data?.id };
+                const tx = bundlr.createTransaction(
+                    await promises.readFile(p.resolve(f)), 
+                    { tags: [...subTags, { name: "Content-Type", value: mimeType }] }
+                )
+                await tx.sign();
+                const id = tx.id;
+                const cost = await bundlr.getPrice(tx.size);
+                console.log("Upload costs", bundlr.utils.unitConverter(cost).toString());
+                console.log("Bundlr subpath upload id for tweet: " + id);
+                try{
+                    await bundlr.fund(cost.multipliedBy(1.1).integerValue());
+                } catch (e: any){
+                    console.log(`Error funding bundlr, probably not enough funds in arweave wallet stopping process...\n ${e}`);
+                    process.exit(1);
+                }
+                await tx.upload();
+                if (!id) { throw new Error("Upload Error") }
+                additionalPaths[relPath] = { id: id };
             } catch (e: any) {
                 console.log(`Error uploading ${f} for ${tweet.id_str} - ${e}`)
                 continue
