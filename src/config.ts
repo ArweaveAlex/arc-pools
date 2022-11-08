@@ -20,5 +20,6 @@ export type Config = {
     nftContractSrc: string, 
     keywordListVersion: string,
     keywords: string[],
-    userIDs: string[]
+    userIDs: string[],
+    balanceUrl: string
 };

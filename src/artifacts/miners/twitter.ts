@@ -8,7 +8,7 @@ import { createWriteStream } from "fs";
 import axios from "axios"
 import Arweave from "arweave";
 import mime from "mime-types";
-import { LoggerFactory, Warp, WarpNodeFactory } from "warp-contracts";
+import { Contract, LoggerFactory, Warp, WarpNodeFactory } from "warp-contracts";
 import { createAsset } from "../assets";
 import { Config, POOLS_PATH } from "../../config";
 const Twitter = require('node-tweet-stream');
@@ -30,12 +30,13 @@ async function* walk(dir: string) : any {
     }
 }
 
-let twitter
+let twitter: any;
 let bundlr: Bundlr
 let config: Config;
-let warp: Warp
 let keys: any;
-let arweave: Arweave
+let arweave: Arweave;
+let smartweave: Warp;
+let contract: Contract;
 
 export async function mineTweets(poolSlug: string) {
     config = JSON.parse(readFileSync(POOLS_PATH).toString())[poolSlug];
@@ -60,13 +61,16 @@ export async function mineTweets(poolSlug: string) {
         protocol: "https"
     });
 
+    smartweave = WarpNodeFactory.memCachedBased(arweave).useArweaveGateway().build();
+
+    contract = smartweave.contract(config.pool.contract).setEvaluationOptions({
+        walletBalanceUrl: config.balanceUrl
+    });
+
 
     LoggerFactory.INST.logLevel("error", "DefaultStateEvaluator");
     LoggerFactory.INST.logLevel("error", "HandlerBasedContract");
     LoggerFactory.INST.logLevel("error", "HandlerExecutorFactory");
-
-
-    warp = WarpNodeFactory.memCached(arweave);
 
     twitter.on('tweet', processTweet);
 
@@ -172,6 +176,10 @@ async function processTweet(tweet: any) {
 
 
         createAsset(
+            bundlr,
+            arweave,
+            smartweave,
+            contract,
             tweet,
             additionalPaths,
             config,

@@ -39,7 +39,7 @@ const getPage = async (query: string) => {
 }
 
 export const parseHTML = (content: any, title: any) => {
-    // const tree = fromHtml(content)
+    // const tree = fromHtml(content);
     // const newTree = map(tree, node => {
     //   if (node.type === 'element' && node.tagName === 'head') {
     //     node.children =

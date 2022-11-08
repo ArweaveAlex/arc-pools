@@ -1,31 +1,18 @@
 import Bundlr from '@bundlr-network/client';
 import Arweave from 'arweave';
 import { readFileSync } from 'fs';
-import { LoggerFactory, WarpNodeFactory } from 'warp-contracts';
+import { Contract, LoggerFactory, Warp, WarpNodeFactory } from 'warp-contracts';
 
 const URL = 'https://gateway.redstone.finance/gateway/contracts/deploy';
 
-let config = JSON.parse(readFileSync("local/pools.json").toString())['shanghai-lockdown'];
-
-let keys = JSON.parse(readFileSync(config.walletPath).toString());
-
-let bundlr: Bundlr = new Bundlr(config.bundlrNode, "arweave", keys.arweave);
-
-let arweave: Arweave = Arweave.init({
-  host: "arweave.net",
-  port: 443,
-  protocol: "https"
-});
-
-let jwk: any = keys.arweave;
+let keys: any;
+let bundlr: Bundlr;
+let arweave: Arweave;
+let jwk: any;
+let smartweave: Warp;
+let contract: Contract;
 
 LoggerFactory.INST.logLevel("fatal");
-
-const smartweave = WarpNodeFactory.memCachedBased(arweave).useArweaveGateway().build();
-
-const contract = smartweave.contract(config.pool.contract).setEvaluationOptions({
-  walletBalanceUrl: config.balanceUrl
-});
 
 async function getRandomContributor() {
   const state: any = await contract.readState();
@@ -74,12 +61,24 @@ const generateTweetName = (tweet: any) => {
 }
 
 export const createAsset = async (
+    bundlrIn: Bundlr,
+    arweaveIn: Arweave,
+    warpIn: Warp,
+    contractIn: Contract,
     content: any,
     additionalPaths: any,
     config: any,
     contentType: string,
     articleTitle: string
 ) => {
+
+  keys = JSON.parse(readFileSync(config.walletPath).toString());
+  jwk = keys.arweave;
+  bundlr = bundlrIn;
+  arweave = arweaveIn;
+  smartweave = warpIn;
+  contract = contractIn;
+
   try {
     const data = contentType === 'application/json' ? JSON.stringify(content) : content;
     
