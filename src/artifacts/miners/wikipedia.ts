@@ -111,12 +111,23 @@ export async function mineWikipedia(poolSlug: string) {
     articles = articles.filter(onlyUnique);
   
     console.log(articles);
-    fs.writeFileSync('local/data/wikiarticles.txt', JSON.stringify(articles));
-    console.log("Processing articles: " + articles.length);
+    console.log("Wikipedia sent: " + articles.length);
+
+    let sentList = [];
+    if(fs.existsSync('local/data/wikiarticlessent.txt')){
+      sentList = fs.readFileSync('local/data/wikiarticlessent.txt').toString().split("\n");
+    }
+
+    console.log(sentList);
   
+    // loop through the api response until we find a non duplicate
     for (let i = 0; i < articles.length; i++) {
-      await delay(6000);
-      console.log(articles[i])
-      let res = await scrapePage(articles[i]);
+      if(!sentList.includes(articles[i])){
+        // await delay(6000);
+        console.log("Found non duplicate article to send: " + articles[i])
+        // let res = await scrapePage(articles[i]);
+        fs.appendFileSync('local/data/wikiarticlessent.txt', articles[i] + "\n");
+        break;
+      }
     }
 }
