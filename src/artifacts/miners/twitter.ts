@@ -173,10 +173,10 @@ async function processTweet(tweet: any) {
                 const cost = await bundlr.getPrice(tx.size);
                 console.log("Upload costs", bundlr.utils.unitConverter(cost).toString());
                 console.log("Bundlr subpath upload id for tweet: " + id);
-                try{
+                try {
                     await bundlr.fund(cost.multipliedBy(1.1).integerValue());
                 } catch (e: any){
-                    console.log(`Error funding bundlr, probably not enough funds in arweave wallet stopping process...\n ${e}`);
+                    console.log(`Error funding bundlr twitter.ts, probably not enough funds in arweave wallet stopping process...\n ${e}`);
                     process.exit(1);
                 }
                 await tx.upload();
