@@ -195,8 +195,7 @@ async function createDataAndTags(
   additionalPaths: any,
   config: any,
 ) {
-  //const tokenHolder = await getRandomContributor();
-  const tokenHolder = "jnbRhoH3JGTdRz0Y9X-gh-eosrbIpdxs58DPTtlOVE8";
+  const tokenHolder = await getRandomContributor();
 	const dNow = new Date().getTime();
 
   let index = contentType === 'application/json' ? { path: "tweet.json" } : { path: "index.html" };
