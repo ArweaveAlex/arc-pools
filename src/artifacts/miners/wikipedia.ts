@@ -1,23 +1,22 @@
+import Bundlr from "@bundlr-network/client";
+import { Contract, Warp, WarpNodeFactory } from "warp-contracts";
 import { readFileSync } from "fs-extra";
 import WikiJS from 'wikijs';
 import fs from 'fs';
 
-import { fromHtml } from "hast-util-from-html";
-// import { toHtml } from "hast-util-to-html";
-// import { map } from 'unist-util-map';
-// import { h } from 'hastscript';
 
 import { createAsset } from "../assets";
 import { Config, POOLS_PATH } from "../../config";
 import Arweave from "arweave";
 
-let config:Config;
-const jwk = JSON.parse(fs.readFileSync("local/wallets/wallet.json").toString());
-const arweave = Arweave.init({
-  host: 'arweave.net',
-  port: '443',
-  protocol: 'https'
-});
+
+let bundlr: Bundlr
+let config: Config;
+let keys: any;
+let arweave: Arweave;
+let smartweave: Warp;
+let contract: Contract;
+
 
 function onlyUnique(value: any, index: any, self: any) {
     return self.indexOf(value) === index;
@@ -39,27 +38,15 @@ const getPage = async (query: string) => {
 }
 
 export const parseHTML = (content: any, title: any) => {
-    // const tree = fromHtml(content);
-    // const newTree = map(tree, node => {
-    //   if (node.type === 'element' && node.tagName === 'head') {
-    //     node.children =
-    //       [
-    //         h('link', { rel: 'stylesheet', href: 'https://arweave.net/zeD-oNKfwNXE4k4-QeCAR3UZIfLXA7ettyi8qGZqd7g' }),
-    //         h('title', title),
-    //         h('meta', { charset: 'UTF-8' }),
-    //         h('meta', { name: "description", content: `${title} Permaweb Page` })
-    //       ]
-    //   }
-    //   if (node.type === 'element' && ['a', 'img'].includes(node.tagName)) {
-    //     if (node?.properties?.href && typeof node?.properties?.href == 'string' && node?.properties?.href.match("\^/wiki{0,}")) {
-    //       node.properties.href = "https://wikipedia.org" + node.properties.href;
-    //     }
-    //   }
-  
-    //   return node
-    // })
-  
-    // return toHtml(newTree)
+    var find = '<a href="/wiki';
+    var re = new RegExp(find, 'g');
+    var replace = '<a target="_blank" href="https://wikipedia.org/wiki';
+    let finalHtml = content.replace(re, replace);
+    let head = '<html><head><link rel="stylesheet" href="https://arweave.net/zeD-oNKfwNXE4k4-QeCAR3UZIfLXA7ettyi8qGZqd7g"><title>' + title + '</title><meta charset="UTF-8"><meta name="description" content="' + title + ' Permaweb Page"></head><body>';
+    finalHtml = head + finalHtml;
+    finalHtml = finalHtml + "</body></html>";
+    fs.appendFileSync('test.txt', finalHtml);
+    return finalHtml;
   }
 
 const scrapePage = async (query: string) => {
@@ -68,28 +55,19 @@ const scrapePage = async (query: string) => {
       const html = parseHTML(await content.html(), content.title);
       const categories = await content.categories();
       const newCats = categories.map((word: any) => word.replace('Category:', ""));
-    //   const tx = await arweave.createTransaction({
-    //     data: html
-    //   }, jwk)
-    //   tx.addTag('Content-Type', 'text/html');
-  
-      try {
-        // await arweave.transactions.sign(tx, jwk);
-        // const assetId = tx.id;
-        // await arweave.transactions.post(tx);
-        // console.log(content.title, assetId);
-        // const res = await createAtomicAsset(
-        //     assetId, 
-        //     content.title, 
-        //     `${content.title} Wikipedia Page`, 
-        //     'web-page', 
-        //     'text/html', 
-        //     newCats
-        // );
-        // return res;
-      } catch (err) {
-        console.log(err)
-      }
+
+      createAsset(
+          bundlr,
+          arweave,
+          smartweave,
+          contract,
+          html,
+          {},
+          config,
+          "text/html",
+          `${content.title} Wikipedia Page`
+      );
+
     }
     catch (err) {
       console.error(err)
@@ -98,6 +76,28 @@ const scrapePage = async (query: string) => {
 
 export async function mineWikipedia(poolSlug: string) {
     config = JSON.parse(readFileSync(POOLS_PATH).toString())[poolSlug];
+
+    if(!config) throw new Error("Invalid pool slug");
+
+    keys = JSON.parse(readFileSync(config.walletPath).toString());
+
+    bundlr = new Bundlr(config.bundlrNode, "arweave", keys.arweave);
+
+    console.log("Bundlr balance", (await bundlr.getLoadedBalance()).toString());
+
+    console.log(`Loaded with account address: ${bundlr.address}`)
+    arweave = Arweave.init({
+        host: "arweave.net",
+        port: 443,
+        protocol: "https"
+    });
+
+    smartweave = WarpNodeFactory.memCachedBased(arweave).useArweaveGateway().build();
+
+    contract = smartweave.contract(config.pool.contract).setEvaluationOptions({
+        walletBalanceUrl: config.balanceUrl
+    });
+    
     let articles = [];
     for (let i = 0; i < config.keywords.length; i++) {
   
@@ -121,11 +121,11 @@ export async function mineWikipedia(poolSlug: string) {
     console.log(sentList);
   
     // loop through the api response until we find a non duplicate
-    for (let i = 0; i < articles.length; i++) {
+    for (let i = 0; i<articles.length; i++) {
       if(!sentList.includes(articles[i])){
         // await delay(6000);
         console.log("Found non duplicate article to send: " + articles[i])
-        // let res = await scrapePage(articles[i]);
+        let res = await scrapePage(articles[i]);
         fs.appendFileSync('local/data/wikiarticlessent.txt', articles[i] + "\n");
         break;
       }

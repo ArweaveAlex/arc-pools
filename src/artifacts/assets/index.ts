@@ -80,7 +80,9 @@ export const createAsset = async (
   contract = contractIn;
 
   try {
+    console.log(contentType);
     const data = contentType === 'application/json' ? JSON.stringify(content) : content;
+    console.log(typeof data);
     
     const tx = await arweave.createTransaction({
       data: data
@@ -91,7 +93,9 @@ export const createAsset = async (
     try {
       await arweave.transactions.sign(tx, jwk);
       const assetId = tx.id;
-      await arweave.transactions.post(tx);
+      let rr = await arweave.transactions.post(tx);
+      console.log(rr);
+      console.log(assetId);
       
       createAtomicAsset(
         assetId, 
@@ -131,6 +135,7 @@ async function createAtomicAsset(
       additionalPaths,
       config
     )
+    console.log(dataAndTags);
     const atomicId = await dispatchToBundler(dataAndTags, contentType)
     await deployToWarp(atomicId, dataAndTags, contentType)
     return atomicId
@@ -178,8 +183,8 @@ async function deployToWarp(
     body: JSON.stringify({ contractTx: tx }),
     headers: {
       'Accept-Encoding': 'gzip, deflate, br',
-      'Content-Type': contentType,
-      Accept: contentType
+      'Content-Type': "application/json",
+      Accept: "application/json"
     }
   })
   console.log("ATOMIC ID", tx.id)
