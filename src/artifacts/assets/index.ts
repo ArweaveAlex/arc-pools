@@ -80,9 +80,7 @@ export const createAsset = async (
   contract = contractIn;
 
   try {
-    console.log(contentType);
     const data = contentType === 'application/json' ? JSON.stringify(content) : content;
-    console.log(typeof data);
     
     const tx = await arweave.createTransaction({
       data: data
@@ -139,7 +137,6 @@ async function createAtomicAsset(
       additionalPaths,
       config
     )
-    console.log(dataAndTags);
     const atomicId = await dispatchToBundler(dataAndTags, contentType)
     await deployToWarp(atomicId, dataAndTags, contentType)
     return atomicId
