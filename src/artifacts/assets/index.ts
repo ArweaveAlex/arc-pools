@@ -93,8 +93,12 @@ export const createAsset = async (
     try {
       await arweave.transactions.sign(tx, jwk);
       const assetId = tx.id;
-      let rr = await arweave.transactions.post(tx);
-      console.log(rr);
+      let uploader = await arweave.transactions.getUploader(tx);
+      while (!uploader.isComplete) {
+        await uploader.uploadChunk();
+        console.log(`${uploader.pctComplete}% complete, ${uploader.uploadedChunks}/${uploader.totalChunks}`);
+      }
+
       console.log(assetId);
       
       createAtomicAsset(
