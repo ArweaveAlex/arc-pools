@@ -59,7 +59,7 @@
         "refreshPeriod": "-4 hours",
         "pool": {
             "transferable": false,
-            "contract": "z8TixEDiO3Ml_D-QsSAb0Xon8Mur830XNHsjaeoAnM"
+            "contract": "-z8TixEDiO3Ml_D-QsSAb0Xon8Mur830XNHsjaeoAnM"
         },
         "nftContractSrc": "nfMLWMoxKWdWEVvwaWksJ3nXXim-7y4CJ9kSl2BAt9E"
     },

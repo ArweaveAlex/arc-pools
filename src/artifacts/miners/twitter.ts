@@ -15,6 +15,7 @@ const Twitter = require('node-tweet-stream');
 
 
 let tweetCount = 0;
+let lockProcess = false;
 
 const checkPath = async (path: PathLike): Promise<boolean> => { return promises.stat(path).then(_ => true).catch(_ => false) };
 
@@ -82,25 +83,24 @@ export async function mineTweets(poolSlug: string) {
     console.log(`Tracking users: ${trackUsers}`)
     twitter.track(trackKeyWords)
     twitter.follow(trackUsers)
+    setTimeout(() => {lockProcess = true; processTweets();}, 30000);
 }
 
 async function listTweet(tweet: any) {
-    console.log("Tracking new tweet: " + tweet);
-    if (!tweet.retweeted_status) {
+    if (!tweet.retweeted_status && !lockProcess) {
+        console.log("Pushing new tweet: " + tweet);
         tweets.push(tweet);
     }
-    if(tweetCount==29){
-        console.log("30 tweets reached untracking twitter");
-        twitter.untrackAll();
-        processTweets();
+    if(lockProcess){
+        twitter.on('tweet', () => {}); 
     }
-    if (!tweet.retweeted_status) {
+    if (!tweet.retweeted_status && !lockProcess) {
         tweetCount++;
     }
+    return;
 }
 
 async function processTweets(){
-    console.log(tweets);
     console.log(tweets.length);
     for(let i=0;i<tweets.length;i++){
         await processTweet(tweets[i]);
