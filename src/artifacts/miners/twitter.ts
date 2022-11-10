@@ -14,11 +14,7 @@ import { Config, POOLS_PATH } from "../../config";
 const Twitter = require('node-tweet-stream');
 
 
-let TPS = 0;
-let pTPS = 0
-// setInterval(() => {
-//     console.log(`TPS: ${TPS} - pTPS: ${pTPS}`); TPS = 0; pTPS = 0
-// }, 1000)
+let tweetCount = 0;
 
 const checkPath = async (path: PathLike): Promise<boolean> => { return promises.stat(path).then(_ => true).catch(_ => false) };
 
@@ -37,6 +33,7 @@ let keys: any;
 let arweave: Arweave;
 let smartweave: Warp;
 let contract: Contract;
+let tweets: any[] = [];
 
 export async function mineTweets(poolSlug: string) {
     config = JSON.parse(readFileSync(POOLS_PATH).toString())[poolSlug];
@@ -74,7 +71,7 @@ export async function mineTweets(poolSlug: string) {
     LoggerFactory.INST.logLevel("error", "HandlerBasedContract");
     LoggerFactory.INST.logLevel("error", "HandlerExecutorFactory");
 
-    twitter.on('tweet', processTweet);
+    twitter.on('tweet', listTweet);
 
     twitter.on('error', (e: any) => {
         console.error(`tStream error: ${e}`)
@@ -87,17 +84,36 @@ export async function mineTweets(poolSlug: string) {
     twitter.follow(trackUsers)
 }
 
+async function listTweet(tweet: any) {
+    console.log("Tracking new tweet: " + tweet);
+    if (!tweet.retweeted_status) {
+        tweets.push(tweet);
+    }
+    if(tweetCount==29){
+        console.log("30 tweets reached untracking twitter");
+        twitter.untrackAll();
+        processTweets();
+    }
+    if (!tweet.retweeted_status) {
+        tweetCount++;
+    }
+}
+
+async function processTweets(){
+    console.log(tweets);
+    console.log(tweets.length);
+    for(let i=0;i<tweets.length;i++){
+        await processTweet(tweets[i]);
+    }
+    console.log("Finished processing all tweets...");
+    process.exit(1);
+}
+
 
 async function processTweet(tweet: any) {
     const tmpdir = await tmp.dir({ unsafeCleanup: true });
 
     try {
-        TPS++
-
-        if (tweet.retweeted_status) { //retweet, ignore.
-            return;
-        }
-
         if (tweet?.extended_entities?.media?.length > 0) {
             try {
                 const mediaDir = p.join(tmpdir.path, "media")
@@ -188,20 +204,23 @@ async function processTweet(tweet: any) {
             }
         }
 
-
-        createAsset(
-            bundlr,
-            arweave,
-            smartweave,
-            contract,
-            tweet,
-            additionalPaths,
-            config,
-            "application/json",
-            ""
-        );
-
-        pTPS++
+        try{
+            await createAsset(
+                bundlr,
+                arweave,
+                smartweave,
+                contract,
+                tweet,
+                additionalPaths,
+                config,
+                "application/json",
+                ""
+            );
+        } catch (e: any){
+            console.log(`Error creating asset stopping processing...\n ${e}`);
+            process.exit(1);
+        }
+        
 
     } catch (e: any) {
         console.log(`general error: ${e.stack ?? e.message}`)

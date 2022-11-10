@@ -59,9 +59,9 @@
         "refreshPeriod": "-4 hours",
         "pool": {
             "transferable": false,
-            "contract": "8Y9XTSDkdNVylhuDwdosZhvFFKr1hrhYjf3Vw-mQII0"
+            "contract": "z8TixEDiO3Ml_D-QsSAb0Xon8Mur830XNHsjaeoAnM"
         },
-        "nftContractSrc": "TYwOwE2Oy45i9tXJmYGDe_U65-8aQjTTVc1taY22hOI"
+        "nftContractSrc": "nfMLWMoxKWdWEVvwaWksJ3nXXim-7y4CJ9kSl2BAt9E"
     },
     "shanghai-lockdown": {
         "keywords": [
@@ -90,9 +90,9 @@
         "refreshPeriod": "-4 hours",
         "pool": {
             "transferable": false,
-            "contract": "CbX34uhYDBGV5U0xg8_iOZJrcXLkvG2q06KvaXB2BDw"
+            "contract": "SAHauW5jIVPl2e6gJ8h77uHhunM2-5Rcpr1p--Nr7oU"
         },
-        "nftContractSrc": "QKTk9R9rz1SnwYrHsXIdABt9hB8M7ZSUH_USyjngSWA"
+        "nftContractSrc": "7IIHn5mbFXDnvgXnQrHSzHGKEpW0bpAL61NxDAiJb6s"
     },
     "iranian-protests": {
         "keywords": [
@@ -128,9 +128,9 @@
         "refreshPeriod": "-4 hours",
         "pool": {
             "transferable": false,
-            "contract": "dOtmD-p-5QUm9bJdhIgJDOu0ItMWZ3qFUSPhzk924mQ"
+            "contract": "m-qVk5-Emy4mYsP3Sual4tN5gzH2EspdZU8d6MdIkw8"
         },
-        "nftContractSrc": "8nMcFTBKJOtGBkrl0Mn5REVab6x3LNjg-9Hnz_hUj0c"
+        "nftContractSrc": "91q1X4znUYSbmMs1lN87d_c9Klmxkjv4xw6H7iEz6LA"
     },
     "musk-twitter": {
         "keywords": [
@@ -160,9 +160,9 @@
         "refreshPeriod": "-4 hours",
         "pool": {
             "transferable": false,
-            "contract": "NIrXqLVeD8hDAFIaTakQo79oc3ueMbJ08T16k__Ls7Q"
+            "contract": "1Mst1y_Di8Y5vqb1zUIypGL4zrjRJGrDS2eytgRzjNA"
         },
-        "nftContractSrc": "QWyiw_xmigPqyCZ_Wf7D3A2dtdWgJGKRxZBUuP1_Gb8"
+        "nftContractSrc": "MIAJcw-CfH8g11cfmcfoPnW0XyH9DXiRWj63EalI1Is"
     },
     "us-midterm" : {
         "keywords": [
@@ -190,8 +190,8 @@
         "refreshPeriod": "-4 hours",
         "pool": {
             "transferable": false,
-            "contract": "Vv5Q72guzHXplcsNTNfwd8I_AWTlryEDwzI4KqhHH5g"
+            "contract": "YB4In2J_zXh2qJxeyRCRj21hxiEjjBk7KAz9pos-PPc"
         },
-        "nftContractSrc": "f_VfU2fOy1eiBNDtxWs513x0djmZj7WdWAy--tD1nZw"
+        "nftContractSrc": "18gi7Qpecs3a8faJRmIsYyu_DpGgjpGdwaP11ixMIoE"
     }
 }

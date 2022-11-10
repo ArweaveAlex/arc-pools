@@ -99,7 +99,7 @@ export const createAsset = async (
 
       console.log(assetId);
       
-      createAtomicAsset(
+      await createAtomicAsset(
         assetId, 
         contentType === 'application/json' ? generateTweetName(content) : articleTitle, 
         contentType === 'application/json' ? generateTweetName(content) : articleTitle, 
@@ -110,11 +110,11 @@ export const createAsset = async (
       );
 
     } catch (err) {
-      console.log(err)
+      throw new Error(err);
     }
   }
   catch (err) {
-    console.error(err)
+    throw new Error(err);
   }
 }
 
@@ -142,7 +142,7 @@ async function createAtomicAsset(
     return atomicId
   } catch (e) {
     console.log(e)
-    return Promise.reject('Could not create Atomic Transaction')
+    throw new Error(e);
   }
 }
 
@@ -159,10 +159,16 @@ export async function dispatchToBundler(
   try{
       await bundlr.fund(cost.multipliedBy(1.1).integerValue());
   } catch (e: any){
-      console.log(`Error funding bundlr, probably not enough funds in arweave wallet stopping process...\n ${e}`);
-      process.exit(1);
+      console.log(`Error funding bundlr, probably not enough funds in arweave wallet...\n ${e}`);
+      throw new Error(e);
   }
-  await tx.upload()
+  try {
+    await tx.upload()
+  } catch (e: any){
+    console.log(`Error uploading to bundlr stopping process...\n ${e}`);
+    throw new Error(e);
+  }
+  
   console.log("BUNDLR ATOMIC ID", id)
   return id
 }
@@ -172,24 +178,33 @@ async function deployToWarp(
   dataAndTags:any,
   contentType: string
 ) {
-  let { data, tags } = dataAndTags;
-  const tx = await arweave.createTransaction({ data })
-  tags.map((t: any) => tx.addTag(t.name, t.value))
+  try {
+    let { data, tags } = dataAndTags;
+    const tx = await arweave.createTransaction({ data })
+    tags.map((t: any) => tx.addTag(t.name, t.value))
 
-  await arweave.transactions.sign(tx, jwk)
-  tx.id = atomicId
+    await arweave.transactions.sign(tx, jwk)
+    tx.id = atomicId
 
-  const result = await fetch(URL, {
-    method: 'POST',
-    body: JSON.stringify({ contractTx: tx }),
-    headers: {
-      'Accept-Encoding': 'gzip, deflate, br',
-      'Content-Type': "application/json",
-      Accept: "application/json"
-    }
-  })
-  console.log("ATOMIC ID", tx.id)
-  return { id: atomicId }
+    // let price = await arweave.transactions.getPrice(parseInt(tx.data_size));
+    // console.log("Warp price: " + price);
+
+    const result = await fetch(URL, {
+      method: 'POST',
+      body: JSON.stringify({ contractTx: tx }),
+      headers: {
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Content-Type': "application/json",
+        Accept: "application/json"
+      }
+    })
+    console.log("ATOMIC ID", tx.id)
+    return { id: atomicId }
+  } catch(e: any){
+    console.log(`Error uploading to warp...\n ${e}`);
+    throw new Error(e);
+  }
+  
 }
 
 async function createDataAndTags(
