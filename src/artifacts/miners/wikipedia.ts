@@ -17,6 +17,7 @@ let arweave: Arweave;
 let smartweave: Warp;
 let contract: Contract;
 
+let currentArticleURL = "wikipedia.org/";
 
 function onlyUnique(value: any, index: any, self: any) {
     return self.indexOf(value) === index;
@@ -37,21 +38,39 @@ const getPage = async (query: string) => {
     return content;
 }
 
+function replacer(
+  match: string, 
+  p1: string, 
+  _offset: number, 
+  _string: string
+) {
+  return match
+    .replace("#" + p1, currentArticleURL + "#" + p1)
+    .replace('<a', '<a target="_blank"');
+}
+
 export const parseHTML = (content: any, title: any) => {
     var find = '<a href="/wiki';
     var re = new RegExp(find, 'g');
     var replace = '<a target="_blank" href="https://wikipedia.org/wiki';
     let finalHtml = content.replace(re, replace);
+
     let head = '<html><head><link rel="stylesheet" href="https://arweave.net/zeD-oNKfwNXE4k4-QeCAR3UZIfLXA7ettyi8qGZqd7g"><title>' + title + '</title><meta charset="UTF-8"><meta name="description" content="' + title + ' Permaweb Page"></head><body>';
     finalHtml = head + finalHtml;
     finalHtml = finalHtml + "</body></html>";
+
+    let tocReg = new RegExp('<a href="#' + '(.*)' + '"><span class="tocnumber">', 'g');
+    finalHtml = finalHtml.replace(tocReg, replacer);
+
     fs.appendFileSync('test.txt', finalHtml);
+
     return finalHtml;
-  }
+}
 
 const scrapePage = async (query: string) => {
     try {
       const content = await getPage(query);
+      currentArticleURL = content.url();
       const html = parseHTML(await content.html(), content.title);
       const categories = await content.categories();
       const newCats = categories.map((word: any) => word.replace('Category:', ""));

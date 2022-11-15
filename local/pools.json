@@ -1,4 +1,44 @@
 {
+    "crypto-crunch" : {
+        "keywords": [
+            "FTX",
+            "FTX Crypto",
+            "SBF",
+            "SBF FTX",
+            "Sam Bankman-Fried",
+            "Samuel Bankman-Fried",
+            "Samuel Bankman-Fried FTX",
+            "FTX Crypto",
+            "@SBF_FTX",
+            "#ftx",
+            "#sambankmanfried",
+            "#sbf",
+            "#crypto",
+            "Binance",
+            "#binance",
+            "Binance FTX",
+            "Crypto Crunch",
+            "Crypto"
+        ],
+        "keywordListID": "crypto-crunch",
+        "keywordListVersion": 1,
+        "userIDs": [
+            "1110877798820777986",
+            "1297651178256257024",
+            "1014864886915108869"
+        ],
+        "instances": 1,
+        "query": "ftx",
+        "walletPath": "./local/wallets/walletCryptoCrunch.json",
+        "bundlrNode": "https://node2.bundlr.network",
+        "difference": 0.02,
+        "refreshPeriod": "-4 hours",
+        "pool": {
+            "transferable": false,
+            "contract": "NTrE1WKisb0AsIY0NUSWcyWaBQTQH5c4DZ4XBXqCczk"
+        },
+        "nftContractSrc": "lzwP2eEDjt6qbI7Ghd2wOcZPNWk8WQIt8cRI-kibLZI"
+    },
     "russia-ukraine-dummy": {
         "keywords": [
             "Ukraine",
@@ -183,7 +223,7 @@
             "1377340265283870731"
         ],
         "instances": 1,
-        "query": "shanghai",
+        "query": "midterm",
         "walletPath": "./local/wallets/walletUsMidterms.json",
         "bundlrNode": "https://node2.bundlr.network",
         "difference": 0.02,
@@ -193,45 +233,5 @@
             "contract": "YB4In2J_zXh2qJxeyRCRj21hxiEjjBk7KAz9pos-PPc"
         },
         "nftContractSrc": "18gi7Qpecs3a8faJRmIsYyu_DpGgjpGdwaP11ixMIoE"
-    },
-    "crypto-crunch" : {
-        "keywords": [
-            "FTX",
-            "FTX Crypto",
-            "SBF",
-            "SBF FTX",
-            "Sam Bankman-Fried",
-            "Samuel Bankman-Fried",
-            "Samuel Bankman-Fried FTX",
-            "FTX Crypto",
-            "@SBF_FTX",
-            "#ftx",
-            "#sambankmanfried",
-            "#sbf",
-            "#crypto",
-            "Binance",
-            "#binance",
-            "Binance FTX",
-            "Crypto Crunch",
-            "Crypto"
-        ],
-        "keywordListID": "crypto-crunch",
-        "keywordListVersion": 1,
-        "userIDs": [
-            "1110877798820777986",
-            "1297651178256257024",
-            "1014864886915108869"
-        ],
-        "instances": 1,
-        "query": "ftx",
-        "walletPath": "./local/wallets/walletCryptoCrunch.json",
-        "bundlrNode": "https://node2.bundlr.network",
-        "difference": 0.02,
-        "refreshPeriod": "-4 hours",
-        "pool": {
-            "transferable": false,
-            "contract": "NTrE1WKisb0AsIY0NUSWcyWaBQTQH5c4DZ4XBXqCczk"
-        },
-        "nftContractSrc": "lzwP2eEDjt6qbI7Ghd2wOcZPNWk8WQIt8cRI-kibLZI"
     }
 }
