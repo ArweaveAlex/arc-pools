@@ -83,7 +83,7 @@ export async function mineTweets(poolSlug: string) {
     console.log(`Tracking users: ${trackUsers}`)
     twitter.track(trackKeyWords)
     twitter.follow(trackUsers)
-    setTimeout(() => {lockProcess = true; processTweets();}, 30000);
+    setTimeout(() => {lockProcess = true; processTweets();}, 20000);
 }
 
 async function listTweet(tweet: any) {
