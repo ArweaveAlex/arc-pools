@@ -17,7 +17,7 @@ let arweave: Arweave;
 let smartweave: Warp;
 let contract: Contract;
 
-let currentArticleURL = "wikipedia.org/";
+let currentArticleURL = "";
 
 function onlyUnique(value: any, index: any, self: any) {
     return self.indexOf(value) === index;
@@ -55,6 +55,16 @@ export const parseHTML = (content: any, title: any) => {
     var replace = '<a target="_blank" href="https://wikipedia.org/wiki';
     let finalHtml = content.replace(re, replace);
 
+    var find2 = '<a href="#cite_note';
+    var re2 = new RegExp(find2, 'g');
+    var replace2 = '<a target="_blank" href="' + currentArticleURL + '#cite_note';
+    finalHtml = finalHtml.replace(re2, replace2);
+
+    var find3 = '<a href="#cite_ref';
+    var re3 = new RegExp(find3, 'g');
+    var replace3 = '<a target="_blank" href="' + currentArticleURL + '#cite_ref';
+    finalHtml = finalHtml.replace(re3, replace3);
+
     let head = '<html><head><link rel="stylesheet" href="https://arweave.net/zeD-oNKfwNXE4k4-QeCAR3UZIfLXA7ettyi8qGZqd7g"><title>' + title + '</title><meta charset="UTF-8"><meta name="description" content="' + title + ' Permaweb Page"></head><body>';
     finalHtml = head + finalHtml;
     finalHtml = finalHtml + "</body></html>";
@@ -62,7 +72,7 @@ export const parseHTML = (content: any, title: any) => {
     let tocReg = new RegExp('<a href="#' + '(.*)' + '"><span class="tocnumber">', 'g');
     finalHtml = finalHtml.replace(tocReg, replacer);
 
-    fs.appendFileSync('test.txt', finalHtml);
+    // fs.appendFileSync('test.txt', finalHtml);
 
     return finalHtml;
 }

@@ -21,5 +21,7 @@ export type Config = {
     keywordListVersion: string,
     keywords: string[],
     userIDs: string[],
-    balanceUrl: string
+    balanceUrl: string,
+    mineAllTweetsUserIDs: string[],
+    mentionTags: string[]
 };

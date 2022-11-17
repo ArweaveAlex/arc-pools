@@ -1,32 +1,22 @@
 
-import Bundlr from "@bundlr-network/client"
-import tmp from "tmp-promise"
-import * as p from "path"
+import Bundlr from "@bundlr-network/client";
+import tmp from "tmp-promise";
+import * as p from "path";
 import { mkdir } from "fs/promises";
-import { PathLike, promises, readFileSync } from "fs";
-import { createWriteStream } from "fs";
-import axios from "axios"
+import axios from "axios";
 import Arweave from "arweave";
 import mime from "mime-types";
 import { Contract, LoggerFactory, Warp, WarpNodeFactory } from "warp-contracts";
-import { createAsset } from "../assets";
-import { Config, POOLS_PATH } from "../../config";
+import { readFileSync, promises } from "fs";
+import { TwitterApi, Tweetv2SearchParams } from "twitter-api-v2";
 const Twitter = require('node-tweet-stream');
 
+import { createAsset } from "../assets";
+import { Config, POOLS_PATH } from "../../config";
+import { checkPath, walk, processMediaURL } from ".";
 
-let tweetCount = 0;
+
 let lockProcess = false;
-
-const checkPath = async (path: PathLike): Promise<boolean> => { return promises.stat(path).then(_ => true).catch(_ => false) };
-
-async function* walk(dir: string) : any {
-    for await (const d of await promises.opendir(dir)) {
-        const entry = p.join(dir, d.name);
-        if (d.isDirectory()) yield* await walk(entry);
-        else if (d.isFile()) yield entry;
-    }
-}
-
 let twitter: any;
 let bundlr: Bundlr
 let config: Config;
@@ -35,8 +25,9 @@ let arweave: Arweave;
 let smartweave: Warp;
 let contract: Contract;
 let tweets: any[] = [];
+let twitterClientV2: TwitterApi;
 
-export async function mineTweets(poolSlug: string) {
+async function init(poolSlug: string) {
     config = JSON.parse(readFileSync(POOLS_PATH).toString())[poolSlug];
 
     if(!config) throw new Error("Invalid pool slug");
@@ -67,10 +58,27 @@ export async function mineTweets(poolSlug: string) {
         walletBalanceUrl: config.balanceUrl
     });
 
-
     LoggerFactory.INST.logLevel("error", "DefaultStateEvaluator");
     LoggerFactory.INST.logLevel("error", "HandlerBasedContract");
     LoggerFactory.INST.logLevel("error", "HandlerExecutorFactory");
+
+    twitterClientV2 = new TwitterApi({
+        appKey: keys.tkeys.consumer_key,
+        appSecret: keys.tkeys.consumer_secret,
+        accessToken: keys.tkeys.token,
+        accessSecret: keys.tkeys.token_secret,
+    });
+}
+
+/**
+ * Start a twitter stream, aggregate them into a list
+ * then mine them onto Arweave synchronously so if it 
+ * fails in the middle we don't end up with partial
+ * atomic assets
+ * @param poolSlug 
+ */
+export async function mineTweets(poolSlug: string) {
+    await init(poolSlug);
 
     twitter.on('tweet', listTweet);
 
@@ -86,6 +94,69 @@ export async function mineTweets(poolSlug: string) {
     setTimeout(() => {lockProcess = true; processTweets();}, 20000);
 }
 
+
+export async function mineTweetsByMention(
+    poolSlug: string
+) {
+    await init(poolSlug);
+    let mentionTags = config.mentionTags;
+
+    console.log("Running mining process for mentions...");
+    console.log(config.mentionTags);
+
+    try {
+        for(let i=0;i<mentionTags.length;i++){
+            console.log(mentionTags[i]);
+            let query = mentionTags[i];
+            let r: any;
+            let allTweets: any[] = [];
+            do {
+                let params: Tweetv2SearchParams = {
+                    max_results: 100,
+                    query: query,
+                };
+                if(r) params.next_token = r.meta.next_token;
+                r = await twitterClientV2.v2.search(
+                    query,
+                    params
+                );
+                // console.log(r.data.data);
+                if(r.data.data) allTweets = allTweets.concat(r.data.data);
+            } while(r.meta.next_token);
+    
+            let ids = allTweets.map((t: any) => { return t.id });
+
+            let tweetsJson = await twitterClientV2.v2.tweets(ids);
+
+            let rParent: any;
+            let allParentTweets: any[] = [];
+            do {
+                let params: Tweetv2SearchParams = {
+                    max_results: 100,
+                    query: query,
+                };
+                if(rParent) params.next_token = rParent.meta.next_token;
+                rParent = await twitterClientV2.v2.tweets(
+                    ids
+                );
+                console.log(rParent);
+                if(rParent.data.data) allParentTweets = allParentTweets.concat(r.data.data);
+            } while(r.meta.next_token);
+            
+        }
+    } catch (e: any) {
+        console.log(e.data);
+    }
+}
+
+export async function mineTweetsByUser(
+    poolSlug: string
+) {
+    await init(poolSlug);
+
+    
+}
+
 async function listTweet(tweet: any) {
     if (!tweet.retweeted_status && !lockProcess) {
         console.log("Pushing new tweet: " + tweet);
@@ -93,9 +164,6 @@ async function listTweet(tweet: any) {
     }
     if(lockProcess){
         twitter.on('tweet', () => {}); 
-    }
-    if (!tweet.retweeted_status && !lockProcess) {
-        tweetCount++;
     }
     return;
 }
@@ -230,26 +298,5 @@ async function processTweet(tweet: any) {
     }
 }
 
-
-export async function processMediaURL(url: string, dir: string, i: number) {
-    return new Promise(async (resolve, reject) => {
-        const ext = url?.split("/")?.at(-1)?.split(".")?.at(1)?.split("?").at(0) ?? "unknown"
-        const wstream = createWriteStream(p.join(dir, `${i}.${ext}`))
-        const res = await axios.get(url, {
-            responseType: "stream"
-        }).catch((e) => {
-            console.log(`getting ${url} - ${e.message}`)
-        })
-        if (!res) { return }
-        await res.data.pipe(wstream) // pipe to file
-        wstream.on('finish', () => {
-            resolve("done")
-        })
-        wstream.on('error', (e) => {
-            reject(e)
-        })
-    })
-
-}
 
 

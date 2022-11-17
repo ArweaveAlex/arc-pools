@@ -180,11 +180,11 @@ async function deployToWarp(
 ) {
   try {
     let { data, tags } = dataAndTags;
-    const tx = await arweave.createTransaction({ data })
-    tags.map((t: any) => tx.addTag(t.name, t.value))
+    const tx = await arweave.createTransaction({ data });
+    tags.map((t: any) => tx.addTag(t.name, t.value));
 
-    await arweave.transactions.sign(tx, jwk)
-    tx.id = atomicId
+    await arweave.transactions.sign(tx, jwk);
+    // tx.id = atomicId;
 
     // let price = await arweave.transactions.getPrice(parseInt(tx.data_size));
     // console.log("Warp price: " + price);
