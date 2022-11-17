@@ -8,7 +8,7 @@ import Arweave from "arweave";
 import mime from "mime-types";
 import { Contract, LoggerFactory, Warp, WarpNodeFactory } from "warp-contracts";
 import { readFileSync, promises } from "fs";
-import { TwitterApi, Tweetv2SearchParams, Tweetv2FieldsParams } from "twitter-api-v2";
+import { TwitterApi, Tweetv2SearchParams, Tweetv2FieldsParams, TweetV2UserTimelineParams } from "twitter-api-v2";
 import * as gql from "gql-query-builder";
 const Twitter = require('node-tweet-stream');
 
@@ -98,83 +98,113 @@ export async function mineTweets(poolSlug: string) {
 
 /**
  * If someone sais @thealexarchive #crypto etc...
- * this will grab that and mine it to the pool
- * it's supposed to handle a lot at once that's 
- * why it is long
+ * this will grab those and mine them to the pool
  * @param poolSlug 
  */
 export async function mineTweetsByMention(
-    poolSlug: string
+    poolSlug: string,
+    mentionTag: string
 ) {
     await init(poolSlug);
-    let mentionTags = config.mentionTags;
 
     console.log("Running mining process for mentions...");
-    console.log(config.mentionTags);
+    console.log(mentionTag);
 
     try {
-        for(let i=0;i<mentionTags.length;i++){
-            console.log(mentionTags[i]);
+        // grab all the mentions from twitter
+        let query = mentionTag;
+        let r: any;
+        let allTweets: any[] = [];
+        do {
+            let params: Tweetv2SearchParams = {
+                max_results: 100,
+                query: query,
+                "tweet.fields": ['referenced_tweets']
+            };
+            if(r) params.next_token = r.meta.next_token;
+            r = await twitterClientV2.v2.search(
+                query,
+                params
+            );
+            if(r.data.data) allTweets = allTweets.concat(r.data.data);
+        } while(r.meta.next_token);
 
-            // grab all the mentions from twitter
-            let query = mentionTags[i];
-            let r: any;
-            let allTweets: any[] = [];
-            do {
-                let params: Tweetv2SearchParams = {
-                    max_results: 100,
-                    query: query,
-                    "tweet.fields": ['referenced_tweets']
-                };
-                if(r) params.next_token = r.meta.next_token;
-                r = await twitterClientV2.v2.search(
-                    query,
-                    params
-                );
-                if(r.data.data) allTweets = allTweets.concat(r.data.data);
-            } while(r.meta.next_token);
-    
-            // get the parent tweets from the mentions above
-            // and remove duplicate ids
-            let ids = allTweets.map((t: any) => { 
-                if(t.referenced_tweets && t.referenced_tweets.length > 0) {
-                    return t.referenced_tweets[0].id;
-                }
-            }).filter(function(item, pos, self) {
-                return self.indexOf(item) == pos;
-            });
-
-            // aggregate 10 parent tweets at once
-            let allParentTweets: any[] = [];
-            for (var j = 0; j < ids.length; j += 10) {
-                console.log("Fetching tweet ids: " + ids.slice(i, i + 10));
-                let rParents = await twitterClientV2.v1.tweets(ids);
-                if(rParents.length > 0) {
-                    allParentTweets = allParentTweets.concat(rParents)
-                };
+        // get the parent tweets from the mentions above
+        // and remove duplicate ids
+        let ids = allTweets.map((t: any) => { 
+            if(t.referenced_tweets && t.referenced_tweets.length > 0) {
+                return t.referenced_tweets[0].id;
             }
+        }).filter(function(item, pos, self) {
+            return self.indexOf(item) == pos;
+        });
 
-            for(let j=0;j<allParentTweets.length;j++){
-                let dup = await isDuplicate(allParentTweets[i]);
-                if(!dup) {
-                    processTweet(allParentTweets[i]);
-                } else {
-                    console.log("Tweet already mined skipping: " + generateTweetName(allParentTweets[i]))
-                }
-            }
-            
-        }
+        await processIds(ids);
     } catch (e: any) {
         console.log(e.data);
     }
 }
 
+/**
+ * mine all of a specific users tweets
+ * ignoring duplicates
+ * @param poolSlug 
+ */
 export async function mineTweetsByUser(
-    poolSlug: string
+    poolSlug: string,
+    userName: string
 ) {
     await init(poolSlug);
 
-    
+    console.log("Running mining process for user...");
+    console.log(userName);
+
+    let uid = "1110877798820777986";
+
+    let r: any;
+    let allTweets: any[] = [];
+    do {
+        let params: TweetV2UserTimelineParams = {
+            max_results: 100
+        };
+        if(r) params.pagination_token = r.meta.next_token;
+
+        r = await twitterClientV2.v2.userTimeline(
+            uid,
+            params
+        ); 
+        if(r.data.data) allTweets = allTweets.concat(r.data.data);
+    } while(r.meta.next_token);
+
+    console.log(allTweets.length + " tweets fetched");
+
+    let ids = allTweets.map((t: any) => { 
+        return t.id
+    });
+
+    await processIds(ids);
+}
+
+async function processIds(ids: string[]) {
+    // aggregate 10 parent tweets at once
+    let allTweets: any[] = [];
+    for (var j = 0; j < ids.length; j += 10) {
+        console.log("Fetching tweet ids: " + ids.slice(j, j + 10));
+        let rParents = await twitterClientV2.v1.tweets(ids.slice(j, j + 5));
+        if(rParents.length > 0) {
+            allTweets = allTweets.concat(rParents)
+        };
+    }
+
+    for(let j=0;j<allTweets.length;j++){
+        console.log(allTweets[j]);
+        let dup = await isDuplicate(allTweets[j]);
+        if(!dup) {
+            await processTweet(allTweets[j]);
+        } else {
+            console.log("Tweet already mined skipping: " + generateTweetName(allTweets[j]))
+        }
+    }
 }
 
 
@@ -221,7 +251,6 @@ async function isDuplicate(tweet: any) {
         if(response.data.data.transactions){
             if(response.data.data.transactions.edges){
                 if(response.data.data.transactions.edges.length > 0){
-                    console.log('asdf')
                     return true;
                 }
             }

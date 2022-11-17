@@ -30,9 +30,9 @@ function mineArtifacts(
     if(source ==='twitter') {
         if(twitterOperation){
             if(twitterOperation === 'user') {
-                mineTweetsByUser(poolSlug);
+                mineTweetsByUser(poolSlug, "@SBF_FTX");
             } else if(twitterOperation ==='mentions') {
-                mineTweetsByMention(poolSlug);
+                mineTweetsByMention(poolSlug, "@thealexarchive #crypto");
             }
         } else {
             mineTweets(poolSlug)  
