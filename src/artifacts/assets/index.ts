@@ -46,13 +46,19 @@ function truncateString(str: string, num: number) {
   }
 }
 
-const generateTweetName = (tweet: any) => {
+export const generateTweetName = (tweet: any) => {
 
   if(tweet.text){
     if(tweet.text.length > 30){
       return 'Username: ' + tweet.user.name + ', Tweet: ' + truncateString(tweet.text, 30);
     } else {
       return 'Username: ' + tweet.user.name + ', Tweet: ' + tweet.text;
+    }
+  } else if (tweet.full_text) {
+    if(tweet.full_text.length > 30){
+      return 'Username: ' + tweet.user.name + ', Tweet: ' + truncateString(tweet.full_text, 30);
+    } else {
+      return 'Username: ' + tweet.user.name + ', Tweet: ' + tweet.full_text;
     }
   } else {
     return 'Username: ' + tweet.user.name + ', Tweet Id: ' + tweet.id;
@@ -184,10 +190,10 @@ async function deployToWarp(
     tags.map((t: any) => tx.addTag(t.name, t.value));
 
     await arweave.transactions.sign(tx, jwk);
-    // tx.id = atomicId;
+    tx.id = atomicId;
 
-    // let price = await arweave.transactions.getPrice(parseInt(tx.data_size));
-    // console.log("Warp price: " + price);
+    let price = await arweave.transactions.getPrice(parseInt(tx.data_size));
+    console.log("Warp price: " + price);
 
     const result = await fetch(URL, {
       method: 'POST',

@@ -16,7 +16,8 @@
         "node-tweet-stream": "^2.1.0",
         "warp-contracts": "=1.1.5",
         "wikijs": "^6.3.3",
-        "twitter-api-v2": "^1.12.0"
+        "twitter-api-v2": "^1.12.0",
+        "gql-query-builder": "^3.7.2"
     },
     "devDependencies": {
         "@types/mime-types": "^2.1.1",

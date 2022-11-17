@@ -8,10 +8,11 @@ import Arweave from "arweave";
 import mime from "mime-types";
 import { Contract, LoggerFactory, Warp, WarpNodeFactory } from "warp-contracts";
 import { readFileSync, promises } from "fs";
-import { TwitterApi, Tweetv2SearchParams } from "twitter-api-v2";
+import { TwitterApi, Tweetv2SearchParams, Tweetv2FieldsParams } from "twitter-api-v2";
+import * as gql from "gql-query-builder";
 const Twitter = require('node-tweet-stream');
 
-import { createAsset } from "../assets";
+import { createAsset, generateTweetName } from "../assets";
 import { Config, POOLS_PATH } from "../../config";
 import { checkPath, walk, processMediaURL } from ".";
 
@@ -95,6 +96,13 @@ export async function mineTweets(poolSlug: string) {
 }
 
 
+/**
+ * If someone sais @thealexarchive #crypto etc...
+ * this will grab that and mine it to the pool
+ * it's supposed to handle a lot at once that's 
+ * why it is long
+ * @param poolSlug 
+ */
 export async function mineTweetsByMention(
     poolSlug: string
 ) {
@@ -107,6 +115,8 @@ export async function mineTweetsByMention(
     try {
         for(let i=0;i<mentionTags.length;i++){
             console.log(mentionTags[i]);
+
+            // grab all the mentions from twitter
             let query = mentionTags[i];
             let r: any;
             let allTweets: any[] = [];
@@ -114,34 +124,44 @@ export async function mineTweetsByMention(
                 let params: Tweetv2SearchParams = {
                     max_results: 100,
                     query: query,
+                    "tweet.fields": ['referenced_tweets']
                 };
                 if(r) params.next_token = r.meta.next_token;
                 r = await twitterClientV2.v2.search(
                     query,
                     params
                 );
-                // console.log(r.data.data);
                 if(r.data.data) allTweets = allTweets.concat(r.data.data);
             } while(r.meta.next_token);
     
-            let ids = allTweets.map((t: any) => { return t.id });
+            // get the parent tweets from the mentions above
+            // and remove duplicate ids
+            let ids = allTweets.map((t: any) => { 
+                if(t.referenced_tweets && t.referenced_tweets.length > 0) {
+                    return t.referenced_tweets[0].id;
+                }
+            }).filter(function(item, pos, self) {
+                return self.indexOf(item) == pos;
+            });
 
-            let tweetsJson = await twitterClientV2.v2.tweets(ids);
-
-            let rParent: any;
+            // aggregate 10 parent tweets at once
             let allParentTweets: any[] = [];
-            do {
-                let params: Tweetv2SearchParams = {
-                    max_results: 100,
-                    query: query,
+            for (var j = 0; j < ids.length; j += 10) {
+                console.log("Fetching tweet ids: " + ids.slice(i, i + 10));
+                let rParents = await twitterClientV2.v1.tweets(ids);
+                if(rParents.length > 0) {
+                    allParentTweets = allParentTweets.concat(rParents)
                 };
-                if(rParent) params.next_token = rParent.meta.next_token;
-                rParent = await twitterClientV2.v2.tweets(
-                    ids
-                );
-                console.log(rParent);
-                if(rParent.data.data) allParentTweets = allParentTweets.concat(r.data.data);
-            } while(r.meta.next_token);
+            }
+
+            for(let j=0;j<allParentTweets.length;j++){
+                let dup = await isDuplicate(allParentTweets[i]);
+                if(!dup) {
+                    processTweet(allParentTweets[i]);
+                } else {
+                    console.log("Tweet already mined skipping: " + generateTweetName(allParentTweets[i]))
+                }
+            }
             
         }
     } catch (e: any) {
@@ -155,6 +175,60 @@ export async function mineTweetsByUser(
     await init(poolSlug);
 
     
+}
+
+
+async function isDuplicate(tweet: any) {
+    let tName = generateTweetName(tweet);
+
+    const query = () => gql.query({
+        operation: "transactions",
+        variables: {
+            tags: {
+                value: [{
+                    name: "Artifact-Name",
+                    values: [tName]
+                }, {
+                    name: "Pool-Id",
+                    values: [config.pool.contract]
+                }],
+                type: "[TagFilter!]"
+            }
+        },
+        fields: [
+            {
+                edges: [
+                    "cursor",
+                    {
+                        node: [
+                            "id",
+                            {
+                                "tags": [
+                                    "name",
+                                    "value"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    });
+
+    const response = await arweave.api.post("/graphql", query());
+
+    if(response.data && response.data.data) {
+        if(response.data.data.transactions){
+            if(response.data.data.transactions.edges){
+                if(response.data.data.transactions.edges.length > 0){
+                    console.log('asdf')
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 async function listTweet(tweet: any) {
@@ -179,6 +253,7 @@ async function processTweets(){
 
 
 async function processTweet(tweet: any) {
+    console.log(tweet);
     const tmpdir = await tmp.dir({ unsafeCleanup: true });
 
     try {
