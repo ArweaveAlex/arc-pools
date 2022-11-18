@@ -139,6 +139,8 @@ export async function mineTweetsByMention(
             return self.indexOf(item) == pos;
         });
 
+        console.log(ids);
+
         await processIds(ids);
     } catch (e: any) {
         console.log(e.data);
@@ -155,11 +157,13 @@ export async function mineTweetsByUser(
     userName: string
 ) {
     await init(poolSlug);
+    let user = await twitterClientV2.v2.userByUsername(userName);
 
     console.log("Running mining process for user...");
     console.log(userName);
+    console.log(user.data.id);
 
-    let uid = "1110877798820777986";
+    let uid = user.data.id;
 
     let r: any;
     let allTweets: any[] = [];
@@ -181,6 +185,8 @@ export async function mineTweetsByUser(
     let ids = allTweets.map((t: any) => { 
         return t.id
     });
+
+    console.log(ids);
 
     await processIds(ids);
 }
@@ -282,7 +288,6 @@ async function processTweets(){
 
 
 async function processTweet(tweet: any) {
-    console.log(tweet);
     const tmpdir = await tmp.dir({ unsafeCleanup: true });
 
     try {

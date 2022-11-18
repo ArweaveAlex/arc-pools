@@ -25,14 +25,15 @@ function createPool() {
 function mineArtifacts(
     poolSlug: string, 
     source: string,
-    twitterOperation: string | null
+    twitterOperation: string | null,
+    twitterParam: string | null
 ) {
     if(source ==='twitter') {
         if(twitterOperation){
             if(twitterOperation === 'user') {
-                mineTweetsByUser(poolSlug, "@SBF_FTX");
+                mineTweetsByUser(poolSlug, twitterParam);
             } else if(twitterOperation ==='mentions') {
-                mineTweetsByMention(poolSlug, "@thealexarchive #crypto");
+                mineTweetsByMention(poolSlug, twitterParam);
             }
         } else {
             mineTweets(poolSlug)  
@@ -52,7 +53,8 @@ switch (process.argv[2]) {
                 mineArtifacts(
                     process.argv[3],
                     process.argv[4], 
-                    process.argv[5]
+                    process.argv[5],
+                    process.argv[6]
                 );
             } else {
                 console.log(LANGUAGE.invalidArgs());
