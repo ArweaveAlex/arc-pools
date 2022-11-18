@@ -203,10 +203,11 @@ async function processIds(ids: string[]) {
     }
 
     for(let j=0;j<allTweets.length;j++){
-        console.log(allTweets[j]);
         let dup = await isDuplicate(allTweets[j]);
         if(!dup) {
-            await processTweet(allTweets[j]);
+            let t = allTweets[j];
+            if(!t.text) t.text = t.full_text;
+            await processTweet(t);
         } else {
             console.log("Tweet already mined skipping: " + generateTweetName(allTweets[j]))
         }

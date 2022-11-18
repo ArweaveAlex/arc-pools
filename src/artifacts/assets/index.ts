@@ -143,6 +143,8 @@ async function createAtomicAsset(
       additionalPaths,
       config
     )
+
+    console.log(dataAndTags);
     const atomicId = await dispatchToBundler(dataAndTags, contentType)
     await deployToWarp(atomicId, dataAndTags, contentType)
     return atomicId
