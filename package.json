@@ -10,16 +10,23 @@
     "dependencies": {
         "@bundlr-network/client": "^0.9.0",
         "@types/fs-extra": "^8.1.0",
-        "arweave": "=1.11.4",
+        "arweave": "^1.11.4",
         "axios": "^0.26.0",
+        "cli-color": "^2.0.3",
+        "figlet": "^1.5.2",
+        "fs": "^0.0.1-security",
         "fs-extra": "^10.1.0",
+        "minimist": "^1.2.7",
         "node-tweet-stream": "^2.1.0",
+        "twitter-api-v2": "^1.12.0",
         "warp-contracts": "=1.1.5",
-        "wikijs": "^6.3.3",
-        "twitter-api-v2": "^1.12.0"
+        "wikijs": "^6.3.3"
     },
     "devDependencies": {
+        "@types/cli-color": "^2.0.2",
+        "@types/figlet": "^1.5.5",
         "@types/mime-types": "^2.1.1",
+        "@types/minimist": "^1.2.2",
         "@types/node": "^18.11.9"
     }
 }

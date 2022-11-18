@@ -1,0 +1,24 @@
+{
+    "test-pool-1": {
+        "contracts": {
+            "nfft": {
+                "src": null
+            },
+            "pool": {
+                "id": null,
+                "src": null
+            }
+        }
+    },
+    "test-pool-2": {
+        "contracts": {
+            "nft": {
+                "src": null
+            },
+            "pool": {
+                "id": null,
+                "src": null
+            }
+        }
+    }
+}

@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 
-import { ARGS, POOLS_PATH } from "./config";
+import { CLI_ARGS, POOLS_PATH } from "./config";
 import { LANGUAGE } from "./language";
 
 import { 
@@ -18,7 +18,7 @@ import { mineWikipedia } from './artifacts/miners/wikipedia';
 
 const POOLS = JSON.parse(readFileSync(POOLS_PATH).toString());
 
-function createPool() {
+function create() {
     console.log(POOLS);
 }
 
@@ -43,10 +43,10 @@ function mineArtifacts(
 }
 
 switch (process.argv[2]) {
-    case ARGS.createPool:
-        createPool();
+    case CLI_ARGS.create:
+        create();
         break;
-    case ARGS.mineArtifacts:
+    case CLI_ARGS.mineArtifacts:
         if(process.argv[3]){
             if(process.argv[4] === 'twitter' || process.argv[4] === 'wikipedia'){
                 mineArtifacts(
