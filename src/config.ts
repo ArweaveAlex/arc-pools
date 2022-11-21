@@ -7,9 +7,24 @@ export const NFT_JSON_PATH = "build/contracts/NFT/init.json";
 export const POOL_CONTRACT_PATH = "build/contracts/pool/contract.js";
 
 export const CLI_ARGS = {
-    create: "create",
-    mineArtifacts: "mine",
-    help: "help"
+    commands: {
+        create: "create",
+        mine: "mine",
+        help: "help"
+    },
+    options: {
+        source: {
+            name: "source"
+        }
+    },
+    sources: {
+        twitter: {
+            name: "twitter"
+        },
+        wikipedia: {
+            name: "wikipedia"
+        },
+    }
 }
 
 export const TAGS = {

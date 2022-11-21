@@ -1,5 +1,5 @@
 {
-    "name": "arc-pools",
+    "name": "arcpool",
     "version": "1.0.0",
     "main": "index.ts",
     "repository": "https://github.com/ArweaveAlex/arc-pools.git",
@@ -7,6 +7,9 @@
     "scripts": {
         "compile:node": "tsc --declaration -project tsconfig.json --outDir build & node ./build.js && cp ./src/contracts/NFT/init.json ./build/contracts/NFT/init.json",
         "start": "ts-node src/index.ts"
+    },
+    "bin": {
+        "arcpool": "bin/arcpool"
     },
     "dependencies": {
         "@bundlr-network/client": "^0.9.0",
@@ -23,6 +26,7 @@
         "minimist": "^1.2.7",
         "node-tweet-stream": "^2.1.0",
         "ts-node": "^10.9.1",
+        "pm2": "^5.2.2",
         "twitter-api-v2": "^1.12.0",
         "warp-contracts": "=1.1.5",
         "wikijs": "^6.3.3"

@@ -5,7 +5,7 @@ import axios from "axios";
 import { ArweaveClient } from "../gql";
 import { exitProcess } from "../utils";
 import { PoolType, PoolStateType, PoolConfigType } from "../types";
-import { validatePool } from "../validations";
+import { validatePoolConfig } from "../validations";
 import { contractEndpoint } from "../endpoints";
 import { ArgumentsInterface, CommandInterface } from "../interfaces";
 import {
@@ -19,31 +19,17 @@ import {
 } from "../config";
 
 const command: CommandInterface = {
-    name: CLI_ARGS.create,
+    name: CLI_ARGS.commands.create,
     execute: async (args: ArgumentsInterface): Promise<void> => {
-        const poolArg = args.commandValues[0];
         const POOLS_JSON = JSON.parse(fs.readFileSync(POOLS_PATH).toString());
-
-        if (!args.commandValues || !args.commandValues.length) {
-            exitProcess(`Pool Not Provided`);
-        }
-
-        if (!(poolArg in POOLS_JSON)) {
-            exitProcess(`Pool Not Found`);
-        }
-
-        const validatedPool: PoolConfigType | null = validatePool(POOLS_JSON[poolArg]);
-
-        if (!validatedPool) {
-            exitProcess(`Invalid Pool Configuration`);
-        }
+        const poolConfig: PoolConfigType = validatePoolConfig(args);
 
         const arClient = new ArweaveClient();
 
         const exisitingPools = await arClient.getAllPools();
         exisitingPools.forEach(function (pool: PoolType) {
-            if (validatedPool.state.title === pool.state.title) {
-                exitProcess(`Pool Already Exists`);
+            if (poolConfig.state.title === pool.state.title) {
+                exitProcess(`Pool Already Exists`, 1);
             }
         });
 
@@ -59,7 +45,7 @@ const command: CommandInterface = {
             poolSrc = fs.readFileSync(POOL_CONTRACT_PATH, "utf8");
         }
         catch {
-            exitProcess(`Invalid Wallet / Contract Configuration`);
+            exitProcess(`Invalid Wallet / Contract Configuration`, 1);
         }
 
         console.log(`Deploying NFT Contract Source ...`);
@@ -70,33 +56,33 @@ const command: CommandInterface = {
         }, true);
         const nftDeploymentSrc = (await axios.get(contractEndpoint(nftDeployment))).data.srcTxId;
 
-        POOLS_JSON[poolArg].contracts.nft.id = nftDeployment;
-        POOLS_JSON[poolArg].contracts.nft.src = nftDeploymentSrc;
+        poolConfig.contracts.nft.id = nftDeployment;
+        poolConfig.contracts.nft.src = nftDeploymentSrc;
         fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
-        console.log(`Updated ${poolArg} JSON Object - contracts.nft.id - [`, clc.green(`'${nftDeployment}'`), `]`);
-        console.log(`Updated ${poolArg} JSON Object - contracts.nft.src - [`, clc.green(`'${nftDeploymentSrc}'`), `]`);
+        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.nft.id - [`, clc.green(`'${nftDeployment}'`), `]`);
+        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.nft.src - [`, clc.green(`'${nftDeploymentSrc}'`), `]`);
 
         console.log(`Deploying Pool Contract Source ...`);
         const poolSrcDeployment = await arClient.sourceImpl.save({ src: poolSrc }, controlWallet);
 
-        POOLS_JSON[poolArg].contracts.pool.src = poolSrcDeployment.id;
+        poolConfig.contracts.pool.src = poolSrcDeployment.id;
         fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
-        console.log(`Updated ${poolArg} JSON Object - contracts.pool.src - [`, clc.green(`'${poolSrcDeployment.id}'`), `]`);
+        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.pool.src - [`, clc.green(`'${poolSrcDeployment.id}'`), `]`);
 
         const timestamp = Date.now().toString();
 
-        POOLS_JSON[poolArg].state.timestamp = timestamp;
+        poolConfig.state.timestamp = timestamp;
         fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
-        console.log(`Updated ${poolArg} JSON Object - state.timestamp - `, clc.green(`'${timestamp}'`));
+        console.log(`Updated ${poolConfig.state.title} JSON Object - state.timestamp - `, clc.green(`'${timestamp}'`));
 
         const poolInitJson: PoolStateType = {
-            title: POOLS_JSON[poolArg].state.title,
-            image: POOLS_JSON[poolArg].state.image,
-            briefDescription: POOLS_JSON[poolArg].state.briefDescription,
-            description: POOLS_JSON[poolArg].state.description,
-            link: POOLS_JSON[poolArg].state.image,
-            owner: POOLS_JSON[poolArg].state.owner.pubkey,
-            ownerInfo: POOLS_JSON[poolArg].state.owner.info,
+            title: poolConfig.state.title,
+            image: poolConfig.state.image,
+            briefDescription: poolConfig.state.briefDescription,
+            description: poolConfig.state.description,
+            link: poolConfig.state.image,
+            owner: poolConfig.state.owner.pubkey,
+            ownerInfo: poolConfig.state.owner.info,
             timestamp: timestamp,
             contributors: {},
             tokens: {},
@@ -105,8 +91,8 @@ const command: CommandInterface = {
         }
 
         const tags = [
-            { "name": TAGS.keys.appType, "value": POOLS_JSON[poolArg].appType },
-            { "name": TAGS.keys.poolName, "value": POOLS_JSON[poolArg].state.title }
+            { "name": TAGS.keys.appType, "value": poolConfig.appType },
+            { "name": TAGS.keys.poolName, "value": poolConfig.state.title }
         ]
 
         console.log(`Deploying Pool from Source Tx ...`);
@@ -118,9 +104,9 @@ const command: CommandInterface = {
             tags: tags
         });
 
-        POOLS_JSON[poolArg].contracts.pool.id = poolDeployment;
+        poolConfig.contracts.pool.id = poolDeployment;
         fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
-        console.log(`Updated ${poolArg} JSON Object - contracts.pool.id - [`, clc.green(`'${poolDeployment}'`), `]`);
+        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.pool.id - [`, clc.green(`'${poolDeployment}'`), `]`);
     }
 }
 
