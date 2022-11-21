@@ -5,7 +5,11 @@
     "repository": "https://github.com/ArweaveAlex/arc-pools.git",
     "author": "NickJ202",
     "scripts": {
-        "start": "ts-node src/index.ts"
+        "start": "ts-node src/index.ts",
+        "build": "tsc"
+    },
+    "bin": {
+        "arcpool": "bin/arcpool"
     },
     "dependencies": {
         "@bundlr-network/client": "^0.9.0",
