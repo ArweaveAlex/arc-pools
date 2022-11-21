@@ -1,87 +1,113 @@
 import fs from "fs";
 import clc from "cli-color";
+import axios from "axios";
 
-import { PoolConfigType } from "../types";
-import { validatePool } from "../validations";
+import { ArweaveClient } from "../gql";
+import { exitProcess } from "../utils";
+import { PoolType, PoolStateType, PoolConfigType } from "../types";
+import { validatePoolConfig } from "../validations";
+import { contractEndpoint } from "../endpoints";
 import { ArgumentsInterface, CommandInterface } from "../interfaces";
-import { CLI_ARGS, POOLS_PATH } from "../config";
-
-// Get pool name from argv
-// Check if pool exists
-// if pool exists
-// Exit
-// else
-// Generate wallet ?
-// Upload image ?
-// deployNFT -> Get NFT Contract Src
-// deployPool -> Get Pool Contract Src
-// create Pool -> Get Pool Contract
+import {
+    CLI_ARGS,
+    POOLS_PATH,
+    CONTROL_WALLET_PATH,
+    NFT_CONTRACT_PATH,
+    NFT_JSON_PATH,
+    POOL_CONTRACT_PATH,
+    TAGS
+} from "../config";
 
 const command: CommandInterface = {
-    name: CLI_ARGS.create,
+    name: CLI_ARGS.commands.create,
     execute: async (args: ArgumentsInterface): Promise<void> => {
-        const POOLS = JSON.parse(fs.readFileSync(POOLS_PATH).toString());
+        const POOLS_JSON = JSON.parse(fs.readFileSync(POOLS_PATH).toString());
+        const poolConfig: PoolConfigType = validatePoolConfig(args);
 
-        if (!args.commandValues || !args.commandValues.length) {
-            console.log(clc.red(`Pool Not Provided`));
-            return;
+        const arClient = new ArweaveClient();
+
+        const exisitingPools = await arClient.getAllPools();
+        exisitingPools.forEach(function (pool: PoolType) {
+            if (poolConfig.state.title === pool.state.title) {
+                exitProcess(`Pool Already Exists`, 1);
+            }
+        });
+
+        let controlWallet: any;
+        let nftSrc: any;
+        let nftInitState: any;
+        let poolSrc: any;
+
+        try {
+            controlWallet = JSON.parse(fs.readFileSync(CONTROL_WALLET_PATH).toString());
+            nftSrc = fs.readFileSync(NFT_CONTRACT_PATH, "utf8");
+            nftInitState = JSON.parse(fs.readFileSync(NFT_JSON_PATH, "utf8"));
+            poolSrc = fs.readFileSync(POOL_CONTRACT_PATH, "utf8");
+        }
+        catch {
+            exitProcess(`Invalid Wallet / Contract Configuration`, 1);
         }
 
-        const poolName = args.commandValues[0];
+        console.log(`Deploying NFT Contract Source ...`);
+        const nftDeployment = await arClient.warp.createContract.deploy({
+            src: nftSrc,
+            initState: JSON.stringify(nftInitState),
+            wallet: controlWallet
+        }, true);
+        const nftDeploymentSrc = (await axios.get(contractEndpoint(nftDeployment))).data.srcTxId;
 
-        if (!(poolName in POOLS)) {
-            console.log(clc.red(`Pool Not Found`));
-            return;
+        poolConfig.contracts.nft.id = nftDeployment;
+        poolConfig.contracts.nft.src = nftDeploymentSrc;
+        fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
+        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.nft.id - [`, clc.green(`'${nftDeployment}'`), `]`);
+        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.nft.src - [`, clc.green(`'${nftDeploymentSrc}'`), `]`);
+
+        console.log(`Deploying Pool Contract Source ...`);
+        const poolSrcDeployment = await arClient.sourceImpl.save({ src: poolSrc }, controlWallet);
+
+        poolConfig.contracts.pool.src = poolSrcDeployment.id;
+        fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
+        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.pool.src - [`, clc.green(`'${poolSrcDeployment.id}'`), `]`);
+
+        const timestamp = Date.now().toString();
+
+        poolConfig.state.timestamp = timestamp;
+        fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
+        console.log(`Updated ${poolConfig.state.title} JSON Object - state.timestamp - `, clc.green(`'${timestamp}'`));
+
+        const poolInitJson: PoolStateType = {
+            title: poolConfig.state.title,
+            image: poolConfig.state.image,
+            briefDescription: poolConfig.state.briefDescription,
+            description: poolConfig.state.description,
+            link: poolConfig.state.image,
+            owner: poolConfig.state.owner.pubkey,
+            ownerInfo: poolConfig.state.owner.info,
+            timestamp: timestamp,
+            contributors: {},
+            tokens: {},
+            totalContributions: "0",
+            totalSupply: "0"
         }
 
-        // Check pool already exists
-        const pool: PoolConfigType = validatePool(POOLS[poolName]);
+        const tags = [
+            { "name": TAGS.keys.appType, "value": poolConfig.appType },
+            { "name": TAGS.keys.poolName, "value": poolConfig.state.title }
+        ]
 
-        if (pool) {
-            console.log(pool);
-        }
-        else {
-            console.log(clc.red(`Invalid Pool Configuration`));
-        }
-        // fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS, null, 4));
+        console.log(`Deploying Pool from Source Tx ...`);
+        const poolInitState = JSON.stringify(poolInitJson, null, 2);
+        const poolDeployment = await arClient.warp.createContract.deployFromSourceTx({
+            wallet: controlWallet,
+            initState: poolInitState,
+            srcTxId: poolSrcDeployment.id,
+            tags: tags
+        });
+
+        poolConfig.contracts.pool.id = poolDeployment;
+        fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
+        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.pool.id - [`, clc.green(`'${poolDeployment}'`), `]`);
     }
 }
 
 export default command;
-
-// class Member implements Serializable<Member> {
-//     id: number;
-
-//     deserialize(input) {
-//         this.id = input.id;
-//         return this;
-//     }
-// }
-
-// class ExampleClass implements Serializable<ExampleClass> {
-//     mainId: number;
-//     firstMember: Member;
-//     secondMember: Member;
-
-//     deserialize(input) {
-//         this.mainId = input.mainId;
-
-//         this.firstMember = new Member().deserialize(input.firstMember);
-//         this.secondMember = new Member().deserialize(input.secondMember);
-
-//         return this;
-//     }
-// }
-
-// var json = {
-//     mainId: 42,
-//     firstMember: {
-//         id: 1337
-//     },
-//     secondMember: {
-//         id: -1
-//     }
-// };
-
-// var instance = new ExampleClass().deserialize(json);
-// console.log(instance);

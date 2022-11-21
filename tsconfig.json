@@ -1,22 +1,22 @@
 {
-    "compilerOptions": {
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "skipLibCheck": true,
-      "allowSyntheticDefaultImports": true,
-      "allowJs": true,
-      "declaration": true,
-      "lib": ["dom"],
-      "esModuleInterop": true,
-      "alwaysStrict": true,
-      "forceConsistentCasingInFileNames": true,
-      "noFallthroughCasesInSwitch": true,
-      "noImplicitReturns": true,
-      "noImplicitAny": false,
-      "noImplicitThis": false,
-      "strictNullChecks": false,
-      "outDir": "build"
-    },
-    "include": ["src/**/*"]
-  }
-  
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "declaration": true,
+    "lib": ["dom"],
+    "esModuleInterop": true,
+    "alwaysStrict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "strictNullChecks": false,
+    "outDir": "build"
+  },
+  "include": ["src/**/*"]
+}
+

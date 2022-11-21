@@ -1,24 +1,28 @@
 {
-    "test-pool-1": {
-        "contracts": {
-            "nfft": {
-                "src": null
-            },
-            "pool": {
-                "id": null,
-                "src": null
-            }
-        }
-    },
-    "test-pool-2": {
+    "russia-ukraine-dummy": {
+        "appType": "Alex-Archiving-Pool-v1.2-Testing",
         "contracts": {
             "nft": {
-                "src": null
+                "id": "zzwcq_5KPqkgM7GcjJFejEV5v8iPLC3f-AnYs9qpGXw",
+                "src": "3sjBa4aWZQQxBiTMjpbJvlcSbBQcTwa-zO5IinflCVM"
             },
             "pool": {
-                "id": null,
-                "src": null
+                "id": "vq1Lh6oWz2HsoynjCIxQc4sDXpqrq1cEgCvrnx8KIzA",
+                "src": "jdtP_GspeAOuKuIso9HGlK3VBt0h6LgvQAjNNkxRypM"
             }
+        },
+        "state": {
+            "owner": {
+                "pubkey": "Pubkey 1",
+                "info": ""
+            },
+            "title": "The Russia/Ukraine Conflict - Dummy",
+            "description": "Arweave has been archiving data coming from Russia and Ukraine since before the war began. It was important to ensure that information individuals were posting online were permanently stored so governments and other centralized entities could not censor it in the future.<br><br>Censorship during a time of war is undeniable, even more so when countries that already have mass control over what is said and written, are involved. It was inevitable that we would see high levels of censorship during this time.<br><br><b>The truth must be preserved, which is why this Archive was created. We want everyone to have their voice heard, so we and future generations can truly understand what has happened.</b>",
+            "briefDescription": "Russia and Ukraine have had a tense relationship for years, but the tipping point came in 2014 when Russia annexed the Crimean Peninsula. This past year, the conflict has escalated to new heights that can only be described as a war.<br><br>Help preserve the truth by contributing to the Ukraine & Russia Conflict Archive.",
+            "link": "",
+            "rewards": "",
+            "image": null,
+            "timestamp": "1669062749647"
         }
     }
 }
