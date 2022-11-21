@@ -1,9 +1,13 @@
-export const ARGS = {
-    createPool: "create-pool",
-    mineArtifacts: "mine"
+export const APP_TITLE = "arc-pools";
+
+export const CLI_ARGS = {
+    create: "create",
+    mineArtifacts: "mine",
+    help: "help"
 }
 
-export const POOLS_PATH = "local/pools.json";
+// export const POOLS_PATH = "local/pools.json";
+export const POOLS_PATH = "local/test-pools.json";
 
 export type Config = { 
     instances: number, 
