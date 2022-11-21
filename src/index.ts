@@ -1,7 +1,6 @@
 import { readFileSync } from "fs";
 
 import { CLI_ARGS, POOLS_PATH } from "./config";
-import { LANGUAGE } from "./language";
 
 import { 
     mineTweets, 
@@ -57,13 +56,13 @@ switch (process.argv[2]) {
                     process.argv[6]
                 );
             } else {
-                console.log(LANGUAGE.invalidArgs());
+                console.log("Invalid args");
             }
         } else {
-            console.log(LANGUAGE.invalidArgs());
+            console.log("Invalid args");
         }
         break;
     default:
-        console.log(LANGUAGE.invalidArgs());
+        console.log("Invalid args");
         break;
 }
