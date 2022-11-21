@@ -8,6 +8,7 @@ const command: CommandInterface = {
     name: CLI_ARGS.help,
     execute: async (args: ArgumentsInterface): Promise<void> => {
         console.log(clc.magenta(figlet.textSync(APP_TITLE)));
+        console.log(args);
     }
 }
 

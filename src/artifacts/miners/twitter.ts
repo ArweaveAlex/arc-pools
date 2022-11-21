@@ -10,7 +10,7 @@ import { Contract, LoggerFactory, Warp, WarpNodeFactory } from "warp-contracts";
 import { readFileSync, promises } from "fs";
 import { TwitterApi, Tweetv2SearchParams, Tweetv2FieldsParams, TweetV2UserTimelineParams } from "twitter-api-v2";
 import * as gql from "gql-query-builder";
-const Twitter = require('node-tweet-stream');
+const Twitter = require("node-tweet-stream");
 
 import { createAsset, generateTweetName } from "../assets";
 import { Config, POOLS_PATH } from "../../config";
