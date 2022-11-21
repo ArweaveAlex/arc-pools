@@ -6,8 +6,8 @@ export const CLI_ARGS = {
     help: "help"
 }
 
-// export const POOLS_PATH = "local/pools.json";
-export const POOLS_PATH = "local/test-pools.json";
+export const POOLS_PATH = "./local/pools.json";
+// export const POOLS_PATH = "local/test-pools.json";
 
 export type Config = { 
     instances: number, 

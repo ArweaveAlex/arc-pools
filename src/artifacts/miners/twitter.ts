@@ -30,7 +30,6 @@ let twitterClientV2: TwitterApi;
 
 async function init(poolSlug: string) {
     config = JSON.parse(readFileSync(POOLS_PATH).toString())[poolSlug];
-
     if(!config) throw new Error("Invalid pool slug");
 
     keys = JSON.parse(readFileSync(config.walletPath).toString());

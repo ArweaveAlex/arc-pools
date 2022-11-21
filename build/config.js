@@ -7,5 +7,4 @@ exports.CLI_ARGS = {
     mineArtifacts: "mine",
     help: "help"
 };
-// export const POOLS_PATH = "local/pools.json";
-exports.POOLS_PATH = "local/test-pools.json";
+exports.POOLS_PATH = "./local/pools.json";

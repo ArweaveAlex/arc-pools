@@ -4,7 +4,7 @@ export declare const CLI_ARGS: {
     mineArtifacts: string;
     help: string;
 };
-export declare const POOLS_PATH = "local/test-pools.json";
+export declare const POOLS_PATH = "./local/pools.json";
 export type Config = {
     instances: number;
     query: string;
