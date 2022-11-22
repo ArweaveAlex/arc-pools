@@ -6,7 +6,7 @@ import { mkdir } from "fs/promises";
 import axios from "axios";
 import Arweave from "arweave";
 import mime from "mime-types";
-import { Contract, LoggerFactory, Warp, WarpNodeFactory } from "warp-contracts";
+import { Contract, LoggerFactory, Warp, WarpFactory, defaultCacheOptions } from "warp-contracts";
 import { readFileSync, promises } from "fs";
 import { TwitterApi, Tweetv2SearchParams, Tweetv2FieldsParams, TweetV2UserTimelineParams } from "twitter-api-v2";
 import * as gql from "gql-query-builder";
@@ -33,6 +33,7 @@ async function init(poolSlug: string) {
 
     if(!config) throw new Error("Invalid pool slug");
 
+    console.log(config);
     keys = JSON.parse(readFileSync(config.walletPath).toString());
 
     twitter = new Twitter({
@@ -53,10 +54,11 @@ async function init(poolSlug: string) {
         protocol: "https"
     });
 
-    smartweave = WarpNodeFactory.memCachedBased(arweave).useArweaveGateway().build();
+    smartweave = WarpFactory.forMainnet({ ...defaultCacheOptions, inMemory: true });
 
     contract = smartweave.contract(config.pool.contract).setEvaluationOptions({
-        walletBalanceUrl: config.balanceUrl
+        walletBalanceUrl: config.balanceUrl,
+        allowBigInt: true
     });
 
     LoggerFactory.INST.logLevel("error", "DefaultStateEvaluator");

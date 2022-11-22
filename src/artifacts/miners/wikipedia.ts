@@ -1,5 +1,5 @@
 import Bundlr from "@bundlr-network/client";
-import { Contract, Warp, WarpNodeFactory } from "warp-contracts";
+import { Contract, Warp, WarpFactory, defaultCacheOptions } from "warp-contracts";
 import { readFileSync } from "fs-extra";
 import WikiJS from 'wikijs';
 import fs from 'fs';
@@ -110,6 +110,7 @@ export async function mineWikipedia(poolSlug: string) {
 
     keys = JSON.parse(readFileSync(config.walletPath).toString());
 
+    console.log(config);
     bundlr = new Bundlr(config.bundlrNode, "arweave", keys.arweave);
 
     console.log("Bundlr balance", (await bundlr.getLoadedBalance()).toString());
@@ -121,10 +122,12 @@ export async function mineWikipedia(poolSlug: string) {
         protocol: "https"
     });
 
-    smartweave = WarpNodeFactory.memCachedBased(arweave).useArweaveGateway().build();
+    smartweave = WarpFactory.forMainnet({ ...defaultCacheOptions, inMemory: true });
 
+    console.log(config.pool);
     contract = smartweave.contract(config.pool.contract).setEvaluationOptions({
-        walletBalanceUrl: config.balanceUrl
+        walletBalanceUrl: config.balanceUrl,
+        allowBigInt: true
     });
     
     let articles = [];
