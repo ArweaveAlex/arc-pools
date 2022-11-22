@@ -1,75 +1,46 @@
-// import { readFileSync, readdirSync } from "fs";
-// import path from 'path';
+import fs from "fs";
+import clc from "cli-color";
+import path from "path";
+import minimist from "minimist";
 
-// import { CLI_ARGS, POOLS_PATH } from "./config";
+import { ArgumentsInterface, CommandInterface, OptionInterface } from "./interfaces";
+import { APP_TITLE, CLI_ARGS } from "./config";
 
-// import { 
-//     mineTweets, 
-//     mineTweetsByUser, 
-//     mineTweetsByMention 
-// } from './artifacts/miners/twitter';
+(async function () {
+    const argv = minimist(process.argv.slice(2));
+    let command = argv._[0];
+    const commandValues = argv._.slice(1);
 
-// import { mineWikipedia } from './artifacts/miners/wikipedia';
+    const commandFiles = fs.readdirSync(path.join(__dirname, "commands")).filter((file) => file.endsWith('.ts'));
+    const commands: Map<string, CommandInterface> = new Map();
+    for (const file of commandFiles) {
+        const filePath = path.join(__dirname, "commands", file);
+        const { default: command } = require(filePath);
+        commands.set(command.name, command);
+    }
 
-// /**
-//  * Todo: write this cli with named arguments etc...
-//  */
+    const optionFiles = fs.readdirSync(path.join(__dirname, "options")).filter((file) => file.endsWith('.ts'));
+    const options: Map<string, OptionInterface> = new Map();
 
-// const localDir = path.join(__dirname, '../local');
-// console.log(localDir);
+    for (const file of optionFiles) {
+      const filePath = path.join(__dirname, "options", file);
 
-// const POOLS = JSON.parse(readFileSync(POOLS_PATH).toString());
+      const { default: option } = require(filePath);
+      options.set(option.name, option);
+    }
 
-// function create() {
-//     console.log(POOLS);
-// }
+    const args: ArgumentsInterface = {
+        argv: argv,
+        commandValues: commandValues,
+        options: options
+    }
 
-// function mineArtifacts(
-//     poolSlug: string, 
-//     source: string,
-//     twitterOperation: string | null,
-//     twitterParam: string | null
-// ) {
-//     if(source ==='twitter') {
-//         if(twitterOperation){
-//             if(twitterOperation === 'user') {
-//                 mineTweetsByUser(poolSlug, twitterParam);
-//             } else if(twitterOperation ==='mentions') {
-//                 mineTweetsByMention(poolSlug, twitterParam);
-//             }
-//         } else {
-//             mineTweets(poolSlug)  
-//         }
-//     }else if(source === 'wikipedia') {
-//         mineWikipedia(poolSlug)
-//     };
-// }
-
-// export function main() {
-//     switch (process.argv[2]) {
-//         case CLI_ARGS.create:
-//             create();
-//             break;
-//         case CLI_ARGS.mineArtifacts:
-//             if(process.argv[3]){
-//                 if(process.argv[4] === 'twitter' || process.argv[4] === 'wikipedia'){
-//                     mineArtifacts(
-//                         process.argv[3],
-//                         process.argv[4], 
-//                         process.argv[5],
-//                         process.argv[6]
-//                     );
-//                 } else {
-//                     console.log("Invalid args");
-//                 }
-//             } else {
-//                 console.log("Invalid args");
-//             }
-//             break;
-//         default:
-//             console.log("Invalid args");
-//             break;
-//     }
-// }
-
-// main();
+    if (commands.has(command)) {
+        await commands.get(command).execute(args);   
+    }
+    else {
+        console.log(clc.red(command ? 
+            `Command not found: ${command}` : `No command provided`), 
+            `\nRun '${APP_TITLE} ${CLI_ARGS.commands.help}' for app usage`);
+    }
+})();
