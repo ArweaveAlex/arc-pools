@@ -2,6 +2,7 @@ const pm2 = require('pm2');
 
 import { ArgumentsInterface, CommandInterface } from "../interfaces";
 import { CLI_ARGS } from "../config";
+import dname from "../options/source";
 
 const displayPm2List = (list: string[]) => {
     console.log("daemon processes - ")
@@ -12,7 +13,7 @@ const displayPm2List = (list: string[]) => {
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.dlist,
-    options: [],
+    options: [dname],
     execute: async (_args: ArgumentsInterface): Promise<void> => {
         pm2.connect(function(err: any) {
             if (err) {

@@ -17,7 +17,7 @@ export const CLI_ARGS = {
         source: "source",
         method: "method",
         mentionTag: "mention-tag",
-        daemonName: "d-name"
+        dname: "dname"
     },
     sources: {
         twitter: {
