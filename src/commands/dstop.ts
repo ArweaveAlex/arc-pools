@@ -4,33 +4,36 @@ import { ArgumentsInterface } from "../interfaces";
 import CommandInterface from "../interfaces/command";
 import { CLI_ARGS } from "../config";
 import dname from "../options/source";
+import { exitProcess } from "../utils";
 
-const displayPm2List = (list: string[]) => {
-    console.log("daemon processes - ")
-    list.map((proc: any) => {
-        console.log(`pid: ${proc.pid}    pm_id: ${proc.pm_id}    name: ${proc.name}    status: ${proc.pm2_env.status}\n`);
-    })
-}
+
 
 const command: CommandInterface = {
-    name: CLI_ARGS.commands.dlist,
+    name: CLI_ARGS.commands.dstop,
     options: [dname],
-    execute: async (_args: ArgumentsInterface): Promise<void> => {
+    execute: async (args: ArgumentsInterface): Promise<void> => {
+        console.log(args.argv);
+        const { dname } = args.argv;
+
+        if(!dname) {
+            exitProcess(`No process name provided...`, 1);
+        }
+
         pm2.connect(function(err: any) {
             if (err) {
               console.error(err);
               process.exit(2);
             }
-            pm2.list((err: any, list: any) => {
+            console.log(dname);
+            pm2.stop(dname, function(err: any) {
                 if (err) {
-                    console.error(err);
+                    console.error("Process not found...");
                     pm2.disconnect();
-                    process.exit(2);
                 } else {
-                    displayPm2List(list);
+                    console.log("pm2 daemon process stopped...");
                     pm2.disconnect();
                 }
-            })
+            });
         });
     }
 }
