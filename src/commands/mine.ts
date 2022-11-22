@@ -27,7 +27,7 @@ const command: CommandInterface = {
                 await twitter.run(poolConfig, args.argv);
                 return;
             case CLI_ARGS.sources.wikipedia.name:
-                wikipedia.run(poolConfig);
+                await wikipedia.run(poolConfig);
                 return;
             default:
                 exitProcess(`Source Not Found`, 1);

@@ -18,9 +18,7 @@ import {
 const Twitter = require("node-tweet-stream");
 
 import { createAsset, generateTweetName } from "../assets";
-// import { Config, POOLS_PATH } from "../../config";
 import { checkPath, walk, processMediaURL } from ".";
-
 import { ArweaveClient } from "../../gql";
 import { exitProcess } from "../../utils";
 import { PoolConfigType } from "../../types";
