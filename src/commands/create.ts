@@ -1,6 +1,6 @@
 import fs from "fs";
-import clc from "cli-color";
 import axios from "axios";
+import clc from "cli-color";
 
 import { ArweaveClient } from "../gql";
 import { exitProcess } from "../utils";
@@ -21,8 +21,10 @@ import {
 const command: CommandInterface = {
     name: CLI_ARGS.commands.create,
     execute: async (args: ArgumentsInterface): Promise<void> => {
-        const POOLS_JSON = JSON.parse(fs.readFileSync(POOLS_PATH).toString());
         const poolConfig: PoolConfigType = validatePoolConfig(args);
+        
+        const POOLS_JSON = JSON.parse(fs.readFileSync(POOLS_PATH).toString());
+        const poolArg = args.commandValues[0]
 
         const arClient = new ArweaveClient();
 
@@ -45,7 +47,7 @@ const command: CommandInterface = {
             poolSrc = fs.readFileSync(POOL_CONTRACT_PATH, "utf8");
         }
         catch {
-            exitProcess(`Invalid Wallet / Contract Configuration`, 1);
+            exitProcess(`Invalid Control Wallet / Contract Configuration`, 1);
         }
 
         console.log(`Deploying NFT Contract Source ...`);
@@ -56,8 +58,8 @@ const command: CommandInterface = {
         }, true);
         const nftDeploymentSrc = (await axios.get(contractEndpoint(nftDeployment))).data.srcTxId;
 
-        poolConfig.contracts.nft.id = nftDeployment;
-        poolConfig.contracts.nft.src = nftDeploymentSrc;
+        POOLS_JSON[poolArg].contracts.nft.id = nftDeployment;
+        POOLS_JSON[poolArg].contracts.nft.src = nftDeploymentSrc;
         fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
         console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.nft.id - [`, clc.green(`'${nftDeployment}'`), `]`);
         console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.nft.src - [`, clc.green(`'${nftDeploymentSrc}'`), `]`);
@@ -65,13 +67,13 @@ const command: CommandInterface = {
         console.log(`Deploying Pool Contract Source ...`);
         const poolSrcDeployment = await arClient.sourceImpl.save({ src: poolSrc }, controlWallet);
 
-        poolConfig.contracts.pool.src = poolSrcDeployment.id;
+        POOLS_JSON[poolArg].contracts.pool.src = poolSrcDeployment.id;
         fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
         console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.pool.src - [`, clc.green(`'${poolSrcDeployment.id}'`), `]`);
 
         const timestamp = Date.now().toString();
 
-        poolConfig.state.timestamp = timestamp;
+        POOLS_JSON[poolArg].state.timestamp = timestamp;
         fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
         console.log(`Updated ${poolConfig.state.title} JSON Object - state.timestamp - `, clc.green(`'${timestamp}'`));
 
@@ -104,7 +106,7 @@ const command: CommandInterface = {
             tags: tags
         });
 
-        poolConfig.contracts.pool.id = poolDeployment;
+        POOLS_JSON[poolArg].contracts.pool.id = poolDeployment;
         fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
         console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.pool.id - [`, clc.green(`'${poolDeployment}'`), `]`);
     }

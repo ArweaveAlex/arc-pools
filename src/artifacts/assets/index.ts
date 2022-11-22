@@ -1,7 +1,9 @@
 import Bundlr from '@bundlr-network/client';
 import Arweave from 'arweave';
 import { readFileSync } from 'fs';
-import { Contract, LoggerFactory, Warp, WarpNodeFactory } from 'warp-contracts';
+import { Contract, LoggerFactory, Warp } from 'warp-contracts';
+
+import { PoolConfigType } from "../../types";
 
 const URL = 'https://gateway.redstone.finance/gateway/contracts/deploy';
 
@@ -9,7 +11,7 @@ let keys: any;
 let bundlr: Bundlr;
 let arweave: Arweave;
 let jwk: any;
-let smartweave: Warp;
+// let smartweave: Warp;
 let contract: Contract;
 
 LoggerFactory.INST.logLevel("fatal");
@@ -73,16 +75,18 @@ export const createAsset = async (
     contractIn: Contract,
     content: any,
     additionalPaths: any,
-    config: any,
+    poolConfig: PoolConfigType,
     contentType: string,
     articleTitle: string
 ) => {
 
-  keys = JSON.parse(readFileSync(config.walletPath).toString());
+  console.log(warpIn);
+
+  keys = JSON.parse(readFileSync(poolConfig.walletPath).toString());
   jwk = keys.arweave;
   bundlr = bundlrIn;
   arweave = arweaveIn;
-  smartweave = warpIn;
+  // smartweave = warpIn;
   contract = contractIn;
 
   try {
@@ -112,7 +116,7 @@ export const createAsset = async (
         contentType === 'application/json' ? 'application/json' : 'web-page', 
         contentType,
         additionalPaths,
-        config
+        poolConfig
       );
 
     } catch (err) {
@@ -131,7 +135,7 @@ async function createAtomicAsset(
     assetType: string, 
     contentType: string,
     additionalPaths: any,
-    config: any
+    poolConfig: PoolConfigType
 ) {
   try {
     const dataAndTags = await createDataAndTags(
@@ -141,7 +145,7 @@ async function createAtomicAsset(
       assetType, 
       contentType,
       additionalPaths,
-      config
+      poolConfig
     )
 
     console.log(dataAndTags);
@@ -156,7 +160,7 @@ async function createAtomicAsset(
 
 export async function dispatchToBundler(
   dataAndTags:any, 
-  contentType: string
+  _contentType: string
 ) {
   let { data, tags } = dataAndTags;
   const tx = bundlr.createTransaction(data, { tags: tags });
@@ -184,7 +188,7 @@ export async function dispatchToBundler(
 async function deployToWarp(
   atomicId: string, 
   dataAndTags:any,
-  contentType: string
+  _contentType: string
 ) {
   try {
     let { data, tags } = dataAndTags;
@@ -197,7 +201,7 @@ async function deployToWarp(
     let price = await arweave.transactions.getPrice(parseInt(tx.data_size));
     console.log("Warp price: " + price);
 
-    const result = await fetch(URL, {
+    await fetch(URL, {
       method: 'POST',
       body: JSON.stringify({ contractTx: tx }),
       headers: {
@@ -212,7 +216,6 @@ async function deployToWarp(
     console.log(`Error uploading to warp...\n ${e}`);
     throw new Error(e);
   }
-  
 }
 
 async function createDataAndTags(
@@ -222,7 +225,7 @@ async function createDataAndTags(
   assetType: string, 
   contentType: string,
   additionalPaths: any,
-  config: any,
+  poolConfig: PoolConfigType,
 ) {
   const tokenHolder = await getRandomContributor();
 	const dNow = new Date().getTime();
@@ -241,20 +244,20 @@ async function createDataAndTags(
       { name: 'App-Name', value: 'SmartWeaveContract' },
       { name: 'App-Version', value: '0.3.0' },
       { name: 'Content-Type', value: "application/x.arweave-manifest+json" },
-      { name: 'Contract-Src', value: config.nftContractSrc},
-      { name: "Pool-Id", value: config.pool.contract },
+      { name: 'Contract-Src', value: poolConfig.contracts.nft.src},
+      { name: 'Pool-Id', value: poolConfig.contracts.pool.id },
       { name: 'Title', value: name },
       { name: 'Description', value: description },
       { name: 'Type', value: assetType },
-      { name: "Artifact-Series", value: "Alex." },
-      { name: "Artifact-Name", value: name },
-      { name: "Initial-Owner", value: tokenHolder },
-      { name: "Date-Created", value: dNow.toString() },
-      { name: "Artifact-Type", value: aType},
-      { name: 'Keywords', value: JSON.stringify(config.keywords) },
-      { name: "Media-Ids", value: JSON.stringify(additionalPaths)},
-      { name: "Implements", value: "ANS-110" },
-      { name: "Topic", value: "Topic:" + config.keywords[0]},      
+      { name: 'Artifact-Series', value: "Alex." },
+      { name: 'Artifact-Name', value: name },
+      { name: 'Initial-Owner', value: tokenHolder },
+      { name: 'Date-Created', value: dNow.toString() },
+      { name: 'Artifact-Type', value: aType},
+      { name: 'Keywords', value: JSON.stringify(poolConfig.keywords) },
+      { name: 'Media-Ids', value: JSON.stringify(additionalPaths)},
+      { name: 'Implements', value: "ANS-110" },
+      { name: 'Topic', value: "Topic:" + poolConfig.keywords[0]},      
       {
         name: 'Init-State', value: JSON.stringify({
           ticker: "ATOMIC-ASSET-" + assetId,

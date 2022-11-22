@@ -36,7 +36,7 @@ import { APP_TITLE, CLI_ARGS } from "./config";
     }
 
     if (commands.has(command)) {
-        await commands.get(command).execute(args);   
+        await commands.get(command).execute(args);
     }
     else {
         console.log(clc.red(command ? 
