@@ -18,9 +18,9 @@ import { PoolConfigType } from "../../types";
 
 // let currentArticleURL = "";
 
-export function run(poolConfig: PoolConfigType) {
+export function run(config: PoolConfigType) {
   console.log("Run Wikipedia");
-  console.log(poolConfig);
+  console.log(config);
 }
 
 // function onlyUnique(value: any, index: any, self: any) {

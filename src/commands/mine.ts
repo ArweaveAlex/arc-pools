@@ -8,9 +8,7 @@ import { exitProcess } from "../utils";
 import { PoolConfigType } from "../types";
 import { validatePoolConfig } from "../validations";
 import { ArgumentsInterface, CommandInterface } from "../interfaces";
-import {
-    CLI_ARGS
-} from "../config";
+import { CLI_ARGS } from "../config";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.mine,
@@ -18,7 +16,7 @@ const command: CommandInterface = {
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
 
-        const { source, method } = args.argv;
+        const { source } = args.argv;
 
         if (!source) {
             exitProcess(`No Source Provided`, 1);
@@ -26,7 +24,7 @@ const command: CommandInterface = {
 
         switch (source) {
             case CLI_ARGS.sources.twitter.name:
-                await twitter.run(poolConfig, method);
+                await twitter.run(poolConfig, args.argv);
                 return;
             case CLI_ARGS.sources.wikipedia.name:
                 wikipedia.run(poolConfig);

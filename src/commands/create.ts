@@ -1,6 +1,6 @@
 import fs from "fs";
-import clc from "cli-color";
 import axios from "axios";
+import clc from "cli-color";
 
 import { ArweaveClient } from "../gql";
 import { exitProcess } from "../utils";

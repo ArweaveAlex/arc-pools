@@ -1,4 +1,3 @@
-
 let esbuild = require('esbuild')
 let { nodeExternalsPlugin } = require('esbuild-node-externals')
 

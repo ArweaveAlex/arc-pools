@@ -1,7 +1,7 @@
 import Bundlr from '@bundlr-network/client';
 import Arweave from 'arweave';
 import { readFileSync } from 'fs';
-import { Contract, LoggerFactory, Warp, WarpNodeFactory } from 'warp-contracts';
+import { Contract, LoggerFactory, Warp } from 'warp-contracts';
 
 import { PoolConfigType } from "../../types";
 
@@ -11,7 +11,7 @@ let keys: any;
 let bundlr: Bundlr;
 let arweave: Arweave;
 let jwk: any;
-let smartweave: Warp;
+// let smartweave: Warp;
 let contract: Contract;
 
 LoggerFactory.INST.logLevel("fatal");
@@ -80,11 +80,13 @@ export const createAsset = async (
     articleTitle: string
 ) => {
 
+  console.log(warpIn);
+
   keys = JSON.parse(readFileSync(poolConfig.walletPath).toString());
   jwk = keys.arweave;
   bundlr = bundlrIn;
   arweave = arweaveIn;
-  smartweave = warpIn;
+  // smartweave = warpIn;
   contract = contractIn;
 
   try {
@@ -158,7 +160,7 @@ async function createAtomicAsset(
 
 export async function dispatchToBundler(
   dataAndTags:any, 
-  contentType: string
+  _contentType: string
 ) {
   let { data, tags } = dataAndTags;
   const tx = bundlr.createTransaction(data, { tags: tags });
@@ -186,7 +188,7 @@ export async function dispatchToBundler(
 async function deployToWarp(
   atomicId: string, 
   dataAndTags:any,
-  contentType: string
+  _contentType: string
 ) {
   try {
     let { data, tags } = dataAndTags;
@@ -199,7 +201,7 @@ async function deployToWarp(
     let price = await arweave.transactions.getPrice(parseInt(tx.data_size));
     console.log("Warp price: " + price);
 
-    const result = await fetch(URL, {
+    await fetch(URL, {
       method: 'POST',
       body: JSON.stringify({ contractTx: tx }),
       headers: {
