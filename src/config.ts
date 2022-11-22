@@ -11,7 +11,8 @@ export const CLI_ARGS = {
         create: "create",
         mine: "mine",
         help: "help",
-        dlist: "dlist"
+        dlist: "dlist",
+        dstop: "dstop"
     },
     options: {
         source: "source",
