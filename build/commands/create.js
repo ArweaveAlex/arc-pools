@@ -41,71 +41,100 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 exports.__esModule = true;
 var fs_1 = __importDefault(require("fs"));
 var cli_color_1 = __importDefault(require("cli-color"));
+var axios_1 = __importDefault(require("axios"));
+var gql_1 = require("../gql");
+var utils_1 = require("../utils");
 var validations_1 = require("../validations");
+var endpoints_1 = require("../endpoints");
 var config_1 = require("../config");
-// Get pool name from argv
-// Check if pool exists
-// if pool exists
-// Exit
-// else
-// Generate wallet ?
-// Upload image ?
-// deployNFT -> Get NFT Contract Src
-// deployPool -> Get Pool Contract Src
-// create Pool -> Get Pool Contract
 var command = {
-    name: config_1.CLI_ARGS.create,
+    name: config_1.CLI_ARGS.commands.create,
     execute: function (args) { return __awaiter(void 0, void 0, void 0, function () {
-        var POOLS, poolName, pool;
+        var POOLS_JSON, poolConfig, arClient, exisitingPools, controlWallet, nftSrc, nftInitState, poolSrc, nftDeployment, nftDeploymentSrc, poolSrcDeployment, timestamp, poolInitJson, tags, poolInitState, poolDeployment;
         return __generator(this, function (_a) {
-            POOLS = JSON.parse(fs_1["default"].readFileSync(config_1.POOLS_PATH).toString());
-            if (!args.commandValues || !args.commandValues.length) {
-                console.log(cli_color_1["default"].red("Pool Not Provided"));
-                return [2 /*return*/];
+            switch (_a.label) {
+                case 0:
+                    POOLS_JSON = JSON.parse(fs_1["default"].readFileSync(config_1.POOLS_PATH).toString());
+                    poolConfig = (0, validations_1.validatePoolConfig)(args);
+                    arClient = new gql_1.ArweaveClient();
+                    return [4 /*yield*/, arClient.getAllPools()];
+                case 1:
+                    exisitingPools = _a.sent();
+                    exisitingPools.forEach(function (pool) {
+                        if (poolConfig.state.title === pool.state.title) {
+                            (0, utils_1.exitProcess)("Pool Already Exists", 1);
+                        }
+                    });
+                    try {
+                        controlWallet = JSON.parse(fs_1["default"].readFileSync(config_1.CONTROL_WALLET_PATH).toString());
+                        nftSrc = fs_1["default"].readFileSync(config_1.NFT_CONTRACT_PATH, "utf8");
+                        nftInitState = JSON.parse(fs_1["default"].readFileSync(config_1.NFT_JSON_PATH, "utf8"));
+                        poolSrc = fs_1["default"].readFileSync(config_1.POOL_CONTRACT_PATH, "utf8");
+                    }
+                    catch (_b) {
+                        (0, utils_1.exitProcess)("Invalid Wallet / Contract Configuration", 1);
+                    }
+                    console.log("Deploying NFT Contract Source ...");
+                    return [4 /*yield*/, arClient.warp.createContract.deploy({
+                            src: nftSrc,
+                            initState: JSON.stringify(nftInitState),
+                            wallet: controlWallet
+                        }, true)];
+                case 2:
+                    nftDeployment = _a.sent();
+                    return [4 /*yield*/, axios_1["default"].get((0, endpoints_1.contractEndpoint)(nftDeployment))];
+                case 3:
+                    nftDeploymentSrc = (_a.sent()).data.srcTxId;
+                    poolConfig.contracts.nft.id = nftDeployment;
+                    poolConfig.contracts.nft.src = nftDeploymentSrc;
+                    fs_1["default"].writeFileSync(config_1.POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
+                    console.log("Updated ".concat(poolConfig.state.title, " JSON Object - contracts.nft.id - ["), cli_color_1["default"].green("'".concat(nftDeployment, "'")), "]");
+                    console.log("Updated ".concat(poolConfig.state.title, " JSON Object - contracts.nft.src - ["), cli_color_1["default"].green("'".concat(nftDeploymentSrc, "'")), "]");
+                    console.log("Deploying Pool Contract Source ...");
+                    return [4 /*yield*/, arClient.sourceImpl.save({ src: poolSrc }, controlWallet)];
+                case 4:
+                    poolSrcDeployment = _a.sent();
+                    poolConfig.contracts.pool.src = poolSrcDeployment.id;
+                    fs_1["default"].writeFileSync(config_1.POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
+                    console.log("Updated ".concat(poolConfig.state.title, " JSON Object - contracts.pool.src - ["), cli_color_1["default"].green("'".concat(poolSrcDeployment.id, "'")), "]");
+                    timestamp = Date.now().toString();
+                    poolConfig.state.timestamp = timestamp;
+                    fs_1["default"].writeFileSync(config_1.POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
+                    console.log("Updated ".concat(poolConfig.state.title, " JSON Object - state.timestamp - "), cli_color_1["default"].green("'".concat(timestamp, "'")));
+                    poolInitJson = {
+                        title: poolConfig.state.title,
+                        image: poolConfig.state.image,
+                        briefDescription: poolConfig.state.briefDescription,
+                        description: poolConfig.state.description,
+                        link: poolConfig.state.image,
+                        owner: poolConfig.state.owner.pubkey,
+                        ownerInfo: poolConfig.state.owner.info,
+                        timestamp: timestamp,
+                        contributors: {},
+                        tokens: {},
+                        totalContributions: "0",
+                        totalSupply: "0"
+                    };
+                    tags = [
+                        { "name": config_1.TAGS.keys.appType, "value": poolConfig.appType },
+                        { "name": config_1.TAGS.keys.poolName, "value": poolConfig.state.title }
+                    ];
+                    console.log("Deploying Pool from Source Tx ...");
+                    poolInitState = JSON.stringify(poolInitJson, null, 2);
+                    return [4 /*yield*/, arClient.warp.createContract.deployFromSourceTx({
+                            wallet: controlWallet,
+                            initState: poolInitState,
+                            srcTxId: poolSrcDeployment.id,
+                            tags: tags
+                        })];
+                case 5:
+                    poolDeployment = _a.sent();
+                    poolConfig.contracts.pool.id = poolDeployment;
+                    fs_1["default"].writeFileSync(config_1.POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
+                    console.log("Updated ".concat(poolConfig.state.title, " JSON Object - contracts.pool.id - ["), cli_color_1["default"].green("'".concat(poolDeployment, "'")), "]");
+                    return [2 /*return*/];
             }
-            poolName = args.commandValues[0];
-            if (!(poolName in POOLS)) {
-                console.log(cli_color_1["default"].red("Pool Not Found"));
-                return [2 /*return*/];
-            }
-            pool = (0, validations_1.validatePool)(POOLS[poolName]);
-            if (pool) {
-                console.log(pool);
-            }
-            else {
-                console.log(cli_color_1["default"].red("Invalid Pool Configuration"));
-            }
-            return [2 /*return*/];
         });
     }); }
 };
 exports["default"] = command;
-// class Member implements Serializable<Member> {
-//     id: number;
-//     deserialize(input) {
-//         this.id = input.id;
-//         return this;
-//     }
-// }
-// class ExampleClass implements Serializable<ExampleClass> {
-//     mainId: number;
-//     firstMember: Member;
-//     secondMember: Member;
-//     deserialize(input) {
-//         this.mainId = input.mainId;
-//         this.firstMember = new Member().deserialize(input.firstMember);
-//         this.secondMember = new Member().deserialize(input.secondMember);
-//         return this;
-//     }
-// }
-// var json = {
-//     mainId: 42,
-//     firstMember: {
-//         id: 1337
-//     },
-//     secondMember: {
-//         id: -1
-//     }
-// };
-// var instance = new ExampleClass().deserialize(json);
-// console.log(instance);

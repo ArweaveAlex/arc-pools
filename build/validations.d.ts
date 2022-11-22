@@ -1,2 +1,3 @@
 import { PoolConfigType } from "./types";
-export declare function validatePool(pool: PoolConfigType): PoolConfigType;
+import { ArgumentsInterface } from "./interfaces";
+export declare function validatePoolConfig(args: ArgumentsInterface): PoolConfigType;

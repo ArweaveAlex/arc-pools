@@ -43,10 +43,11 @@ var cli_color_1 = __importDefault(require("cli-color"));
 var figlet_1 = __importDefault(require("figlet"));
 var config_1 = require("../config");
 var command = {
-    name: config_1.CLI_ARGS.help,
+    name: config_1.CLI_ARGS.commands.help,
     execute: function (args) { return __awaiter(void 0, void 0, void 0, function () {
         return __generator(this, function (_a) {
             console.log(cli_color_1["default"].magenta(figlet_1["default"].textSync(config_1.APP_TITLE)));
+            console.log(args);
             return [2 /*return*/];
         });
     }); }

@@ -1,2 +1,2 @@
-export declare const parseHTML: (content: any, title: any) => any;
-export declare function mineWikipedia(poolSlug: string): Promise<void>;
+import { PoolConfigType } from "../../types";
+export declare function run(poolConfig: PoolConfigType): void;

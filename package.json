@@ -6,7 +6,8 @@
     "author": "NickJ202",
     "scripts": {
         "compile:node": "tsc --declaration -project tsconfig.json --outDir build & node ./build.js && cp ./src/contracts/NFT/init.json ./build/contracts/NFT/init.json",
-        "start": "ts-node src/index.ts"
+        "start": "ts-node src/index.ts",
+        "build": "tsc"
     },
     "bin": {
         "arcpool": "bin/arcpool"

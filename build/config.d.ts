@@ -1,10 +1,38 @@
 export declare const APP_TITLE = "arc-pools";
+export declare const POOLS_PATH = "local/test-pools.json";
+export declare const CONTROL_WALLET_PATH = "local/wallets/control-wallet.json";
+export declare const NFT_CONTRACT_PATH = "build/contracts/NFT/contract.js";
+export declare const NFT_JSON_PATH = "build/contracts/NFT/init.json";
+export declare const POOL_CONTRACT_PATH = "build/contracts/pool/contract.js";
 export declare const CLI_ARGS: {
-    create: string;
-    mineArtifacts: string;
-    help: string;
+    commands: {
+        create: string;
+        mine: string;
+        help: string;
+    };
+    options: {
+        source: {
+            name: string;
+        };
+    };
+    sources: {
+        twitter: {
+            name: string;
+        };
+        wikipedia: {
+            name: string;
+        };
+    };
 };
-export declare const POOLS_PATH = "./local/pools.json";
+export declare const TAGS: {
+    keys: {
+        appType: string;
+        poolName: string;
+    };
+    values: {
+        poolv1: string;
+    };
+};
 export type Config = {
     instances: number;
     query: string;
