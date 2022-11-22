@@ -6,9 +6,9 @@ const baseDir = path.join(__dirname, '../local');
 
 export const POOLS_PATH = "local/testPools.json";
 export const CONTROL_WALLET_PATH = "local/wallets/walletControl.json";
-export const NFT_CONTRACT_PATH = "build/contracts/NFT/contract.js";
-export const NFT_JSON_PATH = "build/contracts/NFT/init.json";
-export const POOL_CONTRACT_PATH = "build/contracts/pool/contract.js";
+export const NFT_CONTRACT_PATH = "src/contracts/NFT/contract.ts";
+export const NFT_JSON_PATH = "src/contracts/NFT/init.json";
+export const POOL_CONTRACT_PATH = "src/contracts/pool/contract.ts";
 
 export const CLI_ARGS = {
     commands: {
