@@ -10,12 +10,14 @@ export const CLI_ARGS = {
     commands: {
         create: "create",
         mine: "mine",
-        help: "help"
+        help: "help",
+        dlist: "dlist"
     },
     options: {
         source: "source",
         method: "method",
-        mentionTag: "mention-tag"
+        mentionTag: "mention-tag",
+        daemonName: "d-name"
     },
     sources: {
         twitter: {

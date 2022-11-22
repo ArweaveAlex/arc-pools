@@ -1,0 +1,33 @@
+const pm2 = require('pm2');
+
+import { ArgumentsInterface, CommandInterface } from "../interfaces";
+import { CLI_ARGS } from "../config";
+
+const displayPm2List = (list: string) => {
+    console.log(list);
+}
+
+const command: CommandInterface = {
+    name: CLI_ARGS.commands.dlist,
+    options: [],
+    execute: async (_args: ArgumentsInterface): Promise<void> => {
+        pm2.connect(function(err: any) {
+            if (err) {
+              console.error(err);
+              process.exit(2);
+            }
+            pm2.list((err: any, list: any) => {
+                if (err) {
+                    console.error(err);
+                    pm2.disconnect();
+                    process.exit(2);
+                } else {
+                    displayPm2List(list);
+                    pm2.disconnect();
+                }
+            })
+        });
+    }
+}
+
+export default command;

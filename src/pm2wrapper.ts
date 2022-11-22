@@ -12,10 +12,10 @@ const pm2 = require('pm2');
               process.exit(2);
             }
             pm2.start({
-              script    : 'build/cli.js',
-              name      : 'arcpool',
+              script    : 'index.ts',
+              name      : process.argv[3],
               args: process.argv
-            }, function(err: any, apps: any) {
+            }, function(err: any, _apps: any) {
               if (err) {
                 console.error("Error connecting to pm2...");
                 console.error(err);
