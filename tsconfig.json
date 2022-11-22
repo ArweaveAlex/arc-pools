@@ -1,25 +1,20 @@
 {
   "compilerOptions": {
-    "target": "es2020",
     "module": "commonjs",
     "moduleResolution": "node",
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "declaration": true,
-    "lib": ["es2020", "dom"],
+    "lib": ["dom"],
     "esModuleInterop": true,
     "alwaysStrict": true,
-    "sourceMap": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": true,
     "noImplicitAny": false,
     "noImplicitThis": false,
     "strictNullChecks": false,
-    "resolveJsonModule": true,
     "outDir": "build"
   }
 }
