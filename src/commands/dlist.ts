@@ -3,6 +3,7 @@ const pm2 = require('pm2');
 import { ArgumentsInterface, CommandInterface } from "../interfaces";
 import { CLI_ARGS } from "../config";
 
+
 const displayPm2List = (list: string[]) => {
     console.log("daemon processes - ")
     list.map((proc: any) => {
