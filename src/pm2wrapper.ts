@@ -15,7 +15,7 @@ const pm2 = require('pm2');
               script    : 'build/cli.js',
               name      : 'arcpool',
               args: process.argv
-            }, function(err: any, apps: any) {
+            }, function(err: any, _apps: any) {
               if (err) {
                 console.error("Error connecting to pm2...");
                 console.error(err);
