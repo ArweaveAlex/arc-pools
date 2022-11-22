@@ -7,7 +7,8 @@ import method from "../options/method";
 import { exitProcess } from "../utils";
 import { PoolConfigType } from "../types";
 import { validatePoolConfig } from "../validations";
-import { ArgumentsInterface, CommandInterface } from "../interfaces";
+import { ArgumentsInterface } from "../interfaces";
+import CommandInterface from "../interfaces/command";
 import { CLI_ARGS } from "../config";
 
 const command: CommandInterface = {

@@ -15,6 +15,7 @@
     "noImplicitAny": false,
     "noImplicitThis": false,
     "strictNullChecks": false,
-    "outDir": "build"
-  }
+    "outDir": "bin"
+  },
+  "include": ["src"],
 }

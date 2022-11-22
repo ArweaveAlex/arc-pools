@@ -1,6 +1,7 @@
 const pm2 = require('pm2');
 
-import { ArgumentsInterface, CommandInterface } from "../interfaces";
+import { ArgumentsInterface } from "../interfaces";
+import CommandInterface from "../interfaces/command";
 import { CLI_ARGS } from "../config";
 
 const displayPm2List = (list: string[]) => {

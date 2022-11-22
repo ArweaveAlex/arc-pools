@@ -7,7 +7,8 @@ import { exitProcess } from "../utils";
 import { PoolType, PoolStateType, PoolConfigType } from "../types";
 import { validatePoolConfig } from "../validations";
 import { contractEndpoint } from "../endpoints";
-import { ArgumentsInterface, CommandInterface } from "../interfaces";
+import { ArgumentsInterface } from "../interfaces";
+import CommandInterface from "../interfaces/command";
 import {
     CLI_ARGS,
     POOLS_PATH,

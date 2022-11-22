@@ -1,7 +1,8 @@
 import clc from "cli-color";
 import figlet from "figlet";
 
-import { ArgumentsInterface, CommandInterface } from "../interfaces";
+import { ArgumentsInterface } from "../interfaces";
+import CommandInterface from "../interfaces/command";
 import { APP_TITLE, CLI_ARGS } from "../config";
 
 const command: CommandInterface = {

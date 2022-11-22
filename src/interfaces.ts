@@ -11,8 +11,8 @@ export interface OptionInterface {
   description: string;
 }
 
-export interface CommandInterface {
-  name: string;
-  options?: OptionInterface[];
-  execute: (args: ArgumentsInterface) => Promise<void>;
-}
+// export interface CommandInterface {
+//   name: string;
+//   options?: OptionInterface[];
+//   execute: (args: ArgumentsInterface) => Promise<void>;
+// }
