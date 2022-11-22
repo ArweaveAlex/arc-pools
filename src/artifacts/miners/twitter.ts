@@ -1,103 +1,124 @@
-// import Bundlr from "@bundlr-network/client";
-// import tmp from "tmp-promise";
-// import * as p from "path";
-// import { mkdir } from "fs/promises";
-// import axios from "axios";
-// import Arweave from "arweave";
-// import mime from "mime-types";
-// import { Contract, LoggerFactory, Warp, WarpNodeFactory } from "warp-contracts";
-// import { readFileSync, promises } from "fs";
-// import { TwitterApi, Tweetv2SearchParams, Tweetv2FieldsParams, TweetV2UserTimelineParams } from "twitter-api-v2";
+import fs from "fs";
+import tmp from "tmp-promise";
+import * as p from "path";
+import { mkdir } from "fs/promises";
+import axios from "axios";
+import mime from "mime-types";
+import Bundlr from "@bundlr-network/client";
+import { Contract, LoggerFactory } from "warp-contracts";
+import { 
+    TwitterApi, 
+    Tweetv2SearchParams, 
+    Tweetv2FieldsParams, 
+    TweetV2UserTimelineParams 
+} from "twitter-api-v2";
 // import * as gql from "gql-query-builder";
-// const Twitter = require("node-tweet-stream");
+const Twitter = require("node-tweet-stream");
 
-// import { createAsset, generateTweetName } from "../assets";
+import { createAsset, generateTweetName } from "../assets";
 // import { Config, POOLS_PATH } from "../../config";
-// import { checkPath, walk, processMediaURL } from ".";
+import { checkPath, walk, processMediaURL } from ".";
+
+import { ArweaveClient } from "../../gql";
+import { exitProcess } from "../../utils";
 import { PoolConfigType } from "../../types";
+import { CLI_ARGS } from "../../config";
 
-// let lockProcess = false;
-// let twitter: any;
-// let bundlr: Bundlr
-// let config: Config;
-// let keys: any;
-// let arweave: Arweave;
-// let smartweave: Warp;
-// let contract: Contract;
-// let tweets: any[] = [];
-// let twitterClientV2: TwitterApi;
+const arClient = new ArweaveClient();
 
-export function run(poolConfig: PoolConfigType) {
-    console.log("Run Twitter");
-    console.log(poolConfig);
+let lockProcess = false;
+let poolConfig: PoolConfigType;
+let bundlr: Bundlr
+let keys: any;
+let contract: Contract;
+let twitter: any;
+let twitterV2: TwitterApi;
+let tweets: any[] = [];
+
+/*
+ * Start a twitter stream, aggregate them into a list
+ * then mine them onto Arweave synchronously so if it 
+ * fails in the middle we don't end up with partial
+ * atomic assets
+ */
+async function mineTweetsByStream() {
+    console.log(`Mining Tweets by stream ...`);
+    twitter.on('tweet', listTweet);
+
+    twitter.on('error', (e: any) => {
+        console.error(`tStream error: ${e}`)
+    })
+    const trackKeyWords = poolConfig.keywords
+    const trackUsers = poolConfig.twitter.userIds
+    console.log(`Tracking key words: ${trackKeyWords}`);
+    console.log(`Tracking users: ${trackUsers}`)
+    twitter.track(trackKeyWords)
+    twitter.follow(trackUsers)
+    setTimeout(() => { lockProcess = true; processTweets(); }, 20000);
 }
 
-// async function init(poolSlug: string) {
-//     config = JSON.parse(readFileSync(POOLS_PATH).toString())[poolSlug];
-//     if(!config) throw new Error("Invalid pool slug");
+async function mineTweetsByMention() {
+    console.log(`Mining Tweets by mention ...`);
+}
 
-//     keys = JSON.parse(readFileSync(config.walletPath).toString());
+async function mineTweetsByUser() {
+    console.log(`Mining Tweets by user ...`);
+}
 
-//     twitter = new Twitter({
-//         consumer_key: keys.tkeys.consumer_key,
-//         consumer_secret: keys.tkeys.consumer_secret,
-//         token: keys.tkeys.token,
-//         token_secret: keys.tkeys.token_secret,
-//         tweet_mode: "extended"
-//     })
-//     bundlr = new Bundlr(config.bundlrNode, "arweave", keys.arweave);
+export async function run(poolConfig: PoolConfigType, method: string | undefined) {
+    poolConfig = poolConfig;
 
-//     console.log("Bundlr balance", (await bundlr.getLoadedBalance()).toString());
+    try {
+        keys = JSON.parse(fs.readFileSync(poolConfig.walletPath).toString());
+    }
+    catch {
+        exitProcess(`Invalid Pool Wallet Configuration`, 1);
+    }
 
-//     console.log(`Loaded with account address: ${bundlr.address}`)
-//     arweave = Arweave.init({
-//         host: "arweave.net",
-//         port: 443,
-//         protocol: "https"
-//     });
+    twitter = new Twitter({
+        consumer_key: keys.tkeys.consumer_key,
+        consumer_secret: keys.tkeys.consumer_secret,
+        token: keys.tkeys.token,
+        token_secret: keys.tkeys.token_secret,
+        tweet_mode: "extended"
+    });
+    bundlr = new Bundlr(poolConfig.bundlrNode, "arweave", keys.arweave);
 
-//     smartweave = WarpNodeFactory.memCachedBased(arweave).useArweaveGateway().build();
+    // TODO - check walletBalanceUrl (Currently not in pools.json but is being read)
+    // contract = arClient.smartweave.contract(poolConfig.contracts.pool.id).setEvaluationOptions({
+    //     walletBalanceUrl: config.balanceUrl
+    // });
 
-//     contract = smartweave.contract(config.pool.contract).setEvaluationOptions({
-//         walletBalanceUrl: config.balanceUrl
-//     });
+    contract = arClient.smartweave.contract(poolConfig.contracts.pool.id);
 
-//     LoggerFactory.INST.logLevel("error", "DefaultStateEvaluator");
-//     LoggerFactory.INST.logLevel("error", "HandlerBasedContract");
-//     LoggerFactory.INST.logLevel("error", "HandlerExecutorFactory");
+    LoggerFactory.INST.logLevel("error", "DefaultStateEvaluator");
+    LoggerFactory.INST.logLevel("error", "HandlerBasedContract");
+    LoggerFactory.INST.logLevel("error", "HandlerExecutorFactory");
 
-//     twitterClientV2 = new TwitterApi({
-//         appKey: keys.tkeys.consumer_key,
-//         appSecret: keys.tkeys.consumer_secret,
-//         accessToken: keys.tkeys.token,
-//         accessSecret: keys.tkeys.token_secret,
-//     });
-// }
+    twitterV2 = new TwitterApi({
+        appKey: keys.tkeys.consumer_key,
+        appSecret: keys.tkeys.consumer_secret,
+        accessToken: keys.tkeys.token,
+        accessSecret: keys.tkeys.token_secret,
+    });
 
-// /**
-//  * Start a twitter stream, aggregate them into a list
-//  * then mine them onto Arweave synchronously so if it 
-//  * fails in the middle we don't end up with partial
-//  * atomic assets
-//  * @param poolSlug 
-//  */
-// export async function mineTweets(poolSlug: string) {
-//     await init(poolSlug);
-
-//     twitter.on('tweet', listTweet);
-
-//     twitter.on('error', (e: any) => {
-//         console.error(`tStream error: ${e}`)
-//     })
-//     const trackKeyWords = config.keywords
-//     const trackUsers = config.userIDs
-//     console.log(`Tracking key words: ${trackKeyWords}`);
-//     console.log(`Tracking users: ${trackUsers}`)
-//     twitter.track(trackKeyWords)
-//     twitter.follow(trackUsers)
-//     setTimeout(() => {lockProcess = true; processTweets();}, 20000);
-// }
-
+    switch (method) {
+        case undefined: case CLI_ARGS.sources.twitter.methods.stream:
+            if (!method) {
+                console.log(`Defaulting to stream method ...`);
+            }
+            mineTweetsByStream();
+            return;
+        case CLI_ARGS.sources.twitter.methods.mention:
+            mineTweetsByMention();
+            return;
+        case CLI_ARGS.sources.twitter.methods.user:
+            mineTweetsByUser();
+            return;
+        default:
+            exitProcess(`Invalid method provided`, 1);
+    }
+}
 
 // /**
 //  * If someone says @thealexarchive #crypto etc...
@@ -125,7 +146,7 @@ export function run(poolConfig: PoolConfigType) {
 //                 "tweet.fields": ['referenced_tweets']
 //             };
 //             if(r) params.next_token = r.meta.next_token;
-//             r = await twitterClientV2.v2.search(
+//             r = await twitterV2.v2.search(
 //                 query,
 //                 params
 //             );
@@ -160,7 +181,7 @@ export function run(poolConfig: PoolConfigType) {
 //     userName: string
 // ) {
 //     await init(poolSlug);
-//     let user = await twitterClientV2.v2.userByUsername(userName);
+//     let user = await twitterV2.v2.userByUsername(userName);
 
 //     console.log("Running mining process for user...");
 //     console.log(userName);
@@ -176,7 +197,7 @@ export function run(poolConfig: PoolConfigType) {
 //         };
 //         if(r) params.pagination_token = r.meta.next_token;
 
-//         r = await twitterClientV2.v2.userTimeline(
+//         r = await twitterV2.v2.userTimeline(
 //             uid,
 //             params
 //         ); 
@@ -199,7 +220,7 @@ export function run(poolConfig: PoolConfigType) {
 //     let allTweets: any[] = [];
 //     for (var j = 0; j < ids.length; j += 10) {
 //         console.log("Fetching tweet ids: " + ids.slice(j, j + 10));
-//         let rParents = await twitterClientV2.v1.tweets(ids.slice(j, j + 5));
+//         let rParents = await twitterV2.v1.tweets(ids.slice(j, j + 5));
 //         if(rParents.length > 0) {
 //             allTweets = allTweets.concat(rParents)
 //         };
@@ -270,143 +291,143 @@ export function run(poolConfig: PoolConfigType) {
 //     return false;
 // }
 
-// async function listTweet(tweet: any) {
-//     if (!tweet.retweeted_status && !lockProcess) {
-//         console.log("Pushing new tweet: " + tweet);
-//         tweets.push(tweet);
-//     }
-//     if(lockProcess){
-//         twitter.on('tweet', () => {}); 
-//     }
-//     return;
-// }
+async function listTweet(tweet: any) {
+    if (!tweet.retweeted_status && !lockProcess) {
+        console.log("Pushing new tweet: " + tweet);
+        tweets.push(tweet);
+    }
+    if(lockProcess){
+        twitter.on('tweet', () => {}); 
+    }
+    return;
+}
 
-// async function processTweets(){
-//     console.log(tweets.length);
-//     for(let i=0;i<tweets.length;i++){
-//         await processTweet(tweets[i]);
-//     }
-//     console.log("Finished processing all tweets...");
-//     process.exit(1);
-// }
+async function processTweets(){
+    console.log(tweets.length);
+    for(let i=0;i<tweets.length;i++){
+        await processTweet(tweets[i]);
+    }
+    console.log("Finished processing all tweets...");
+    process.exit(1);
+}
 
 
-// async function processTweet(tweet: any) {
-//     const tmpdir = await tmp.dir({ unsafeCleanup: true });
+async function processTweet(tweet: any) {
+    const tmpdir = await tmp.dir({ unsafeCleanup: true });
 
-//     try {
-//         if (tweet?.extended_entities?.media?.length > 0) {
-//             try {
-//                 const mediaDir = p.join(tmpdir.path, "media")
-//                 if (!await checkPath(mediaDir)) {
-//                     await mkdir(mediaDir)
-//                 }
-//                 for (let i = 0; i < tweet.extended_entities.media.length; i++) {
-//                     const mobj = tweet.extended_entities.media[i]
-//                     const url = mobj.media_url
-//                     if ((mobj.type === "video" || mobj.type === "animated_gif") && mobj?.video_info?.variants) {
-//                         const variants = mobj?.video_info?.variants.sort((a: any, b: any) => ((a.bitrate ?? 1000) > (b.bitrate ?? 1000) ? -1 : 1))
-//                         await processMediaURL(variants[0].url, mediaDir, i)
-//                     } else {
-//                         await processMediaURL(url, mediaDir, i)
-//                     }
-//                 }
-//             } catch (e: any) {
-//                 console.error(`while archiving media: ${e.stack}`)
-//             }
+    try {
+        if (tweet?.extended_entities?.media?.length > 0) {
+            try {
+                const mediaDir = p.join(tmpdir.path, "media")
+                if (!await checkPath(mediaDir)) {
+                    await mkdir(mediaDir)
+                }
+                for (let i = 0; i < tweet.extended_entities.media.length; i++) {
+                    const mobj = tweet.extended_entities.media[i]
+                    const url = mobj.media_url
+                    if ((mobj.type === "video" || mobj.type === "animated_gif") && mobj?.video_info?.variants) {
+                        const variants = mobj?.video_info?.variants.sort((a: any, b: any) => ((a.bitrate ?? 1000) > (b.bitrate ?? 1000) ? -1 : 1))
+                        await processMediaURL(variants[0].url, mediaDir, i)
+                    } else {
+                        await processMediaURL(url, mediaDir, i)
+                    }
+                }
+            } catch (e: any) {
+                console.error(`while archiving media: ${e.stack}`)
+            }
 
-//         }
+        }
 
-//         if (tweet.entities.urls?.length > 0) {
-//             try {
-//                 for (let i = 0; i < tweet.entities.urls.length; i++) {
-//                     const u = tweet.entities.urls[i]
-//                     const url = u.expanded_url
-//                     // tweets sometimes reference themselves
-//                     if (url === `https://twitter.com/i/web/status/${tweet.id_str}`) {
-//                         continue;
-//                     }
-//                     const headres = await axios.head(url).catch((e) => {
-//                         console.log(`heading ${url} - ${e.message}`)
-//                     })
-//                     if (!headres) { continue }
-//                     const contentType = headres.headers["content-type"]?.split(";")[0]?.toLowerCase() ?? "text/html"
-//                     const linkPath = p.join(tmpdir.path, `/links/${i}`)
-//                     if (!await checkPath(linkPath)) {
-//                         await mkdir(linkPath, { recursive: true })
-//                     }
-//                     // if it links a web page:
-//                     if (contentType === "text/html") {
-//                         // add to article DB.
-//                         // await article.addUrl(url)
-//                     } else {
-//                         await processMediaURL(url, linkPath, i)
-//                     }
-//                 }
-//             } catch (e: any) {
-//                 console.error(`While processing URLs: ${e.stack ?? e.message}`)
-//             }
+        if (tweet.entities.urls?.length > 0) {
+            try {
+                for (let i = 0; i < tweet.entities.urls.length; i++) {
+                    const u = tweet.entities.urls[i]
+                    const url = u.expanded_url
+                    // tweets sometimes reference themselves
+                    if (url === `https://twitter.com/i/web/status/${tweet.id_str}`) {
+                        continue;
+                    }
+                    const headres = await axios.head(url).catch((e) => {
+                        console.log(`heading ${url} - ${e.message}`)
+                    })
+                    if (!headres) { continue }
+                    const contentType = headres.headers["content-type"]?.split(";")[0]?.toLowerCase() ?? "text/html"
+                    const linkPath = p.join(tmpdir.path, `/links/${i}`)
+                    if (!await checkPath(linkPath)) {
+                        await mkdir(linkPath, { recursive: true })
+                    }
+                    // if it links a web page:
+                    if (contentType === "text/html") {
+                        // add to article DB.
+                        // await article.addUrl(url)
+                    } else {
+                        await processMediaURL(url, linkPath, i)
+                    }
+                }
+            } catch (e: any) {
+                console.error(`While processing URLs: ${e.stack ?? e.message}`)
+            }
 
-//         }
+        }
 
-//         const subTags = [
-//             { name: "Application", value: "TwittAR" },
-//             { name: "Tweet-ID", value: `${tweet.id_str ?? "unknown"}` },
-//             { name: "Content-Type", value: "application/json" }
-//         ]
+        const subTags = [
+            { name: "Application", value: "TwittAR" },
+            { name: "Tweet-ID", value: `${tweet.id_str ?? "unknown"}` },
+            { name: "Content-Type", value: "application/json" }
+        ]
 
-//         const additionalPaths: { [key: string]: any } = {"": ""};
+        const additionalPaths: { [key: string]: any } = {"": ""};
 
-//         for await (const f of walk(tmpdir.path)) {
-//             const relPath = p.relative(tmpdir.path, f)
-//             try {
-//                 const mimeType = mime.contentType(mime.lookup(relPath) || "application/octet-stream") as string;
-//                 const tx = bundlr.createTransaction(
-//                     await promises.readFile(p.resolve(f)), 
-//                     { tags: [...subTags, { name: "Content-Type", value: mimeType }] }
-//                 )
-//                 await tx.sign();
-//                 const id = tx.id;
-//                 const cost = await bundlr.getPrice(tx.size);
-//                 console.log("Upload costs", bundlr.utils.unitConverter(cost).toString());
-//                 console.log("Bundlr subpath upload id for tweet: " + id);
-//                 try {
-//                     await bundlr.fund(cost.multipliedBy(1.1).integerValue());
-//                 } catch (e: any){
-//                     console.log(`Error funding bundlr twitter.ts, probably not enough funds in arweave wallet stopping process...\n ${e}`);
-//                     process.exit(1);
-//                 }
-//                 await tx.upload();
-//                 if (!id) { throw new Error("Upload Error") }
-//                 additionalPaths[relPath] = { id: id };
-//             } catch (e: any) {
-//                 console.log(`Error uploading ${f} for ${tweet.id_str} - ${e}`)
-//                 continue
-//             }
-//         }
+        for await (const f of walk(tmpdir.path)) {
+            const relPath = p.relative(tmpdir.path, f)
+            try {
+                const mimeType = mime.contentType(mime.lookup(relPath) || "application/octet-stream") as string;
+                const tx = bundlr.createTransaction(
+                    await fs.promises.readFile(p.resolve(f)), 
+                    { tags: [...subTags, { name: "Content-Type", value: mimeType }] }
+                )
+                await tx.sign();
+                const id = tx.id;
+                const cost = await bundlr.getPrice(tx.size);
+                console.log("Upload costs", bundlr.utils.unitConverter(cost).toString());
+                console.log("Bundlr subpath upload id for tweet: " + id);
+                try {
+                    await bundlr.fund(cost.multipliedBy(1.1).integerValue());
+                } catch (e: any){
+                    console.log(`Error funding bundlr twitter.ts, probably not enough funds in arweave wallet stopping process...\n ${e}`);
+                    process.exit(1);
+                }
+                await tx.upload();
+                if (!id) { throw new Error("Upload Error") }
+                additionalPaths[relPath] = { id: id };
+            } catch (e: any) {
+                console.log(`Error uploading ${f} for ${tweet.id_str} - ${e}`)
+                continue
+            }
+        }
 
-//         try{
-//             await createAsset(
-//                 bundlr,
-//                 arweave,
-//                 smartweave,
-//                 contract,
-//                 tweet,
-//                 additionalPaths,
-//                 config,
-//                 "application/json",
-//                 ""
-//             );
-//         } catch (e: any){
-//             console.log(`Error creating asset stopping processing...\n ${e}`);
-//             process.exit(1);
-//         }
+        try{
+            await createAsset(
+                bundlr,
+                arClient.arweave,
+                arClient.smartweave,
+                contract,
+                tweet,
+                additionalPaths,
+                poolConfig,
+                "application/json",
+                ""
+            );
+        } catch (e: any){
+            console.log(`Error creating asset stopping processing...\n ${e}`);
+            process.exit(1);
+        }
         
 
-//     } catch (e: any) {
-//         console.log(`general error: ${e.stack ?? e.message}`)
-//         if (tmpdir) {
-//             await tmpdir.cleanup()
-//         }
-//     }
-// }
+    } catch (e: any) {
+        console.log(`general error: ${e.stack ?? e.message}`)
+        if (tmpdir) {
+            await tmpdir.cleanup()
+        }
+    }
+}

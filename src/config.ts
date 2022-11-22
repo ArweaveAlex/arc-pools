@@ -1,7 +1,11 @@
+import * as path from "path";
+
 export const APP_TITLE = "arc-pools";
 
-export const POOLS_PATH = "local/test-pools.json";
-export const CONTROL_WALLET_PATH = "local/wallets/control-wallet.json";
+const baseDir = path.join(__dirname, '../local');
+
+export const POOLS_PATH = "local/testPools.json";
+export const CONTROL_WALLET_PATH = "local/wallets/walletControl.json";
 export const NFT_CONTRACT_PATH = "build/contracts/NFT/contract.js";
 export const NFT_JSON_PATH = "build/contracts/NFT/init.json";
 export const POOL_CONTRACT_PATH = "build/contracts/pool/contract.js";
@@ -13,13 +17,17 @@ export const CLI_ARGS = {
         help: "help"
     },
     options: {
-        source: {
-            name: "source"
-        }
+        source: "source",
+        method: "method",
     },
     sources: {
         twitter: {
-            name: "twitter"
+            name: "twitter",
+            methods: {
+                stream: "stream",
+                mention: "mention",
+                user: "user"
+            }
         },
         wikipedia: {
             name: "wikipedia"

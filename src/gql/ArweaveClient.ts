@@ -6,7 +6,7 @@ import { TAGS } from "../config";
 
 const PAGINATOR = 100;
 
-export default class GQLCLient {
+export default class ArweaveClient {
     arweave: any = Arweave.init({
         host: "arweave.net",
         port: 443,

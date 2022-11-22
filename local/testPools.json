@@ -1,14 +1,14 @@
 {
     "russia-ukraine-dummy": {
-        "appType": "Alex-Archiving-Pool-v1.2-Testing",
+        "appType": "Alex-Archiving-Pool-v1.4-Testing",
         "contracts": {
             "nft": {
-                "id": "zzwcq_5KPqkgM7GcjJFejEV5v8iPLC3f-AnYs9qpGXw",
-                "src": "3sjBa4aWZQQxBiTMjpbJvlcSbBQcTwa-zO5IinflCVM"
+                "id": "tfOl24I-VDhWPIYvCanMsRrgtp26SDtpifawT4VsWfQ",
+                "src": "M302DR0JtT92GTSOV2LRV9WoGMw_NOSSY2Yee3bcNx4"
             },
             "pool": {
-                "id": "vq1Lh6oWz2HsoynjCIxQc4sDXpqrq1cEgCvrnx8KIzA",
-                "src": "jdtP_GspeAOuKuIso9HGlK3VBt0h6LgvQAjNNkxRypM"
+                "id": "wgnPM2j3zTua06qKGlUQXHJijjSL54OM1C-cL6YkOEE",
+                "src": "3sTd4Sd3_iRsvr_zjmppjrrzegxLdUE1b-UvmHVnN-4"
             }
         },
         "state": {
@@ -16,13 +16,34 @@
                 "pubkey": "Pubkey 1",
                 "info": ""
             },
-            "title": "The Russia/Ukraine Conflict - Dummy",
+            "title": "The Russia/Ukraine Conflict - Dummy v1.4",
             "description": "Arweave has been archiving data coming from Russia and Ukraine since before the war began. It was important to ensure that information individuals were posting online were permanently stored so governments and other centralized entities could not censor it in the future.<br><br>Censorship during a time of war is undeniable, even more so when countries that already have mass control over what is said and written, are involved. It was inevitable that we would see high levels of censorship during this time.<br><br><b>The truth must be preserved, which is why this Archive was created. We want everyone to have their voice heard, so we and future generations can truly understand what has happened.</b>",
             "briefDescription": "Russia and Ukraine have had a tense relationship for years, but the tipping point came in 2014 when Russia annexed the Crimean Peninsula. This past year, the conflict has escalated to new heights that can only be described as a war.<br><br>Help preserve the truth by contributing to the Ukraine & Russia Conflict Archive.",
             "link": "",
             "rewards": "",
-            "image": null,
-            "timestamp": "1669062749647"
-        }
+            "image": "",
+            "timestamp": "1669130247771"
+        },
+        "walletPath": "./local/wallets/walletFake.json",
+        "bundlrNode": "https://node2.bundlr.network",
+        "twitter": {
+            "userIds": [
+                "718916004072570880",
+                "2315512764"
+            ]
+        },
+        "keywords": [
+            "Ukraine",
+            "ukraine",
+            "Russia",
+            "russia",
+            "#UkraineInvasion",
+            "Donetsk",
+            "Luhansk",
+            "Donbas",
+            "Донецьк",
+            "Луганськ",
+            "Донба́с"
+        ]
     }
 }

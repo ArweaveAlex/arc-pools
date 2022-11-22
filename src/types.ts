@@ -44,5 +44,11 @@ export type PoolConfigType = {
         rewards: string,
         image: NStringType,
         timestamp: NStringType
-    }
+    },
+    walletPath: string,
+    bundlrNode: string,
+    twitter: {
+        userIds: string[]
+    },
+    keywords: string[]
 }
