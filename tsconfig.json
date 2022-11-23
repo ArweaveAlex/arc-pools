@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "target": "esNext",
     "module": "commonjs",
     "moduleResolution": "node",
     "skipLibCheck": true,

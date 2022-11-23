@@ -13,7 +13,9 @@ import { APP_TITLE, CLI_ARGS } from "./config";
     let command = argv._[0];
     const commandValues = argv._.slice(1);
 
-    const commandFiles = fs.readdirSync(path.join(__dirname, "commands")).filter((file) => file.endsWith('.ts'));
+    const fileFilter = process.argv[0].indexOf("ts-node") > -1 ? '.ts' : '.js';
+
+    const commandFiles = fs.readdirSync(path.join(__dirname, "commands")).filter((file) => file.endsWith(fileFilter));
     const commands: Map<string, CommandInterface> = new Map();
     for (const file of commandFiles) {
         const filePath = path.join(__dirname, "commands", file);
@@ -21,7 +23,7 @@ import { APP_TITLE, CLI_ARGS } from "./config";
         commands.set(command.name, command);
     }
 
-    const optionFiles = fs.readdirSync(path.join(__dirname, "options")).filter((file) => file.endsWith('.ts'));
+    const optionFiles = fs.readdirSync(path.join(__dirname, "options")).filter((file) => file.endsWith(fileFilter));
     const options: Map<string, OptionInterface> = new Map();
 
     for (const file of optionFiles) {
