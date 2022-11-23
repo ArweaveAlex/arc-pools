@@ -2,6 +2,7 @@ import fs from "fs";
 import axios from "axios";
 import clc from "cli-color";
 import { ArweaveSigner } from 'arbundles/src/signing';
+import mime from 'mime';
 
 import { ArweaveClient } from "../gql";
 import { exitProcess } from "../utils";
@@ -24,7 +25,7 @@ const command: CommandInterface = {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
 
         let poolPath: string = args.argv["pool-conf"];
-        
+
         if(!args.argv["control-wallet"]){
             exitProcess("Control wallet not provided", 1);
         }
@@ -53,6 +54,23 @@ const command: CommandInterface = {
             nftSrc = fs.readFileSync(NFT_CONTRACT_PATH, "utf8");
             nftInitState = JSON.parse(fs.readFileSync(NFT_JSON_PATH, "utf8"));
             poolSrc = fs.readFileSync(POOL_CONTRACT_PATH, "utf8");
+
+
+            if (args.argv["image"]) {
+                const image = fs.readFileSync(args.argv["image"], 'utf8')
+                const type = mime.getType(args.argv["image"])
+
+                const tx = await arClient.arweave.createTransaction({
+                    data: JSON.stringify(image)
+                });
+                tx.addTag("Content-Type", type);
+                await arClient.arweave.transactions.sign(tx, controlWallet);
+                await arClient.arweave.transactions.post(tx);
+
+                POOLS_JSON[poolArg].state.image = tx.id;
+            } else {
+                POOLS_JSON[poolArg].state.image = "tVIyHNzSut55pGLrWxvD4EQzb526coAeznMcf7GjLEo"
+            }
         }
         catch {
             exitProcess(`Invalid Control Wallet / Contract Configuration`, 1);
@@ -89,7 +107,7 @@ const command: CommandInterface = {
 
         const poolInitJson: PoolStateType = {
             title: poolConfig.state.title,
-            image: poolConfig.state.image,
+            image: POOLS_JSON[poolArg].state.image,
             briefDescription: poolConfig.state.briefDescription,
             description: poolConfig.state.description,
             link: poolConfig.state.image,

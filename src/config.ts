@@ -1,6 +1,6 @@
 import path from "path";
 
-export const APP_TITLE = "arc-pools";
+export const APP_TITLE = "arcpool";
 
 /**
  *  find the base directory of the repo
@@ -27,7 +27,8 @@ export const CLI_ARGS = {
         mentionTag: "mention-tag",
         dname: "dname",
         poolConfig: "pool-conf",
-        controlWallet: "control-wallet"
+        controlWallet: "control-wallet",
+        image: "image"
     },
     sources: {
         twitter: {

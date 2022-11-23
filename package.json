@@ -24,10 +24,11 @@
         "fs": "^0.0.1-security",
         "fs-extra": "^10.1.0",
         "gql-query-builder": "^3.7.2",
+        "mime": "^3.0.0",
         "minimist": "^1.2.7",
         "node-tweet-stream": "^2.1.0",
-        "ts-node": "^10.9.1",
         "pm2": "^5.2.2",
+        "ts-node": "^10.9.1",
         "twitter-api-v2": "^1.12.0",
         "warp-contracts": "1.2.24",
         "wikijs": "^6.3.3"
