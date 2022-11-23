@@ -15,34 +15,24 @@ npm install --global arcpool
 ```
 
 ```
-arcpool help
-```
-
-```
 Usage: arcpool [command] [options]
 
-Options                             Description
---source                            
---method                            
---mention-tag                       
---dname                             
---pool-conf                          
---control-wallet                     
---image                             
+
+Commands                                    Description
+create                                      Create pool, options --pool-conf, --control-wallet, --image
+mine <pool_id>                              Mine artifacts, options --pool-conf, --source, --method, --mention-tag
+help                                        Print help
+dlist                                       List daemon mining processes
+dstop                                       Stop daemon mining process, options --dname
 
 
-Commands                            Description
-create                              Create pool
-mine <pool_id>                      Mine artifacts
-help                                Print help
-dlist                               List daemon mining processes
-dstop                               Stop daemon mining process
+Options                                     Description
+--source <twitter or wikipedia>             Used with command mine, mandatory, specifies mining program         
+--method <mention>                          Used with command mine, optional, mines for --mention-tag value
+--mention-tag <@username #something>        Used with command mine and option --method mention, value to search twitter for
+--dname <pm2 daemon name>                   Used with command dstop, specifies daemon name to stop
+--pool-conf <path to json file>             Used with commands create and mine, mandatory, specifies main pool config
+--control-wallet <arweave wallet>           Used with command create, mandatory, path to wallet used for pool creation      
+--image <path to image file>                Used with command create, path to image to upload for pool background image
 ```
 
-## Contributing
-
-1.  Create a fork
-2.  Create your feature branch: `git checkout -b my-feature`
-3.  Commit your changes: `git commit -am 'Add some feature'`
-4.  Push to the branch: `git push origin my-new-feature`
-5.  Submit a pull request 🚀
