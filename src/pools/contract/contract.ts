@@ -10,6 +10,16 @@ function addOrUpdateBigStrings(object, key, qty) {
 	}
 }
 
+function updateContributions(object, key, qty) {
+	if (object[key]) {
+		object[key].push({
+			timestamp: Date.now().toString(), qty: BigInt(qty).toString()
+		})
+	} else {
+		object[key] = [{ timestamp: Date.now().toString(), qty: qty.toString() }];
+	}
+}
+
 function addOrUpdateIntStrings(object, key, qty) {
 	if (object[key]) {
 		object[key] = (parseInt(object[key]) + qty).toString();
@@ -37,7 +47,7 @@ export async function handle(state, action) {
 				// mint 100% of supply
 				state.tokens = {};
 				state.tokens[caller] = `${state.totalSupply}`;
-				addOrUpdateBigStrings(state.contributors, action.caller, contribution);
+				updateContributions(state.contributors, action.caller, contribution);
 				state.totalContributions = (totalContributions + contribution).toString();
 			} else {
 
@@ -53,7 +63,7 @@ export async function handle(state, action) {
 				}
 				addOrUpdateBigStrings(state, "balance", contribution)
 				addOrUpdateIntStrings(state.tokens, action.caller, totalSupply - sum);
-				addOrUpdateBigStrings(state.contributors, action.caller, contribution);
+				updateContributions(state.contributors, action.caller, contribution);
 				state.totalContributions = (totalContributions + contribution).toString();
 			}
 			return { state };
