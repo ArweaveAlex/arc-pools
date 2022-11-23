@@ -28,7 +28,7 @@ const command: CommandInterface = {
                     console.error("Process not found...");
                     pm2.disconnect();
                 } else {
-                    console.log("pm2 daemon process stopped...");
+                    console.log(`pm2 daemon process stopped -- ${dname}`);
                     pm2.disconnect();
                 }
             });

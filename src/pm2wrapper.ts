@@ -1,9 +1,9 @@
 const pm2 = require('pm2');
 
 (async function () {
-    if(process.argv.includes("--daemon")){
+    if(process.argv.includes("--d")){
         if(process.argv[2] !== 'mine') {
-            console.error("--daemon flag can only be used with the mine command");
+            console.error("--d flag can only be used with the mine command");
             process.exit(2);
         }
         pm2.connect(function(err: any) {
