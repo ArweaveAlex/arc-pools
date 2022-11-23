@@ -16,7 +16,8 @@
     "noImplicitAny": false,
     "noImplicitThis": false,
     "strictNullChecks": false,
-    "outDir": "bin"
+    "outDir": "bin",
+    "resolveJsonModule": true
   },
-  "include": ["src"],
+  "include": ["src", "src/**/*.json"],
 }
