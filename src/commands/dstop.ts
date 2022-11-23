@@ -12,7 +12,7 @@ const command: CommandInterface = {
     name: CLI_ARGS.commands.dstop,
     options: [dname],
     execute: async (args: ArgumentsInterface): Promise<void> => {
-        console.log(args.argv);
+        console.log(args);
         const { dname } = args.argv;
 
         if(!dname) {
