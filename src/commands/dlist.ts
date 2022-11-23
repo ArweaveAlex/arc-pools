@@ -4,10 +4,11 @@ import { ArgumentsInterface } from "../interfaces";
 import CommandInterface from "../interfaces/command";
 import { CLI_ARGS } from "../config";
 
+
 const displayPm2List = (list: string[]) => {
-    console.log("daemon processes - ")
+    console.log("\ndaemon processes - ")
     list.map((proc: any) => {
-        console.log(`pid: ${proc.pid}    pm_id: ${proc.pm_id}    name: ${proc.name}    status: ${proc.pm2_env.status}\n`);
+        console.log(`pid: ${proc.pid}    pm_id: ${proc.pm_id}    name: ${proc.name}    status: ${proc.pm2_env.status}`);
     })
 }
 

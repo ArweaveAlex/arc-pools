@@ -7,12 +7,10 @@ import dname from "../options/source";
 import { exitProcess } from "../utils";
 
 
-
 const command: CommandInterface = {
     name: CLI_ARGS.commands.dstop,
     options: [dname],
     execute: async (args: ArgumentsInterface): Promise<void> => {
-        console.log(args);
         const { dname } = args.argv;
 
         if(!dname) {
@@ -30,7 +28,7 @@ const command: CommandInterface = {
                     console.error("Process not found...");
                     pm2.disconnect();
                 } else {
-                    console.log("pm2 daemon process stopped...");
+                    console.log(`pm2 daemon process stopped -- ${dname}`);
                     pm2.disconnect();
                 }
             });
