@@ -1,6 +1,7 @@
 import fs from "fs";
 import axios from "axios";
 import clc from "cli-color";
+import { ArweaveSigner } from 'arbundles/src/signing';
 
 import { ArweaveClient } from "../gql";
 import { exitProcess } from "../utils";
@@ -57,7 +58,7 @@ const command: CommandInterface = {
             initState: JSON.stringify(nftInitState),
             wallet: controlWallet
         }, true);
-        const nftDeploymentSrc = (await axios.get(contractEndpoint(nftDeployment))).data.srcTxId;
+        const nftDeploymentSrc = (await axios.get(contractEndpoint(nftDeployment.contractTxId))).data.srcTxId;
 
         POOLS_JSON[poolArg].contracts.nft.id = nftDeployment;
         POOLS_JSON[poolArg].contracts.nft.src = nftDeploymentSrc;
@@ -65,8 +66,10 @@ const command: CommandInterface = {
         console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.nft.id - [`, clc.green(`'${nftDeployment}'`), `]`);
         console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.nft.src - [`, clc.green(`'${nftDeploymentSrc}'`), `]`);
 
+        const signer = new ArweaveSigner(controlWallet);
+
         console.log(`Deploying Pool Contract Source ...`);
-        const poolSrcDeployment = await arClient.sourceImpl.save({ src: poolSrc }, controlWallet);
+        const poolSrcDeployment = await arClient.sourceImpl.save({ src: poolSrc }, "mainnet", controlWallet);
 
         POOLS_JSON[poolArg].contracts.pool.src = poolSrcDeployment.id;
         fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));

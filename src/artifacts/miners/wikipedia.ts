@@ -133,8 +133,6 @@ const scrapePage = async (query: string) => {
 
     createAsset(
       bundlr,
-      arClient.arweave,
-      arClient.smartweave,
       contract,
       html,
       {},

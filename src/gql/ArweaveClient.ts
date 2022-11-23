@@ -1,6 +1,6 @@
 import Arweave from "arweave";
 import * as gql from "gql-query-builder";
-import { WarpNodeFactory, SourceImpl } from "warp-contracts";
+import { WarpFactory, defaultCacheOptions, SourceImpl } from "warp-contracts";
 
 import { TAGS } from "../config";
 
@@ -14,8 +14,10 @@ export default class ArweaveClient {
         timeout: 40000,
         logging: false,
     })
-    smartweave = WarpNodeFactory.memCachedBased(this.arweave).useArweaveGateway().build();
-    warp = WarpNodeFactory.memCached(this.arweave);
+
+
+    smartweave = WarpFactory.forMainnet({ ...defaultCacheOptions, inMemory: true });
+    warp = this.smartweave;
     sourceImpl = new SourceImpl(this.arweave);
 
     async getPoolIds(){
@@ -82,7 +84,7 @@ export default class ArweaveClient {
         for (let i = 0; i < POOL_IDS.length; i++) {
             try {
                 const contract = this.smartweave.contract(POOL_IDS[i]!);
-                collections.push({ id: POOL_IDS[i], state: (await contract.readState()).state });
+                collections.push({ id: POOL_IDS[i], state: (await contract.readState()).cachedValue.state });
             }
             catch (error: any) {
                 console.error(error)

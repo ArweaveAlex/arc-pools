@@ -401,8 +401,6 @@ async function processTweet(tweet: any) {
         try {
             await createAsset(
                 bundlr,
-                arClient.arweave,
-                arClient.smartweave,
                 contract,
                 tweet,
                 additionalPaths,
