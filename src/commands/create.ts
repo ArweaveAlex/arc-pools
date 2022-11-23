@@ -12,7 +12,6 @@ import { ArgumentsInterface } from "../interfaces";
 import CommandInterface from "../interfaces/command";
 import {
     CLI_ARGS,
-    POOLS_PATH,
     CONTROL_WALLET_PATH,
     NFT_CONTRACT_PATH,
     NFT_JSON_PATH,
@@ -24,8 +23,10 @@ const command: CommandInterface = {
     name: CLI_ARGS.commands.create,
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
-        
-        const POOLS_JSON = JSON.parse(fs.readFileSync(POOLS_PATH).toString());
+
+        let poolPath: string = args.argv["pool-conf"];
+
+        const POOLS_JSON = JSON.parse(fs.readFileSync(poolPath).toString());
         const poolArg = args.commandValues[0]
 
         const arClient = new ArweaveClient();
@@ -62,7 +63,7 @@ const command: CommandInterface = {
 
         POOLS_JSON[poolArg].contracts.nft.id = nftDeployment;
         POOLS_JSON[poolArg].contracts.nft.src = nftDeploymentSrc;
-        fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
+        fs.writeFileSync(poolPath, JSON.stringify(POOLS_JSON, null, 4));
         console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.nft.id - [`, clc.green(`'${nftDeployment}'`), `]`);
         console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.nft.src - [`, clc.green(`'${nftDeploymentSrc}'`), `]`);
 
@@ -72,13 +73,13 @@ const command: CommandInterface = {
         const poolSrcDeployment = await arClient.sourceImpl.save({ src: poolSrc }, "mainnet", controlWallet);
 
         POOLS_JSON[poolArg].contracts.pool.src = poolSrcDeployment.id;
-        fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
+        fs.writeFileSync(poolPath, JSON.stringify(POOLS_JSON, null, 4));
         console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.pool.src - [`, clc.green(`'${poolSrcDeployment.id}'`), `]`);
 
         const timestamp = Date.now().toString();
 
         POOLS_JSON[poolArg].state.timestamp = timestamp;
-        fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
+        fs.writeFileSync(poolPath, JSON.stringify(POOLS_JSON, null, 4));
         console.log(`Updated ${poolConfig.state.title} JSON Object - state.timestamp - `, clc.green(`'${timestamp}'`));
 
         const poolInitJson: PoolStateType = {
@@ -111,7 +112,7 @@ const command: CommandInterface = {
         });
 
         POOLS_JSON[poolArg].contracts.pool.id = poolDeployment;
-        fs.writeFileSync(POOLS_PATH, JSON.stringify(POOLS_JSON, null, 4));
+        fs.writeFileSync(poolPath, JSON.stringify(POOLS_JSON, null, 4));
         console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.pool.id - [`, clc.green(`'${poolDeployment}'`), `]`);
     }
 }
