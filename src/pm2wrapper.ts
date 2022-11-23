@@ -1,4 +1,17 @@
+import path from "path";
+
 const pm2 = require('pm2');
+
+import { BASE_DIR } from "./config";
+
+const buildScriptPath = () => {
+  console.log(process.argv);
+  if(process.argv[0].indexOf("ts-node") > -1) {
+    return path.join(BASE_DIR, "src/index.ts");
+  } else {
+    return path.join(BASE_DIR, "bin/index.js");
+  }
+}
 
 (async function () {
     if(process.argv.includes("--d")){
@@ -12,7 +25,7 @@ const pm2 = require('pm2');
               process.exit(2);
             }
             pm2.start({
-              script    : 'index.ts',
+              script    : buildScriptPath(),
               name      : process.argv[3],
               args: process.argv
             }, function(err: any, _apps: any) {
@@ -27,6 +40,6 @@ const pm2 = require('pm2');
             });
         });
     } else {
-        require('./cli');
+        require('./index');
     }
 })();

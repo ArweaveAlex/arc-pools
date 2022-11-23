@@ -7,13 +7,13 @@ export const APP_TITLE = "arc-pools";
  *  so the code runs in global install
  *  as well as local ts-node run 
  */
-let baseDir = path.join(__dirname, "").split("arc-pools")[0] + "arc-pools";
+export const BASE_DIR = path.join(__dirname, "").split("arc-pools")[0] + "arc-pools";
 
-export const POOLS_PATH = path.join(baseDir, "local/testPools.json");
-export const CONTROL_WALLET_PATH = path.join(baseDir, "local/wallets/walletControl.json");
-export const NFT_CONTRACT_PATH = path.join(baseDir, "build/contracts/NFT/contract.js");
-export const NFT_JSON_PATH = path.join(baseDir, "build/contracts/NFT/init.json");
-export const POOL_CONTRACT_PATH = path.join(baseDir, "build/contracts/pool/contract.js");
+export const POOLS_PATH = path.join(BASE_DIR, "local/testPools.json");
+export const CONTROL_WALLET_PATH = path.join(BASE_DIR, "local/wallets/walletControl.json");
+export const NFT_CONTRACT_PATH = path.join(BASE_DIR, "build/contracts/NFT/contract.js");
+export const NFT_JSON_PATH = path.join(BASE_DIR, "build/contracts/NFT/init.json");
+export const POOL_CONTRACT_PATH = path.join(BASE_DIR, "build/contracts/pool/contract.js");
 
 export const CLI_ARGS = {
     commands: {
