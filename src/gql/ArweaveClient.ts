@@ -84,6 +84,9 @@ export default class ArweaveClient {
         for (let i = 0; i < POOL_IDS.length; i++) {
             try {
                 const contract = this.smartweave.contract(POOL_IDS[i]!);
+                contract.setEvaluationOptions({
+                    allowBigInt: true
+                });
                 collections.push({ id: POOL_IDS[i], state: (await contract.readState()).cachedValue.state });
             }
             catch (error: any) {

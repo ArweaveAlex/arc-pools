@@ -10,7 +10,6 @@ export function validatePoolConfig(args: ArgumentsInterface): PoolConfigType {
         exitProcess(`Pool Not Provided`, 1);
     }
 
-    console.log(args.argv)
     if (!args.argv["pool-conf"]) {
         exitProcess(`Pool Config Not Provided`, 1);
     }

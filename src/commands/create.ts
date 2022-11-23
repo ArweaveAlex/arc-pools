@@ -12,7 +12,6 @@ import { ArgumentsInterface } from "../interfaces";
 import CommandInterface from "../interfaces/command";
 import {
     CLI_ARGS,
-    CONTROL_WALLET_PATH,
     NFT_CONTRACT_PATH,
     NFT_JSON_PATH,
     POOL_CONTRACT_PATH,
@@ -25,6 +24,12 @@ const command: CommandInterface = {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
 
         let poolPath: string = args.argv["pool-conf"];
+        
+        if(!args.argv["control-wallet"]){
+            exitProcess("Control wallet not provided", 1);
+        }
+
+        let controlWalletPath: string = args.argv["control-wallet"];
 
         const POOLS_JSON = JSON.parse(fs.readFileSync(poolPath).toString());
         const poolArg = args.commandValues[0]
@@ -44,7 +49,7 @@ const command: CommandInterface = {
         let poolSrc: any;
 
         try {
-            controlWallet = JSON.parse(fs.readFileSync(CONTROL_WALLET_PATH).toString());
+            controlWallet = JSON.parse(fs.readFileSync(controlWalletPath).toString());
             nftSrc = fs.readFileSync(NFT_CONTRACT_PATH, "utf8");
             nftInitState = JSON.parse(fs.readFileSync(NFT_JSON_PATH, "utf8"));
             poolSrc = fs.readFileSync(POOL_CONTRACT_PATH, "utf8");
