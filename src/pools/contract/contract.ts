@@ -4,9 +4,11 @@ declare let SmartWeave: any;
 
 function addOrUpdateBigStrings(object, key, qty) {
 	if (object[key]) {
-		object[key] = (BigInt(object[key]) + qty).toString();
+		object[key].push({
+			timestamp: Date.now().toString(), qty: BigInt(qty).toString()
+		})
 	} else {
-		object[key] = qty.toString();
+		object[key] = [{ timestamp: Date.now().toString(), qty: qty.toString() }];
 	}
 }
 
