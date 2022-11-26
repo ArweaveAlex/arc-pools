@@ -36,7 +36,7 @@ Options                                     Description
 --image <path to image file>                Used with command create, path to image to upload for pool background image
 ```
 
-## Creating a pool
+## Creating a pool for the first time
 
 __First make a directory anywhere on your machine which will contain pool configurations and wallets. You can call the directory anything you want.__
 
@@ -45,7 +45,7 @@ mkdir alexfiles
 cd alexfiles
 ```
 
-__Next, create a pools.json file which will contain all pool configurations for every one of you pools.__ You will edit this file yourself and it will also be modified by the client so don't delete it unless you need a fresh start. This will be required to run the program like package.json for npm. Put the  following json into the file, note this is an example.
+__Next, create a pools.json file which will contain all pool configurations for every one of your pools.__ You will edit this file yourself and it will also be modified by the client so don't delete it unless you need a fresh start. This will be required to run the program like package.json for npm. Put the  following json into the file, note this is an example.
 
 ```
 [
@@ -107,7 +107,7 @@ __Now modify this pools.json file to generate a pool to your liking.__ we will m
     This is the core driving data which will tell the mining programs what to pull from twitter and wikipedia
 
 
-Now run the client from within the directory containing pools.json, it requires pools.json in the current directory
+__Lastly run the client from within the directory containing pools.json, it requires pools.json in the current directory__
 
 ```
 arcpool create <poolId> --control-wallet <path to wallet.json> --image <path to image file> 
@@ -119,6 +119,77 @@ Example:
 arcpool create russia-ukraine-test --control-wallet wallet.json --image background.jpg
 ```
 
-__You have now created a pool, you can check the Alex site for the pool__ https://alex.arweave.dev/#/collections This will also generate a pool wallet in your current directory do not lose this wallet it is where contributions go.
+__You have now created a pool, you can check the Alex site for the pool__ https://alex.arweave.dev/#/collections yhis will also generate a pool wallet in your current directory do not lose this wallet it is where contributions go.
 
 
+## Adding another pool in the future
+
+__First, copy the inside of the list from the above example json, so not the whole list just the object inside it. i.e.  "russia-ukraine-test": {...)__
+
+__Next add this as another list item in your pools.json file on your computer__
+
+__Then start at the step above of modifying the config to your needs and follow the rest of the creation process outlined above.__
+
+__Which pool you are creating is driven by the <poolId> you feed to the CLI__
+
+
+## Mining artifacts into a pool
+
+__If this a new pool someone must be able to mine, the mining process will not run without funds in the pool wallet so first go to Alex and contribute to your pool__
+
+__Next, run the client mine command from within the directory containing pools.json.__ It can be run with multiple different options here are examples using the test pool above
+
+Mine tweets into the test pool from above, regular mine command streams tweets for 20 seconds.
+```
+arcpool mine russia-ukraine-test --source twitter
+```
+
+Mine all tweets where users commented/quoted on twitter with "@thealexarchive #ukraine", this --mention-tag value can be whatever you want.
+```
+arcpool mine russia-ukraine-test --source twitter --method mention --mention-tag "@thealexarchive #ukraine"
+```
+
+Mine all tweets ever from a particular user for example user SBF_FTX, do not include the @ in the --username value
+```
+arcpool mine russia-ukraine-test --source twitter --method user --username SBF_FTX
+```
+
+Mine a single wikipedia article related to the given keywords in config
+```
+arcpool mine russia-ukraine-test --source wikipedia
+```
+
+## Daemon mode mining
+
+__The above commands run a finite process which will end, 20 seconds for tweets and after 1 article for wikipedia.__ If we wish to run these forever use daemon mode by passing the --d flag to any of the above mining commands. This daemon mode is built on top of pm2.
+
+Mine tweets into the test pool from above, still runs for 20 seconds but the daemon mode will continue restarting the program infinetly. __note the --d flag__
+```
+arcpool mine russia-ukraine-test --source twitter --d
+```
+
+Now we can view all the daemon mode mining processes
+```
+arcpool dlist
+```
+
+Output should look something like this
+```
+daemon processes -
+pid: 0    pm_id: 0    name: russia-ukraine-test    status: running
+```
+
+And we can stop a pools daemon process by name
+```
+arcpool dstop --dname russia-ukraine-test
+```
+
+To view logs for your mining processes install pm2
+```
+npm install --global pm2
+```
+
+Then stream the logs
+```
+pm2 logs
+```
