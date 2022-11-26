@@ -1,7 +1,7 @@
 import fs from "fs";
 
 import { exitProcess } from "./utils";
-import { CLI_ARGS } from "./config";
+import { POOL_FILE } from "./config";
 import { PoolConfigType } from "./types";
 import { ArgumentsInterface } from "./interfaces";
 
@@ -10,13 +10,12 @@ export function validatePoolConfig(args: ArgumentsInterface): PoolConfigType {
         exitProcess(`Pool Not Provided`, 1);
     }
 
-    if (!args.argv["pool-conf"]) {
-        exitProcess(`Pool Config Not Provided`, 1);
+    if(!fs.existsSync(POOL_FILE)){
+        exitProcess(`No pools.json file detected`, 1);
     }
 
     const poolArg = args.commandValues[0];
-    const poolConfigArg = args.argv["pool-conf"];
-    const POOLS_JSON = JSON.parse(fs.readFileSync(poolConfigArg).toString());
+    const POOLS_JSON = JSON.parse(fs.readFileSync(POOL_FILE).toString());
 
     if (!(poolArg in POOLS_JSON)) {
         exitProcess(`Pool Not Found`, 1);

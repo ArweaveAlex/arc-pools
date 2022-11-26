@@ -16,7 +16,8 @@ import {
     NFT_CONTRACT_PATH,
     NFT_JSON_PATH,
     POOL_CONTRACT_PATH,
-    TAGS
+    TAGS,
+    POOL_FILE
 } from "../config";
 
 const command: CommandInterface = {
@@ -26,7 +27,7 @@ const command: CommandInterface = {
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
 
-        let poolPath: string = args.argv["pool-conf"];
+        let poolPath: string = POOL_FILE;
 
         if(!args.argv["control-wallet"]){
             exitProcess("Control wallet not provided", 1);

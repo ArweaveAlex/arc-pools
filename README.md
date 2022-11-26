@@ -34,6 +34,7 @@ create <pool id>                        Create a pool using pools.json
 dlist                                   list all daemon mining processes
 dstop <daemon name>                     Stop a daemon mining process by name
 help                                    Display help text
+init <pool id>                          Initialize pools.json
 mine <pool id>                          Mine artifacts for a given pool
 ```
 
@@ -44,14 +45,23 @@ __First make a directory anywhere on your machine which will contain pool config
 
 ```
 mkdir alexfiles
+```
+
+Change into the directory you created
+```
 cd alexfiles
 ```
 
-__Next, create a pools.json file which will contain all pool configurations for every one of your pools.__ You will edit this file yourself and it will also be modified by the client so don't delete it unless you need a fresh start. This will be required to run the program like package.json for npm. Put the  following json into the file, note this is an example.
+__Next, create a pools.json file which will contain all pool configurations for every one of your pools.__ You will edit this file yourself and it will also be modified by the client so don't delete it after running the create and mine commands unless you need a fresh start. Put the  following json into the file, note this is an example. Run the init command with a pool id of your choosing, containing no spaces. here is an example -
 
 ```
-[
-    "russia-ukraine-test": {
+arcpool init russia-ukraine-pool-id
+```
+
+You should now have a pools.json file which looks like this
+```
+{
+    "russia-ukraine-pool-id": {
         "appType": "Alex-Archiving-Pool-v1.8-Testing",
         "contracts": {
             "nft": {
@@ -68,30 +78,25 @@ __Next, create a pools.json file which will contain all pool configurations for 
                 "pubkey": "",
                 "info": ""
             },
-            "title": "The Russia/Ukraine Conflict 2 - Dummy v1.8",
-            "description": "Arweave has been archiving data coming from Russia and Ukraine since before the war began. It was important to ensure that information individuals were posting online were permanently stored so governments and other centralized entities could not censor it in the future.<br>",
+            "title": "Pool Title such as Russia Ukraine War",
+            "description": "Paragraph/html markup for long pool description on site",
             "link": "",
             "rewards": "",
             "image": "",
             "timestamp": ""
         },
-        "walletPath": "./local/wallets/walletFake.json",
+        "walletPath": "",
         "bundlrNode": "https://node2.bundlr.network",
         "twitter": {
             "userIds": [
-                "718916004072570880",
-                "2315512764"
+                "twitter uid"
             ]
         },
         "keywords": [
-            "Ukraine",
-            "ukraine",
-            "Russia",
-            "russia",
-            "#UkraineInvasion"
+            "keyword1"
         ]
     }
-]
+}
 ```
 
 __Now modify this pools.json file to generate a pool to your liking.__ we will modify 5 items above, modify only the following configs - 

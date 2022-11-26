@@ -13,13 +13,16 @@ export const NFT_CONTRACT_PATH = path.join(BASE_DIR, "build/contracts/NFT/contra
 export const NFT_JSON_PATH = path.join(BASE_DIR, "build/contracts/NFT/init.json");
 export const POOL_CONTRACT_PATH = path.join(BASE_DIR, "build/contracts/pool/contract.js");
 
+export const POOL_FILE = "pools.json";
+
 export const CLI_ARGS = {
     commands: {
         create: "create",
         mine: "mine",
         help: "help",
         dlist: "dlist",
-        dstop: "dstop"
+        dstop: "dstop",
+        init: "init"
     },
     options: {
         source: "source",
