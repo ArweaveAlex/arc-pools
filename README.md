@@ -102,17 +102,18 @@ following json into the file, note this is an example.
 ```
 
 Now modify this pools.json file to generate a pool to your liking, we will modify 5 items above, modify the following configs - 
-    1. the poolId, where it says russia-ukraine-test, this is the pool id which will be used to 
-       specify which pool you are running the client for in the future, so modify this to be
-       something related to your pool for example a pool for the Iraq war could be iraq-war.
-    2. state.title, this is the title of your pool which will display on the homepage of Alex etc...
-       Modify it to a title you want.
-    3. state.description, this is a long description used for your pool on the site it can contain
-       Text and html markup, also modify this.
-    4. twitter.userIds, a list of twitter uid's to track in twitter mining, this can be empty or contain
-       multiple uids, modify this as well.
-    5. keywords, this is a list of the main keywords to track in the mining process for all mining processes.
-       This is the core driving data which will tell the mining programs what to pull from twitter and wikipedia
+
+1. the poolId, where it says russia-ukraine-test, this is the pool id which will be used to 
+    specify which pool you are running the client for in the future, so modify this to be
+    something related to your pool for example a pool for the Iraq war could be iraq-war.
+2. state.title, this is the title of your pool which will display on the homepage of Alex etc...
+    Modify it to a title you want.
+3. state.description, this is a long description used for your pool on the site it can contain
+    Text and html markup, also modify this.
+4. twitter.userIds, a list of twitter uid's to track in twitter mining, this can be empty or contain
+    multiple uids, modify this as well.
+5. keywords, this is a list of the main keywords to track in the mining process for all mining processes.
+    This is the core driving data which will tell the mining programs what to pull from twitter and wikipedia
 
 The rest of the configs can remain the same for now, the program will modify them, do not modify the appType config
 This is a value used by the site to find the pools.
