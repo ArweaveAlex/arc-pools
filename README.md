@@ -113,7 +113,7 @@ __Lastly run the client from within the directory containing pools.json, it requ
 arcpool create <poolId> --control-wallet <path to wallet.json> --image <path to image file> 
 ```
 
-Example:
+__Example:__
 
 ```
 arcpool create russia-ukraine-test --control-wallet wallet.json --image background.jpg
@@ -124,13 +124,13 @@ __You have now created a pool, you can check the Alex site for the pool__ https:
 
 ## Adding another pool in the future
 
-__First, copy the inside of the list from the above example json, so not the whole list just the object inside it. i.e.  "russia-ukraine-test": {...)__
+First, copy the inside of the list from the above example json, so not the whole list just the object inside it. i.e.  "russia-ukraine-test": {...)
 
-__Next add this as another list item in your pools.json file on your computer__
+Next add this as another list item in your pools.json file on your computer
 
-__Then start at the step above of modifying the config to your needs and follow the rest of the creation process outlined above.__
+Then start at the step above of modifying the config to your needs and follow the rest of the creation process outlined above.
 
-__Which pool you are creating is driven by the <poolId> you feed to the CLI__
+Which pool you are creating is driven by the <poolId> you feed to the CLI
 
 
 ## Mining artifacts into a pool
