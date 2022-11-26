@@ -3,7 +3,8 @@ import { CLI_ARGS } from "../config";
 
 const option: OptionInterface = {
   name: CLI_ARGS.options.mentionTag,
-  description: `Specifies the mention tag for --source twitter --method mention (pass in single quotes for multiple tags i.e. '@AlexArchive #history')`,
+  description: `Mention tag to mine, example '@AlexArchive #history'`,
+  arg: '<string in quotes>'
 };
 
 export default option;

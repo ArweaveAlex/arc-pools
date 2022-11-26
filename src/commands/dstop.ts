@@ -9,7 +9,9 @@ import { exitProcess } from "../utils";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.dstop,
+    description: 'Stop a daemon mining process by name',
     options: [dname],
+    args: ['daemon name'],
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const { dname } = args.argv;
 

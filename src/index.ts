@@ -36,7 +36,8 @@ import { APP_TITLE, CLI_ARGS } from "./config";
     const args: ArgumentsInterface = {
         argv: argv,
         commandValues: commandValues,
-        options: options
+        options: options,
+        commands: commands
     }
 
     if (commands.has(command)) {

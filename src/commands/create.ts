@@ -21,6 +21,8 @@ import {
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.create,
+    description: 'Create a pool using pools.json',
+    args: ['pool id'],
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
 

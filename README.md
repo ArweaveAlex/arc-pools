@@ -6,6 +6,8 @@ Users contribute to collections and they receive “artifacts” back into their
 
 This repository is the client which creates the pools and mines artifacts into the pools.
 
+
+
 ## Installing Alex. CLI
 
 arcpool runs using NodeJS and NPM. You must have both installed on your machine for it to work. You will also need an arweave wallet for the beginning creation process.
@@ -16,25 +18,25 @@ npm install --global arcpool
 ```
 
 ```
-Usage: arcpool [command] [options]
+Usage: arcpool [commands] [options]
+
+Options                                 Description
+--control-wallet <wallet file>          Specifies a wallet to use in the pool creation
+--dname <string>                        Specifies the daemon name to stop
+--image <path to image file>            Specifies an image to use for pool
+--mention-tag <twitter username>        Username for twitter with --method user (do not in
+--method <user or mention>              Used to pull user or mentions for twitter
+--source <twitter or wikipedia>         Specifies the data source
 
 
-Commands                                    Description
-create                                      Create pool, options --control-wallet, --image
-mine <pool_id>                              Mine artifacts, options --source, --method, --mention-tag
-help                                        Print help
-dlist                                       List daemon mining processes
-dstop                                       Stop daemon mining process, options --dname
-
-
-Options                                     Description
---source <twitter or wikipedia>             Used with command mine, mandatory, specifies mining program         
---method <mention>                          Used with command mine, optional, mines for --mention-tag value
---mention-tag <@username #something>        Used with command mine and option --method mention, value to search twitter for
---dname <pm2 daemon name>                   Used with command dstop, specifies daemon name to stop
---control-wallet <arweave wallet>           Used with command create, mandatory, path to wallet used for pool creation      
---image <path to image file>                Used with command create, path to image to upload for pool background image
+Commands                                Description
+create <pool id>                        Create a pool using pools.json
+dlist                                   list all daemon mining processes
+dstop <daemon name>                     Stop a daemon mining process by name
+help                                    Display help text
+mine <pool id>                          Mine artifacts for a given pool
 ```
+
 
 ## Creating a pool for the first time
 
@@ -94,7 +96,7 @@ __Next, create a pools.json file which will contain all pool configurations for 
 
 __Now modify this pools.json file to generate a pool to your liking.__ we will modify 5 items above, modify only the following configs - 
 
-1. the poolId, where it says russia-ukraine-test, this is the pool id which will be used to 
+1. the pool id, where it says russia-ukraine-test, this is the pool id which will be used to 
     specify which pool you are running the client for in the future, so modify this to be
     something related to your pool for example a pool for the Iraq war could be iraq-war.
 2. state.title, this is the title of your pool which will display on the homepage of Alex etc...
@@ -110,7 +112,7 @@ __Now modify this pools.json file to generate a pool to your liking.__ we will m
 __Lastly run the client from within the directory containing pools.json, it requires pools.json in the current directory__
 
 ```
-arcpool create <poolId> --control-wallet <path to wallet.json> --image <path to image file> 
+arcpool create <pool id> --control-wallet <path to wallet.json> --image <path to image file> 
 ```
 
 __Example:__
@@ -122,6 +124,7 @@ arcpool create russia-ukraine-test --control-wallet wallet.json --image backgrou
 __You have now created a pool, you can check the Alex site for the pool__ https://alex.arweave.dev/#/collections yhis will also generate a pool wallet in your current directory do not lose this wallet it is where contributions go.
 
 
+
 ## Adding another pool in the future
 
 First, copy the inside of the list from the above example json, so not the whole list just the object inside it. i.e.  "russia-ukraine-test": {...)
@@ -130,7 +133,8 @@ Next add this as another list item in your pools.json file on your computer
 
 Then start at the step above of modifying the config to your needs and follow the rest of the creation process outlined above.
 
-Which pool you are creating is driven by the <poolId> you feed to the CLI
+Which pool you are creating is driven by the <pool id> you feed to the CLI
+
 
 
 ## Mining artifacts into a pool
@@ -158,6 +162,8 @@ Mine a single wikipedia article related to the given keywords in config
 ```
 arcpool mine russia-ukraine-test --source wikipedia
 ```
+
+
 
 ## Daemon mode mining
 
