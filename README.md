@@ -43,19 +43,14 @@ mine <pool id>                          Mine artifacts for a given pool
 ## Creating pool
 Create a directory for the pool configurations and wallets. Name the directory anything you want.
 
-```
-mkdir alexfiles
-```
+```mkdir alexfiles```
 Change into the directory you created
-```
-cd alexfiles
-```
+```cd alexfiles```
 
 Next, create a pools.json file using the `arcpool init` command. You will edit this file and it will also be modified by the client so do not delete it after running the create and mine commands, unless you need to start over. Run the init command with a pool id of your choosing, containing no spaces. here is an example -
 
-```
-arcpool init POOL_NAME
-```
+```arcpool init POOL_NAME```
+
 A pools.json file will be generated looking similar to the one below
 ```
 {
@@ -106,15 +101,11 @@ __Modify the pools.json file to generate your pool.__ Modify the following confi
 
 __Lastly run the client from within the directory containing pools.json.__
 
-```
-arcpool create <POOL_ID> --control-wallet <PATH_TO_WALLET.json> --image <PATH_TO_IMAGE> 
-```
+```arcpool create <POOL_ID> --control-wallet <PATH_TO_WALLET.json> --image <PATH_TO_IMAGE>```
 
 __Example:__
 
-```
-arcpool create russia-ukraine-test --control-wallet wallet.json --image background.jpg
-```
+```arcpool create russia-ukraine-test --control-wallet wallet.json --image background.jpg```
 
 If the transaction is successful, you will see a new wallet and seed phrase file in a `wallets` directory. __KEEP THESE FILES SAFE. THEY ARE FOR YOUR COLLECTIONS CONTRIBUTION AND MINING PROCESS.__
 Visit https://alex.arweave.dev/#/collections to view your new pool.
@@ -147,14 +138,10 @@ __The mining commands run a finite process which will end after 20 seconds for t
 
 ###### Mine tweets into the pool from above, still runs for 20 seconds but the daemon mode will continue restarting the program infinetly. Note the `--d` flag.
 
-```
-arcpool mine russia-ukraine-test --source twitter --d
-```
+```arcpool mine russia-ukraine-test --source twitter --d```
 
 ###### To view all the daemon mode mining processes:
-```
-arcpool dlist
-```
+```arcpool dlist```
 
 ###### Output will look similar to:
 ```
@@ -163,16 +150,10 @@ pid: 0    pm_id: 0    name: russia-ukraine-test    status: running
 ```
 
 ###### Stop a pools daemon process by name:
-```
-arcpool dstop --dname russia-ukraine-test
-```
+```arcpool dstop --dname russia-ukraine-test```
 
 ###### To view logs for the mining processes install pm2:
-```
-npm install --global pm2
-```
+```npm install --global pm2```
 
 ###### Stream the logs:
-```
-pm2 logs
-```
+```pm2 logs```
