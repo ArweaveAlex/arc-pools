@@ -14,9 +14,7 @@ An arweave wallet is needed for creating a collection.
 [Arweave Wallet](https://docs.arweave.org/info/wallets/arweave-wallet)
 [ArConnect](https://arconnect.io)
 ## Installing Alex. CLI
-```
-npm install --global arcpool
-```
+```npm install --global arcpool```
 
 ```
 Usage: arcpool [commands] [options]
