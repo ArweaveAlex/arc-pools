@@ -83,40 +83,39 @@ const command: CommandInterface = {
                 console.log("Pool image posted, arweave tx id: " + tx.id);
                 POOLS_JSON[poolArg].state.image = tx.id;
             } else {
-                POOLS_JSON[poolArg].state.image = "tVIyHNzSut55pGLrWxvD4EQzb526coAeznMcf7GjLEo"
+                POOLS_JSON[poolArg].state.image = "8HqSqy_nNRSTPv-q-j7_iHGTp6lEA5K77TP4BPuXGyA"
             }
         }
         catch {
             exitProcess(`Invalid Control Wallet / Contract Configuration`, 1);
         }
 
-
         // upload contract source code for the pool then modify
         // the pool config to contain the id for the source
         console.log(`Deploying NFT Contract Source ...`);
-        const nftDeployment = await arClient.warp.createContract.deploy({
-            src: nftSrc,
-            initState: JSON.stringify(nftInitState),
-            wallet: controlWallet
-        }, true);
-        const nftDeploymentSrc = (await axios.get(contractEndpoint(nftDeployment.contractTxId))).data.srcTxId;
+        let nftDeployment;
+        let nftDeploymentSrc;
 
-        POOLS_JSON[poolArg].contracts.nft.id = nftDeployment;
-        POOLS_JSON[poolArg].contracts.nft.src = nftDeploymentSrc;
-        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.nft.id - [`, clc.green(`'${nftDeployment}'`), `]`);
-        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.nft.src - [`, clc.green(`'${nftDeploymentSrc}'`), `]`);
+        try{
+            nftDeployment = await arClient.warp.createContract.deploy({
+                src: nftSrc,
+                initState: JSON.stringify(nftInitState),
+                wallet: controlWallet
+            }, true);
+        } catch (e: any) {
+            exitProcess("Failed deploying nftContractSrc to warp", 1);
+        }
 
-        const signer = new ArweaveSigner(controlWallet);
+        POOLS_JSON[poolArg].contracts.nft.id = nftDeployment.contractTxId;
+        POOLS_JSON[poolArg].contracts.nft.src = nftDeployment.srcTxId;
 
         console.log(`Deploying Pool Contract Source ...`);
-        const poolSrcDeployment = await arClient.sourceImpl.save({ src: poolSrc }, "mainnet", controlWallet);
+        console.log(poolSrc);
+        const poolSrcDeployment = await arClient.arweave.sourceImpl.save({ src: poolSrc }, "mainnet", controlWallet);
 
         POOLS_JSON[poolArg].contracts.pool.src = poolSrcDeployment.id;
-        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.pool.src - [`, clc.green(`'${poolSrcDeployment.id}'`), `]`);
-
         const timestamp = Date.now().toString();
         POOLS_JSON[poolArg].state.timestamp = timestamp;
-        console.log(`Updated ${poolConfig.state.title} JSON Object - state.timestamp - `, clc.green(`'${timestamp}'`));
 
         // initialize the state of the pool then send it to warp
         const poolInitJson: PoolStateType = {
@@ -148,11 +147,13 @@ const command: CommandInterface = {
             tags: tags
         });
 
-        POOLS_JSON[poolArg].contracts.pool.id = poolDeployment;
+        POOLS_JSON[poolArg].contracts.pool.id = poolDeployment.contractTxId;
 
         // save the pool file with all the new data
         fs.writeFileSync(poolPath, JSON.stringify(POOLS_JSON, null, 4));
-        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.pool.id - [`, clc.green(`'${poolDeployment}'`), `]`);
+
+        console.log("Your pool has been deployed please wait for the pool to display correctly from the below link before proceeding...");
+        console.log("https://sonar.warp.cc/#/app/contract/" + poolDeployment.contractTxId);
     }
 }
 

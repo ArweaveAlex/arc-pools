@@ -16,7 +16,7 @@ export default class ArweaveClient {
     })
 
     smartweave = WarpFactory.forMainnet({ ...defaultCacheOptions, inMemory: true });
-    warp = this.smartweave;
+    warp = WarpFactory.forMainnet();
     sourceImpl = new SourceImpl(this.arweave);
 
     async getPoolIds(){
