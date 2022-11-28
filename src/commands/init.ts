@@ -56,6 +56,7 @@ let poolJson =
             },
             "title": "Pool Title such as Russia Ukraine War",
             "description": "Paragraph/html markup for long pool description on site",
+            "briefDescription": "Text for short pool description on site",
             "link": "",
             "rewards": "",
             "image": "",
