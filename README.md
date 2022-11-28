@@ -40,7 +40,7 @@ mine <pool id>                          Mine artifacts for a given pool
 ```
 
 
-## Creating initial pool
+## Creating pool
 Create a directory for the pool configurations and wallets. Name the directory anything you want.
 
 ```
@@ -51,7 +51,7 @@ Change into the directory you created
 cd alexfiles
 ```
 
-Next, create a pools.json file which will contain all pool configurations. You will edit this file and it will also be modified by the client so do not delete it after running the create and mine commands, unless you need to start over. Put the following json into the file. Run the init command with a pool id of your choosing, containing no spaces. here is an example -
+Next, create a pools.json file using the `arcpool init` command. You will edit this file and it will also be modified by the client so do not delete it after running the create and mine commands, unless you need to start over. Run the init command with a pool id of your choosing, containing no spaces. here is an example -
 
 ```
 arcpool init POOL_NAME
@@ -116,7 +116,7 @@ __Example:__
 arcpool create russia-ukraine-test --control-wallet wallet.json --image background.jpg
 ```
 
-If the transaction is successful, you will now see a `wallet.json` and a text file containing that wallets seed phrase. __KEEP THESE FILES SAFE. THEY ARE FOR YOUR COLLECTIONS CONTRIBUTION AND MINING PROCESS.__
+If the transaction is successful, you will see a new wallet and seed phrase file in a `wallets` directory. __KEEP THESE FILES SAFE. THEY ARE FOR YOUR COLLECTIONS CONTRIBUTION AND MINING PROCESS.__
 Visit https://alex.arweave.dev/#/collections to view your new pool.
 
 __To add another pool, follow the same steps as above in the same directory with the pools.json__
