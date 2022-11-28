@@ -15,7 +15,6 @@ export default class ArweaveClient {
         logging: false,
     })
 
-
     smartweave = WarpFactory.forMainnet({ ...defaultCacheOptions, inMemory: true });
     warp = this.smartweave;
     sourceImpl = new SourceImpl(this.arweave);
