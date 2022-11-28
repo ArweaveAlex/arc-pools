@@ -98,13 +98,10 @@ A pools.json file will be generated looking similar to the one below
 ```
 
 __Modify the pools.json file to generate your pool.__ Modify the following configs - 
-
-1. `POOL_NAME` will be used to specify which pool you are running the client for in the future, so modify this to be related to your pool eg. Iraq war could be `iraq-war`.
-2. `state.title` is the title of your pool.
-3. `state.description` is a long description of your pool. It can contain
-    Text and/or HTML.
-4. `twitter.userIds` is a list of twitter uid's to track in Twitter mining. This can be left empty or contain multiple uids.
-5. `keywords` is a list of the main keywords to track in the mining process. This is the core driving data that instructs the mining programs of what to pull from Twitter and Wikipedia.
+1. `state.title` is the title of your pool.
+2. `state.description` is a long description of your pool. It can contain Text and/or HTML.
+3. `twitter.userIds` is a list of twitter uid's to track in Twitter mining. This can be left empty or contain multiple uids.
+4. `keywords` is a list of the main keywords to track in the mining process. This is the core driving data that instructs the mining programs of what to pull from Twitter and Wikipedia.
 
 
 __Lastly run the client from within the directory containing pools.json.__
@@ -148,8 +145,7 @@ Run the client mine command from within the directory containing pools.json. It 
 
 __The mining commands run a finite process which will end after 20 seconds for tweets and each 1 article for wikipedia.__ If we wish to run these forever use daemon mode by passing the `--d` flag to any of the above mining commands. Daemon mode is built on top of pm2.
 
-###### Mine tweets into the pool from above, still runs for 20 seconds but the daemon mode will continue restarting the program infinetly. 
-Note the `--d` flag.
+###### Mine tweets into the pool from above, still runs for 20 seconds but the daemon mode will continue restarting the program infinetly. Note the `--d` flag.
 
 ```
 arcpool mine russia-ukraine-test --source twitter --d
@@ -160,7 +156,7 @@ arcpool mine russia-ukraine-test --source twitter --d
 arcpool dlist
 ```
 
-Output will look similar to:
+###### Output will look similar to:
 ```
 daemon processes -
 pid: 0    pm_id: 0    name: russia-ukraine-test    status: running
@@ -171,12 +167,12 @@ pid: 0    pm_id: 0    name: russia-ukraine-test    status: running
 arcpool dstop --dname russia-ukraine-test
 ```
 
-###### To view logs for the mining processes install pm2
+###### To view logs for the mining processes install pm2:
 ```
 npm install --global pm2
 ```
 
-###### Stream the logs
+###### Stream the logs:
 ```
 pm2 logs
 ```
