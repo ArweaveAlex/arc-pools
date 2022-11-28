@@ -10,6 +10,7 @@ import { PoolType, PoolStateType, PoolConfigType } from "../types";
 import { validatePoolConfig } from "../validations";
 import { contractEndpoint } from "../endpoints";
 import { ArgumentsInterface } from "../interfaces";
+import { createWallet } from "../wallet"
 import CommandInterface from "../interfaces/command";
 import {
     CLI_ARGS,
@@ -28,12 +29,9 @@ const command: CommandInterface = {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
 
         let poolPath: string = POOL_FILE;
+        await createWallet()
 
-        if(!args.argv["control-wallet"]){
-            exitProcess("Control wallet not provided", 1);
-        }
-
-        let controlWalletPath: string = args.argv["control-wallet"];
+        let controlWalletPath: string = 'local/data/wallet.json';
 
         const POOLS_JSON = JSON.parse(fs.readFileSync(poolPath).toString());
         const poolArg = args.commandValues[0]
