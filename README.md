@@ -132,13 +132,7 @@ __You have now created a pool, you can check the Alex site for the pool__ https:
 
 ## Adding another pool in the future
 
-First, copy the inside of the list from the above example json, so not the whole list just the object inside it. i.e.  "russia-ukraine-test": {...)
-
-Next add this as another list item in your pools.json file on your computer
-
-Then start at the step above of modifying the config to your needs and follow the rest of the creation process outlined above.
-
-Which pool you are creating is driven by the <pool id> you feed to the CLI
+__Follow the same steps as above in the same directory with the same pools.json__
 
 
 
