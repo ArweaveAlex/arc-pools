@@ -109,11 +109,9 @@ const command: CommandInterface = {
         POOLS_JSON[poolArg].contracts.nft.id = nftDeployment.contractTxId;
         POOLS_JSON[poolArg].contracts.nft.src = nftDeployment.srcTxId;
 
-        
-
         console.log(`Deploying Pool Contract Source ...`);
         console.log(poolSrc);
-        const poolSrcDeployment = await arClient.sourceImpl.save({ src: poolSrc }, "mainnet", controlWallet);
+        const poolSrcDeployment = await arClient.arweave.sourceImpl.save({ src: poolSrc }, "mainnet", controlWallet);
 
         POOLS_JSON[poolArg].contracts.pool.src = poolSrcDeployment.id;
         const timestamp = Date.now().toString();
