@@ -110,10 +110,14 @@ const command: CommandInterface = {
         POOLS_JSON[poolArg].contracts.nft.src = nftDeployment.srcTxId;
 
         console.log(`Deploying Pool Contract Source ...`);
-        console.log(poolSrc);
-        const poolSrcDeployment = await arClient.arweave.sourceImpl.save({ src: poolSrc }, "mainnet", controlWallet);
+        console.log(typeof poolSrc);
+        const poolSrcDeployment = await arClient.warp.createContract.deploy({
+            src: poolSrc,
+            initState: JSON.stringify({}),
+            wallet: controlWallet
+        }, true);
 
-        POOLS_JSON[poolArg].contracts.pool.src = poolSrcDeployment.id;
+        POOLS_JSON[poolArg].contracts.pool.src = poolSrcDeployment.srcTxId;
         const timestamp = Date.now().toString();
         POOLS_JSON[poolArg].state.timestamp = timestamp;
 
@@ -133,6 +137,8 @@ const command: CommandInterface = {
             totalSupply: "0"
         }
 
+        console.log(poolInitJson);
+
         const tags = [
             { "name": TAGS.keys.appType, "value": poolConfig.appType },
             { "name": TAGS.keys.poolName, "value": poolConfig.state.title }
@@ -143,7 +149,7 @@ const command: CommandInterface = {
         const poolDeployment = await arClient.warp.createContract.deployFromSourceTx({
             wallet: controlWallet,
             initState: poolInitState,
-            srcTxId: poolSrcDeployment.id,
+            srcTxId: poolSrcDeployment.srcTxId,
             tags: tags
         });
 
