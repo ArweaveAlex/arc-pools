@@ -4,15 +4,16 @@
 
 Users contribute to collections and they receive “artifacts” back into their wallet as they are minted. Artifacts are NFTs of items the collection is storing. Since the artifacts are stored on Arweave, they cannot be changed or removed in any way by anyone.
 
-This repository is the client which creates the pools and mines artifacts into the pools.
+This repository is the client tool for creating the pools and mining artifacts.
 
 
+## Requirements
+`arcpool` requires NodeJS and NPM installed. 
 
+An arweave wallet is needed for creating a collection. 
+[Arweave Wallet](https://docs.arweave.org/info/wallets/arweave-wallet)
+[ArConnect](https://arconnect.io)
 ## Installing Alex. CLI
-
-arcpool runs using NodeJS and NPM. You must have both installed on your machine for it to work. You will also need an arweave wallet for the beginning creation process.
-
-
 ```
 npm install --global arcpool
 ```
@@ -39,29 +40,26 @@ mine <pool id>                          Mine artifacts for a given pool
 ```
 
 
-## Creating a pool for the first time
-
-__First make a directory anywhere on your machine which will contain pool configurations and wallets. You can call the directory anything you want.__
+## Creating initial pool
+Create a directory for the pool configurations and wallets. Name the directory anything you want.
 
 ```
 mkdir alexfiles
 ```
-
 Change into the directory you created
 ```
 cd alexfiles
 ```
 
-__Next, create a pools.json file which will contain all pool configurations for every one of your pools.__ You will edit this file yourself and it will also be modified by the client so don't delete it after running the create and mine commands unless you need a fresh start. Put the  following json into the file, note this is an example. Run the init command with a pool id of your choosing, containing no spaces. here is an example -
+Next, create a pools.json file which will contain all pool configurations. You will edit this file and it will also be modified by the client so do not delete it after running the create and mine commands, unless you need to start over. Put the following json into the file. Run the init command with a pool id of your choosing, containing no spaces. here is an example -
 
 ```
-arcpool init russia-ukraine-pool-id
+arcpool init POOL_NAME
 ```
-
-You should now have a pools.json file which looks like this
+A pools.json file will be generated looking similar to the one below
 ```
 {
-    "russia-ukraine-pool-id": {
+    "POOL_NAME": {
         "appType": "Alex-Archiving-Pool-v1.8-Testing",
         "contracts": {
             "nft": {
@@ -78,8 +76,8 @@ You should now have a pools.json file which looks like this
                 "pubkey": "",
                 "info": ""
             },
-            "title": "Pool Title such as Russia Ukraine War",
-            "description": "Paragraph/html markup for long pool description on site",
+            "title": "Pool Title eg. Russia Ukraine War",
+            "description": "Paragraph/HTML for long pool description",
             "link": "",
             "rewards": "",
             "image": "",
@@ -99,25 +97,20 @@ You should now have a pools.json file which looks like this
 }
 ```
 
-__Now modify this pools.json file to generate a pool to your liking.__ we will modify 5 items above, modify only the following configs - 
+__Modify the pools.json file to generate your pool.__ Modify the following configs - 
 
-1. the pool id, where it says russia-ukraine-test, this is the pool id which will be used to 
-    specify which pool you are running the client for in the future, so modify this to be
-    something related to your pool for example a pool for the Iraq war could be iraq-war.
-2. state.title, this is the title of your pool which will display on the homepage of Alex etc...
-    Modify it to a title you want.
-3. state.description, this is a long description used for your pool on the site it can contain
-    Text and html markup, also modify this.
-4. twitter.userIds, a list of twitter uid's to track in twitter mining, this can be empty or contain
-    multiple uids, modify this as well.
-5. keywords, this is a list of the main keywords to track in the mining process for all mining processes.
-    This is the core driving data which will tell the mining programs what to pull from twitter and wikipedia
+1. `POOL_NAME` will be used to specify which pool you are running the client for in the future, so modify this to be related to your pool eg. Iraq war could be `iraq-war`.
+2. `state.title` is the title of your pool.
+3. `state.description` is a long description of your pool. It can contain
+    Text and/or HTML.
+4. `twitter.userIds` is a list of twitter uid's to track in Twitter mining. This can be left empty or contain multiple uids.
+5. `keywords` is a list of the main keywords to track in the mining process. This is the core driving data that instructs the mining programs of what to pull from Twitter and Wikipedia.
 
 
-__Lastly run the client from within the directory containing pools.json, it requires pools.json in the current directory__
+__Lastly run the client from within the directory containing pools.json.__
 
 ```
-arcpool create <pool id> --control-wallet <path to wallet.json> --image <path to image file> 
+arcpool create <POOL_ID> --control-wallet <PATH_TO_WALLET.json> --image <PATH_TO_IMAGE> 
 ```
 
 __Example:__
@@ -126,75 +119,64 @@ __Example:__
 arcpool create russia-ukraine-test --control-wallet wallet.json --image background.jpg
 ```
 
-__You have now created a pool, you can check the Alex site for the pool__ https://alex.arweave.dev/#/collections yhis will also generate a pool wallet in your current directory do not lose this wallet it is where contributions go.
+If the transaction is successful, you will now see a `wallet.json` and a text file containing that wallets seed phrase. __KEEP THESE FILES SAFE. THEY ARE FOR YOUR COLLECTIONS CONTRIBUTION AND MINING PROCESS.__
+Visit https://alex.arweave.dev/#/collections to view your new pool.
 
-
-
-## Adding another pool in the future
-
-__Follow the same steps as above in the same directory with the same pools.json__
-
-
+__To add another pool, follow the same steps as above in the same directory with the pools.json__
 
 ## Mining artifacts into a pool
 
-__If this a new pool someone must be able to mine, the mining process will not run without funds in the pool wallet so first go to Alex and contribute to your pool__
+__The mining process will not run without funds in the pool wallet. In this case, go to [Alex](https://alex.arweave.dev) and contribute to your pool__
 
-__Next, run the client mine command from within the directory containing pools.json.__ It can be run with multiple different options here are examples using the test pool above
+Run the client mine command from within the directory containing pools.json. It can be run with different options:
 
-Mine tweets into the test pool from above, regular mine command streams tweets for 20 seconds.
-```
-arcpool mine russia-ukraine-test --source twitter
-```
+###### Mine tweets into the test pool from above, regular mine command streams tweets for 20 seconds.
+```arcpool mine russia-ukraine-test --source twitter```
 
-Mine all tweets where users commented/quoted on twitter with "@thealexarchive #ukraine", this --mention-tag value can be whatever you want.
-```
-arcpool mine russia-ukraine-test --source twitter --method mention --mention-tag "@thealexarchive #ukraine"
-```
+###### Mine all tweets where users commented/quoted on twitter with "@thealexarchive #ukraine", this --mention-tag value can be whatever you want.
+```arcpool mine russia-ukraine-test --source twitter --method mention --mention-tag "@thealexarchive #ukraine"```
 
-Mine all tweets ever from a particular user for example user SBF_FTX, do not include the @ in the --username value
-```
-arcpool mine russia-ukraine-test --source twitter --method user --username SBF_FTX
-```
+###### Mine all tweets ever from a particular user for example user SBF_FTX, do not include the @ in the --username value
+```arcpool mine crypto-crunch --source twitter --method user --username SBF_FTX```
 
-Mine a single wikipedia article related to the given keywords in config
-```
-arcpool mine russia-ukraine-test --source wikipedia
-```
+###### Mine a single wikipedia article related to the given keywords in config
+```arcpool mine russia-ukraine-test --source wikipedia```
 
 
 
 ## Daemon mode mining
 
-__The above commands run a finite process which will end, 20 seconds for tweets and after 1 article for wikipedia.__ If we wish to run these forever use daemon mode by passing the --d flag to any of the above mining commands. This daemon mode is built on top of pm2.
+__The mining commands run a finite process which will end after 20 seconds for tweets and each 1 article for wikipedia.__ If we wish to run these forever use daemon mode by passing the `--d` flag to any of the above mining commands. Daemon mode is built on top of pm2.
 
-Mine tweets into the test pool from above, still runs for 20 seconds but the daemon mode will continue restarting the program infinetly. __note the --d flag__
+###### Mine tweets into the pool from above, still runs for 20 seconds but the daemon mode will continue restarting the program infinetly. 
+Note the `--d` flag.
+
 ```
 arcpool mine russia-ukraine-test --source twitter --d
 ```
 
-Now we can view all the daemon mode mining processes
+###### To view all the daemon mode mining processes:
 ```
 arcpool dlist
 ```
 
-Output should look something like this
+Output will look similar to:
 ```
 daemon processes -
 pid: 0    pm_id: 0    name: russia-ukraine-test    status: running
 ```
 
-And we can stop a pools daemon process by name
+###### Stop a pools daemon process by name:
 ```
 arcpool dstop --dname russia-ukraine-test
 ```
 
-To view logs for your mining processes install pm2
+###### To view logs for the mining processes install pm2
 ```
 npm install --global pm2
 ```
 
-Then stream the logs
+###### Stream the logs
 ```
 pm2 logs
 ```
