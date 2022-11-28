@@ -9,9 +9,9 @@ export const APP_TITLE = "arcpool";
  */
 export const BASE_DIR = path.join(__dirname, "").split("arc-pools")[0] + "arc-pools";
 
-export const NFT_CONTRACT_PATH = path.join(BASE_DIR, "build/contracts/NFT/contract.js");
-export const NFT_JSON_PATH = path.join(BASE_DIR, "build/contracts/NFT/init.json");
-export const POOL_CONTRACT_PATH = path.join(BASE_DIR, "build/contracts/pool/contract.js");
+export const NFT_CONTRACT_PATH = path.join(BASE_DIR, "bin/contracts/NFT/contract.js");
+export const NFT_JSON_PATH = path.join(BASE_DIR, "bin/contracts/NFT/init.json");
+export const POOL_CONTRACT_PATH = path.join(BASE_DIR, "bin/contracts/pool/contract.js");
 
 export const POOL_FILE = "pools.json";
 

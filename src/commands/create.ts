@@ -20,6 +20,7 @@ import {
     TAGS,
     POOL_FILE
 } from "../config";
+import path from "path";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.create,
@@ -68,16 +69,18 @@ const command: CommandInterface = {
 
             // upload an image from the argument if provided if not use default
             if (args.argv["image"]) {
-                const image = fs.readFileSync(args.argv["image"], 'utf8')
-                const type = mime.getType(args.argv["image"])
-
+                if(!fs.existsSync(args.argv["image"])){
+                    exitProcess(`Image file does not exist`, 1);
+                }
+                const image = await fs.promises.readFile(path.resolve(args.argv["image"]));
+                const type = mime.getType(args.argv["image"]);
                 const tx = await arClient.arweave.createTransaction({
-                    data: JSON.stringify(image)
+                    data: image
                 });
                 tx.addTag("Content-Type", type);
                 await arClient.arweave.transactions.sign(tx, controlWallet);
                 await arClient.arweave.transactions.post(tx);
-
+                console.log("Pool image posted, arweave tx id: " + tx.id);
                 POOLS_JSON[poolArg].state.image = tx.id;
             } else {
                 POOLS_JSON[poolArg].state.image = "tVIyHNzSut55pGLrWxvD4EQzb526coAeznMcf7GjLEo"
