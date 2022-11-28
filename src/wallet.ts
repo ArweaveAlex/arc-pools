@@ -1,8 +1,11 @@
 import { ArweaveClient } from './gql';
-import bip39 from 'bip39-web-crypto'
+
 import { getKeyPairFromMnemonic } from "human-crypto-keys";
 import { webcrypto } from 'crypto'
 import fs from 'fs';
+import path from 'path';
+
+const bip39 = require('bip39-web-crypto');
 
 const arClient = new ArweaveClient();
 
@@ -43,11 +46,29 @@ async function pkcs8ToJwk(privateKey: any) {
     };
 }
 
-export async function createWallet() {
+export type WalletReturn = {
+    file: string;
+    address: string;
+}
+
+export async function createWallet(poolArg: string) {
+    if (!fs.existsSync('wallets')) {
+        fs.mkdirSync('wallets');
+    }
+
     const mnemonic = await bip39.generateMnemonic();
-    fs.writeFileSync('local/wallets/mnemonic.txt', JSON.stringify(mnemonic))
+    let mnemonicFile = path.join("", "wallets/" + poolArg + "-mnemonic.txt");
+    fs.writeFileSync(mnemonicFile, JSON.stringify(mnemonic));
     const keyfile: any = await jwkFromMnemonic(mnemonic);
     const address = await arClient.arweave.wallets.jwkToAddress(keyfile);
-    fs.writeFileSync('local/wallets/wallet.json', JSON.stringify(keyfile))
+    let walletFile = path.join("", "wallets/" + poolArg + "-" + address + ".json");
+    fs.writeFileSync(walletFile, JSON.stringify(keyfile));
+    console.log("New pool wallet file created: " + walletFile);
+    console.log("Wallet Address: " + address);
     const encryptedKeyfile = btoa(JSON.stringify(keyfile));
+    let r: WalletReturn = {
+        file: walletFile,
+        address: address
+    };
+    return r;
 }

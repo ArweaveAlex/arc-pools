@@ -17,6 +17,7 @@
         "@types/fs-extra": "^8.1.0",
         "arweave": "^1.11.4",
         "axios": "^0.26.1",
+        "bip39-web-crypto": "^4.0.1",
         "cli-color": "^2.0.3",
         "clui": "^0.3.6",
         "esbuild": "^0.15.15",
@@ -25,6 +26,7 @@
         "fs": "^0.0.1-security",
         "fs-extra": "^10.1.0",
         "gql-query-builder": "^3.7.2",
+        "human-crypto-keys": "^0.1.4",
         "mime": "^3.0.0",
         "minimist": "^1.2.7",
         "node-tweet-stream": "^2.1.0",
@@ -40,8 +42,6 @@
         "@types/human-crypto-keys": "^0.1.0",
         "@types/mime-types": "^2.1.1",
         "@types/minimist": "^1.2.2",
-        "@types/node": "^18.11.9",
-        "bip39-web-crypto": "^4.0.1",
-        "human-crypto-keys": "^0.1.4"
+        "@types/node": "^18.11.9"
     }
 }
