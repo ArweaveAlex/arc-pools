@@ -22,12 +22,15 @@ export async function run(config: PoolConfigType) {
   poolConfig = config;
 
   try {
+    console.log(poolConfig);
+    console.log(poolConfig.walletPath);
+    console.log(fs.readFileSync(poolConfig.walletPath));
     keys = JSON.parse(fs.readFileSync(poolConfig.walletPath).toString());
   }
   catch {
     exitProcess(`Invalid Pool Wallet Configuration`, 1);
   }
-  bundlr = new Bundlr(poolConfig.bundlrNode, "arweave", keys.arweave);
+  bundlr = new Bundlr(poolConfig.bundlrNode, "arweave", keys);
 
   contract = arClient.smartweave.contract(poolConfig.contracts.pool.id);
 
@@ -47,10 +50,16 @@ export async function run(config: PoolConfigType) {
   console.log("Wikipedia sent: " + articles.length);
 
   let sentList = [];
-  if (fs.existsSync('local/data/wikiarticlessent.txt')) {
-    sentList = fs.readFileSync('local/data/wikiarticlessent.txt').toString().split("\n");
+
+  if(!fs.existsSync('data')){
+    fs.mkdirSync('data');
   }
 
+  if(!fs.existsSync('data/wikiarticlessent.txt')){
+    fs.writeFileSync('data/wikiarticlessent.txt', "");
+  }
+
+  sentList = fs.readFileSync('data/wikiarticlessent.txt').toString().split("\n");
   console.log(sentList);
 
   // loop through the api response until we find a non duplicate
@@ -59,7 +68,7 @@ export async function run(config: PoolConfigType) {
       // await delay(6000);
       console.log("Found non duplicate article to send: " + articles[i])
       let res = await scrapePage(articles[i]);
-      fs.appendFileSync('local/data/wikiarticlessent.txt', articles[i] + "\n");
+      fs.appendFileSync('data/wikiarticlessent.txt', articles[i] + "\n");
       break;
     }
   }

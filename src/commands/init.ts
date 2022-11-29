@@ -68,7 +68,13 @@ let poolJson =
         },
         "keywords": [
             "keyword1",
-        ]
+        ],
+        "twitterApiKeys": {
+            "consumer_key": "",
+            "consumer_secret": "",
+            "token": "",
+            "token_secret": ""
+        }
     };
 
 
