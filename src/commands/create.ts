@@ -3,7 +3,7 @@ import clc from "cli-color";
 import mime from 'mime';
 
 import { ArweaveClient } from "../gql";
-import { exitProcess } from "../utils";
+import { exitProcess, displayJsonUpdate } from "../utils";
 import { PoolType, PoolStateType, PoolConfigType } from "../types";
 import { validatePoolConfig, validateControlWalletPath } from "../validations";
 import { ArgumentsInterface, CommandInterface } from "../interfaces";
@@ -41,6 +41,8 @@ const command: CommandInterface = {
         let walletInfo = await createWallet(poolArg);
         POOLS_JSON[poolArg].state.owner.pubkey = walletInfo.address;
         POOLS_JSON[poolArg].walletPath = walletInfo.file;
+        displayJsonUpdate(poolConfig.state.title, `state.owner.pubkey`, walletInfo.address);
+        displayJsonUpdate(poolConfig.state.title, `walletPath`, walletInfo.file);
 
         const arClient = new ArweaveClient();
 
@@ -79,8 +81,11 @@ const command: CommandInterface = {
                 await arClient.arweave.transactions.post(tx);
                 console.log(`Pool image posted, Arweave Tx Id - [`, clc.green(`'${tx.id}'`), `]`);
                 POOLS_JSON[poolArg].state.image = tx.id;
-            } else {
+                displayJsonUpdate(poolConfig.state.title, `state.image`, tx.id);
+            } 
+            else {
                 POOLS_JSON[poolArg].state.image = FALLBACK_IMAGE;
+                displayJsonUpdate(poolConfig.state.title, `state.image`, FALLBACK_IMAGE);
             }
         }
         catch {
@@ -103,6 +108,8 @@ const command: CommandInterface = {
 
         POOLS_JSON[poolArg].contracts.nft.id = nftDeployment.contractTxId;
         POOLS_JSON[poolArg].contracts.nft.src = nftDeployment.srcTxId;
+        displayJsonUpdate(poolConfig.state.title, `contracts.nft.id`, nftDeployment.contractTxId);
+        displayJsonUpdate(poolConfig.state.title, `contracts.nft.src`, nftDeployment.srcTxId);
 
         console.log(`Deploying Pool Contract Source ...`);
         const poolSrcDeployment = await arClient.warp.createContract.deploy({
@@ -112,8 +119,11 @@ const command: CommandInterface = {
         });
 
         POOLS_JSON[poolArg].contracts.pool.src = poolSrcDeployment.srcTxId;
+        displayJsonUpdate(poolConfig.state.title, `contracts.pool.src`, poolSrcDeployment.contractTxId);
+        
         const timestamp = Date.now().toString();
         POOLS_JSON[poolArg].state.timestamp = timestamp;
+        displayJsonUpdate(poolConfig.state.title, `state.timestamp`, timestamp);
 
         // Initialize the state of the pool then send it to warp
         const poolInitJson: PoolStateType = {
@@ -121,7 +131,7 @@ const command: CommandInterface = {
             image: POOLS_JSON[poolArg].state.image,
             briefDescription: poolConfig.state.briefDescription,
             description: poolConfig.state.description,
-            link: POOLS_JSON[poolArg].state.image,
+            link: "",
             owner: POOLS_JSON[poolArg].state.owner.pubkey,
             ownerInfo: poolConfig.state.owner.info,
             timestamp: timestamp,
@@ -146,16 +156,12 @@ const command: CommandInterface = {
         });
 
         POOLS_JSON[poolArg].contracts.pool.id = poolDeployment.contractTxId;
+        displayJsonUpdate(poolConfig.state.title, `contracts.pool.id`, poolDeployment.contractTxId);
 
         // Save the pool file with all the new data
         fs.writeFileSync(poolPath, JSON.stringify(POOLS_JSON, null, 4));
-        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.nft.id - [`, clc.green(`'${nftDeployment.contractTxId}'`), `]`);
-        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.nft.src - [`, clc.green(`'${nftDeployment.srcTxId}'`), `]`);
-        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.pool.id - [`, clc.green(`'${poolDeployment.contractTxId}'`), `]`);
-        console.log(`Updated ${poolConfig.state.title} JSON Object - contracts.pool.src - [`, clc.green(`'${poolSrcDeployment.contractTxId}'`), `]`);
-        console.log(`Updated ${poolConfig.state.title} JSON Object - state.timestamp - `, clc.green(`'${timestamp}'`));
 
-        console.log(`Your pool has been deployed please wait for the pool to display correctly from the below link before proceeding...`);
+        console.log(`Your pool has been deployed, please wait for the pool to display correctly from the below link before proceeding...`);
         console.log(clc.magenta(sonarLink(poolDeployment.contractTxId)));
     }
 }

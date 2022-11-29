@@ -5,7 +5,6 @@
     "repository": "https://github.com/ArweaveAlex/arc-pools.git",
     "author": "NickJ202",
     "scripts": {
-        "compile": "tsc --declaration -project tsconfig.json --outDir bin & node ./build.js && cp ./src/contracts/NFT/init.json ./build/contracts/NFT/init.json",
         "start": "ts-node src/index.ts",
         "build": "tsc"
     },
