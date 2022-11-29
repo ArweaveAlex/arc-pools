@@ -7,11 +7,11 @@ import { ArgumentsInterface } from "./interfaces";
 
 export function validatePoolConfig(args: ArgumentsInterface): PoolConfigType {
     if (!args.commandValues || !args.commandValues.length) {
-        exitProcess(`Pool Not Provided`, 1);
+        exitProcess(`Pool not provided`, 1);
     }
 
-    if(!fs.existsSync(POOL_FILE)){
-        exitProcess(`No pools.json file detected`, 1);
+    if (!fs.existsSync(POOL_FILE)) {
+        exitProcess(`${POOL_FILE} does not exist`, 1);
     }
 
     const poolArg = args.commandValues[0];
@@ -24,4 +24,16 @@ export function validatePoolConfig(args: ArgumentsInterface): PoolConfigType {
     // TODO - validate JSON
 
     return POOLS_JSON[poolArg];
+}
+
+export function validateControlWalletPath(path: string): string {
+    if (!path) {
+        exitProcess(`Control wallet path not provided`, 1);
+    }
+
+    if (!fs.existsSync(path)) {
+        exitProcess(`${path} does not exist`, 1);
+    }
+
+    return path;
 }

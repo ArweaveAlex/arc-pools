@@ -3,7 +3,7 @@ import path from "path";
 export const APP_TITLE = "arcpool";
 
 /**
- *  find the base directory of the repo
+ *  Find the base directory of the repo
  *  so the code runs in global install
  *  as well as local ts-node run 
  */
@@ -58,23 +58,4 @@ export const TAGS = {
     }
 }
 
-export type Config = { 
-    instances: number, 
-    query: string, 
-    walletPath: string, 
-    bundlrNode: string, 
-    difference: number, 
-    refreshPeriod: string, 
-    keywordListID: string, 
-    pool: { 
-        contract: string, 
-        transferable: boolean 
-    }, 
-    nftContractSrc: string, 
-    keywordListVersion: string,
-    keywords: string[],
-    userIDs: string[],
-    balanceUrl: string,
-    mineAllTweetsUserIDs: string[],
-    mentionTags: string[]
-};
+export const FALLBACK_IMAGE = "8HqSqy_nNRSTPv-q-j7_iHGTp6lEA5K77TP4BPuXGyA";

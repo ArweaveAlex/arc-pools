@@ -1,1 +1,2 @@
 export const contractEndpoint = (txId: string) => `https://gateway.redstone.finance/gateway/contract?txId=${txId}`;
+export const sonarLink = (contractId: string) => `https://sonar.warp.cc/#/app/contract/${contractId}`;

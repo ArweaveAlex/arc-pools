@@ -7,15 +7,14 @@ import method from "../options/method";
 import { exitProcess } from "../utils";
 import { PoolConfigType } from "../types";
 import { validatePoolConfig } from "../validations";
-import { ArgumentsInterface } from "../interfaces";
-import CommandInterface from "../interfaces/command";
+import { ArgumentsInterface, CommandInterface } from "../interfaces";
 import { CLI_ARGS } from "../config";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.mine,
-    description: 'Mine artifacts for a given pool',
+    description: `Mine artifacts for a given pool`,
     options: [source, method],
-    args: ['pool id'],
+    args: ["pool id"],
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
 

@@ -1,17 +1,15 @@
 const pm2 = require('pm2');
 
-import { ArgumentsInterface } from "../interfaces";
-import CommandInterface from "../interfaces/command";
+import { ArgumentsInterface, CommandInterface } from "../interfaces";
 import { CLI_ARGS } from "../config";
 import dname from "../options/source";
 import { exitProcess } from "../utils";
 
-
 const command: CommandInterface = {
     name: CLI_ARGS.commands.dstop,
-    description: 'Stop a daemon mining process by name',
+    description: `Stop a daemon mining process by name`,
     options: [dname],
-    args: ['daemon name'],
+    args: ["daemon name"],
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const { dname } = args.argv;
 

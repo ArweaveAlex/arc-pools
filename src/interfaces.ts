@@ -1,5 +1,4 @@
 import minimist from "minimist";
-import CommandInterface from "./interfaces/command";
 
 export interface ArgumentsInterface {
   argv: minimist.ParsedArgs;
@@ -14,8 +13,10 @@ export interface OptionInterface {
   arg: string
 }
 
-// export interface CommandInterface {
-//   name: string;
-//   options?: OptionInterface[];
-//   execute: (args: ArgumentsInterface) => Promise<void>;
-// }
+export interface CommandInterface {
+    name: string;
+    options?: any[];
+    args?: string[];
+    description: string;
+    execute: (args: any) => Promise<void>;
+}
