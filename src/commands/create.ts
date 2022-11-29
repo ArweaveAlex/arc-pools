@@ -156,7 +156,7 @@ const command: CommandInterface = {
         console.log(`Updated ${poolConfig.state.title} JSON Object - state.timestamp - `, clc.green(`'${timestamp}'`));
 
         console.log(`Your pool has been deployed please wait for the pool to display correctly from the below link before proceeding...`);
-        console.log(sonarLink(poolDeployment.contractTxId));
+        console.log(clc.magenta(sonarLink(poolDeployment.contractTxId)));
     }
 }
 
