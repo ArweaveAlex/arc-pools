@@ -4,8 +4,7 @@ import clc from "cli-color";
 import path from "path";
 import minimist from "minimist";
 
-import { ArgumentsInterface, OptionInterface } from "./interfaces";
-import CommandInterface from "./interfaces/command";
+import { ArgumentsInterface, CommandInterface, OptionInterface } from "./interfaces";
 import { APP_TITLE, CLI_ARGS } from "./config";
 
 (async function () {

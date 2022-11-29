@@ -2,14 +2,13 @@ import clc from "cli-color";
 import figlet from "figlet";
 import CLI from 'clui';
 
-import { ArgumentsInterface } from "../interfaces";
-import CommandInterface from "../interfaces/command";
+import { ArgumentsInterface, CommandInterface } from "../interfaces";
 import { APP_TITLE, CLI_ARGS } from "../config";
 
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.help,
-    description: 'Display help text',
+    description: `Display help text`,
     execute: async (args: ArgumentsInterface): Promise<void> => {
         console.log(clc.magenta(figlet.textSync(APP_TITLE)));
         

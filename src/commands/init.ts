@@ -1,17 +1,14 @@
 import fs from "fs";
 
-import { ArgumentsInterface } from "../interfaces";
-import CommandInterface from "../interfaces/command";
+import { ArgumentsInterface, CommandInterface } from "../interfaces";
 import { CLI_ARGS, POOL_FILE } from "../config";
 import { exitProcess } from "../utils";
 
-
-
 const command: CommandInterface = {
     name: CLI_ARGS.commands.init,
-    description: 'Initialize pools.json',
+    description: `Initialize ${POOL_FILE}`,
     options: [],
-    args: ['pool id'],
+    args: ["pool id"],
     execute: async (args: ArgumentsInterface): Promise<void> => {
         if (!args.commandValues || !args.commandValues.length) {
             exitProcess(`Pool id Not Provided`, 1);
