@@ -61,7 +61,7 @@ export async function createWallet(poolArg: string) {
     fs.writeFileSync(mnemonicFile, JSON.stringify(mnemonic));
     const keyfile: any = await jwkFromMnemonic(mnemonic);
     const address = await arClient.arweave.wallets.jwkToAddress(keyfile);
-    let walletFile = path.join("", "wallets/" + poolArg + "-" + address + ".json");
+    let walletFile = "wallets/" + poolArg + "-" + address + ".json";
     fs.writeFileSync(walletFile, JSON.stringify(keyfile));
     console.log("New pool wallet file created: " + walletFile);
     console.log("Wallet Address: " + address);

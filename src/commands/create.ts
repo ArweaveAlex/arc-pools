@@ -128,7 +128,7 @@ const command: CommandInterface = {
             contributors: {},
             tokens: {},
             totalContributions: "0",
-            totalSupply: "0"
+            totalSupply: "10000000"
         }
 
         const tags = [
