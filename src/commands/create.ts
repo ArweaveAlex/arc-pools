@@ -138,7 +138,7 @@ const command: CommandInterface = {
 
         console.log(`Deploying Pool from Source Tx ...`);
         const poolInitState = JSON.stringify(poolInitJson, null, 2);
-        const poolDeployment = await arClient.warp.createContract.deployFromSourceTx({
+        const poolDeployment = await arClient.smartweave.createContract.deployFromSourceTx({
             wallet: controlWallet,
             initState: poolInitState,
             srcTxId: poolSrcDeployment.srcTxId,
