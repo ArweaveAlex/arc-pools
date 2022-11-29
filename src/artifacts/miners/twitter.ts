@@ -46,13 +46,13 @@ export async function run(config: PoolConfigType, argv: minimist.ParsedArgs) {
     }
 
     twitter = new Twitter({
-        consumer_key: keys.tkeys.consumer_key,
-        consumer_secret: keys.tkeys.consumer_secret,
-        token: keys.tkeys.token,
-        token_secret: keys.tkeys.token_secret,
+        consumer_key: poolConfig.twitterApiKeys.consumer_key,
+        consumer_secret: poolConfig.twitterApiKeys.consumer_secret,
+        token: poolConfig.twitterApiKeys.token,
+        token_secret: poolConfig.twitterApiKeys.token_secret,
         tweet_mode: "extended"
     });
-    bundlr = new Bundlr(poolConfig.bundlrNode, "arweave", keys.arweave);
+    bundlr = new Bundlr(poolConfig.bundlrNode, "arweave", keys);
 
     contract = arClient.smartweave.contract(poolConfig.contracts.pool.id);
 
@@ -61,10 +61,10 @@ export async function run(config: PoolConfigType, argv: minimist.ParsedArgs) {
     LoggerFactory.INST.logLevel("error", "HandlerExecutorFactory");
 
     twitterV2 = new TwitterApi({
-        appKey: keys.tkeys.consumer_key,
-        appSecret: keys.tkeys.consumer_secret,
-        accessToken: keys.tkeys.token,
-        accessSecret: keys.tkeys.token_secret,
+        appKey: poolConfig.twitterApiKeys.consumer_key,
+        appSecret: poolConfig.twitterApiKeys.consumer_secret,
+        accessToken: poolConfig.twitterApiKeys.token,
+        accessSecret: poolConfig.twitterApiKeys.token_secret,
     });
 
     const method = argv["method"];

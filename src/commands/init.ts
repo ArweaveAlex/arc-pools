@@ -63,7 +63,7 @@ let poolJson =
         "bundlrNode": "https://node2.bundlr.network",
         "twitter": {
             "userIds": [
-                "twitter uid"
+                
             ]
         },
         "keywords": [

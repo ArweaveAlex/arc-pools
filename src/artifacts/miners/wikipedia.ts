@@ -22,9 +22,6 @@ export async function run(config: PoolConfigType) {
   poolConfig = config;
 
   try {
-    console.log(poolConfig);
-    console.log(poolConfig.walletPath);
-    console.log(fs.readFileSync(poolConfig.walletPath));
     keys = JSON.parse(fs.readFileSync(poolConfig.walletPath).toString());
   }
   catch {

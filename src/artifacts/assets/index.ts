@@ -25,10 +25,8 @@ export function selectTokenHolder(tokens: any, totalSupply: number) {
   for (const address of Object.keys(tokens)) {
       weights[address] = tokens[address] / totalSupply;
   }
-
   let sum = 0;
   const r = Math.random();
-
   for (const address of Object.keys(weights)) {
       sum += weights[address];
       if (r <= sum && weights[address] > 0) {
@@ -78,7 +76,7 @@ export const createAsset = async (
 ) => {
 
   keys = JSON.parse(readFileSync(config.walletPath).toString());
-  jwk = keys.arweave;
+  jwk = keys;
   bundlr = bundlrIn;
   contract = contractIn;
   contract.setEvaluationOptions({
@@ -92,8 +90,16 @@ export const createAsset = async (
   await assetTx.sign();
   let assetId: string;
   
-  //Deploying asset to bundlr
+  // Deploying asset to bundlr
   try {
+    const cost = await bundlr.getPrice(assetTx.size);
+    console.log("Upload costs", bundlr.utils.unitConverter(cost).toString());
+    try{
+        await bundlr.fund(cost.multipliedBy(1.1).integerValue());
+    } catch (e: any){
+        console.log(`Error funding bundlr, probably not enough funds in arweave wallet...\n ${e}`);
+        throw new Error(e);
+    }
     const assetBundlrResponse = await assetTx.upload();
     console.log("Bundlr asset ID: " + assetBundlrResponse.id);
     assetId = assetBundlrResponse.id
@@ -112,7 +118,8 @@ export const createAsset = async (
       additionalPaths,
       config
     );
-    // await deployToWarp(assetId, dataAndTags, contentType);
+
+    await deployToWarp(dataAndTags);
 
   } catch (err) {
     throw new Error(err);
@@ -121,9 +128,7 @@ export const createAsset = async (
 
 
 async function deployToWarp(
-  atomicId: string, 
   dataAndTags:any,
-  contentType: string
 ) {
   try {
     const signer = new ArweaveSigner(jwk);
@@ -166,8 +171,8 @@ async function createDataAndTags(
       { name: 'App-Name', value: 'SmartWeaveContract' },
       { name: 'App-Version', value: '0.3.0' },
       { name: 'Content-Type', value: "application/x.arweave-manifest+json" },
-      { name: 'Contract-Src', value: config.nftContractSrc},
-      { name: "Pool-Id", value: config.pool.contract },
+      { name: 'Contract-Src', value: config.contracts.nft.src},
+      { name: "Pool-Id", value: config.contracts.pool.id },
       { name: 'Title', value: name },
       { name: 'Description', value: description },
       { name: 'Type', value: assetType },
