@@ -97,11 +97,13 @@ const command: CommandInterface = {
         let nftDeploymentSrc;
 
         try{
-            nftDeployment = await arClient.warp.createContract.deploy({
+            console.log(nftSrc);
+            nftDeployment = await arClient.smartweave.createContract.deploy({
                 src: nftSrc,
                 initState: JSON.stringify(nftInitState),
                 wallet: controlWallet
             }, true);
+            console.log(nftDeployment.srcTxId);
         } catch (e: any) {
             exitProcess("Failed deploying nftContractSrc to warp", 1);
         }
@@ -111,7 +113,7 @@ const command: CommandInterface = {
 
         console.log(`Deploying Pool Contract Source ...`);
         console.log(typeof poolSrc);
-        const poolSrcDeployment = await arClient.warp.createContract.deploy({
+        const poolSrcDeployment = await arClient.smartweave.createContract.deploy({
             src: poolSrc,
             initState: JSON.stringify({}),
             wallet: controlWallet
@@ -146,7 +148,7 @@ const command: CommandInterface = {
 
         console.log(`Deploying Pool from Source Tx ...`);
         const poolInitState = JSON.stringify(poolInitJson, null, 2);
-        const poolDeployment = await arClient.warp.createContract.deployFromSourceTx({
+        const poolDeployment = await arClient.smartweave.createContract.deployFromSourceTx({
             wallet: controlWallet,
             initState: poolInitState,
             srcTxId: poolSrcDeployment.srcTxId,
