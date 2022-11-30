@@ -13,7 +13,8 @@ import { Contract, LoggerFactory } from "warp-contracts";
 import {
     TwitterApi,
     Tweetv2SearchParams,
-    TweetV2UserTimelineParams
+    TweetV2UserTimelineParams,
+    ETwitterStreamEvent
 } from "twitter-api-v2";
 const Twitter = require("node-tweet-stream");
 
@@ -33,7 +34,9 @@ let keys: any;
 let contract: Contract;
 let twitter: any;
 let twitterV2: TwitterApi;
+let twitterV2Bearer: TwitterApi;
 let tweets: any[] = [];
+
 
 export async function run(config: PoolConfigType, argv: minimist.ParsedArgs) {
     poolConfig = config;
@@ -52,6 +55,9 @@ export async function run(config: PoolConfigType, argv: minimist.ParsedArgs) {
         token_secret: poolConfig.twitterApiKeys.token_secret,
         tweet_mode: "extended"
     });
+
+    twitterV2Bearer = new TwitterApi(poolConfig.twitterApiKeys.bearer_token);
+
     bundlr = new Bundlr(poolConfig.bundlrNode, "arweave", keys);
 
     contract = arClient.smartweave.contract(poolConfig.contracts.pool.id);
@@ -95,26 +101,95 @@ export async function run(config: PoolConfigType, argv: minimist.ParsedArgs) {
     }
 }
 
+
+// v1 streaming
+// async function mineTweetsByStream() {
+//     console.log(`Mining Tweets by stream ...`);
+//     twitter.on('tweet', listTweet);
+
+//     twitter.on('error', (e: any) => {
+//         console.error(`tStream error: ${e}`)
+//     })
+//     const trackKeyWords = poolConfig.keywords
+//     const trackUsers = poolConfig.twitter.userIds
+//     console.log(`Tracking key words: ${trackKeyWords}`);
+//     console.log(`Tracking users: ${trackUsers}`)
+//     twitter.track(trackKeyWords)
+//     twitter.follow(trackUsers)
+//     setTimeout(() => { lockProcess = true; processTweets(); }, 20000);
+// }
+
+
 /*
  * Start a twitter stream, aggregate them into a list
  * then mine them onto Arweave synchronously so if it 
  * fails in the middle we don't end up with partial
  * atomic assets
  */
-async function mineTweetsByStream() {
-    console.log(`Mining Tweets by stream ...`);
-    twitter.on('tweet', listTweet);
 
-    twitter.on('error', (e: any) => {
-        console.error(`tStream error: ${e}`)
-    })
-    const trackKeyWords = poolConfig.keywords
-    const trackUsers = poolConfig.twitter.userIds
-    console.log(`Tracking key words: ${trackKeyWords}`);
-    console.log(`Tracking users: ${trackUsers}`)
-    twitter.track(trackKeyWords)
-    twitter.follow(trackUsers)
-    setTimeout(() => { lockProcess = true; processTweets(); }, 20000);
+// Delete the stream rules before and after this run.
+// Before to clear out any previous leftovers from failed runs
+async function deleteStreamRules() {
+    const rules = await twitterV2Bearer.v2.streamRules();
+
+    if (rules.data?.length) {
+        await twitterV2Bearer.v2.updateStreamRules({
+            delete: { ids: rules.data.map(rule => rule.id) },
+        });
+
+        console.log("Deleted rules: ");
+        console.log(rules);
+    }
+}
+
+async function mineTweetsByStream() {
+    await deleteStreamRules();
+
+    const stream = twitterV2Bearer.v2.searchStream({autoConnect: false});
+    let lockProc = false;
+
+    let rules = poolConfig.keywords.map((keyword: string) => {
+        return {
+            value: keyword, 
+            tag: keyword.toLowerCase().replace(/\s/g, '')
+        }
+    });
+
+    await twitterV2Bearer.v2.updateStreamRules({
+        add: rules,
+    });
+
+    twitterV2Bearer.v2.getStream
+
+    const eventTweetIds = [] as string[];
+    const itTweetIds = [] as string[];
+
+    await stream.connect({ autoReconnect: true });
+
+    await Promise.race([
+      // stream for 14 seconds
+      new Promise(resolve => setTimeout(resolve, 4 * 1000)),
+      (async function () {
+        stream.on(ETwitterStreamEvent.Data, (tweet) => {
+            if(!lockProc) {
+                console.log("pushing new tweet: " + tweet.data.text); 
+                eventTweetIds.push(tweet.data.id);
+            }
+        });
+
+        for await (const tweet of stream) {
+          itTweetIds.push(tweet.data.id);
+        }
+      })(),
+    ]);
+
+    lockProc = true;
+
+    await deleteStreamRules();
+
+    await processIds(itTweetIds);
+
+    process.exit(1);
 }
 
 /*

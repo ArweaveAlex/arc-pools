@@ -73,7 +73,8 @@ let poolJson =
             "consumer_key": "",
             "consumer_secret": "",
             "token": "",
-            "token_secret": ""
+            "token_secret": "",
+            "bearer_token": ""
         }
     };
 
