@@ -29,6 +29,7 @@ Options                                 Description
 
 
 Commands                                Description
+balance <pool id>                       Check the Bundlr and Arweave balance for the pool wallet
 create <pool id>                        Create a pool using pools.json
 dlist                                   list all daemon mining processes
 dstop <daemon name>                     Stop a daemon mining process by name
