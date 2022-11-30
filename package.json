@@ -1,6 +1,6 @@
 {
     "name": "arcpool",
-    "version": "1.0.6",
+    "version": "1.0.0",
     "main": "./bin/index.js",
     "repository": "https://github.com/ArweaveAlex/arc-pools.git",
     "author": "NickJ202",
@@ -9,7 +9,7 @@
         "build": "tsc"
     },
     "bin": {
-        "arcpool": "./bin/index.js"
+        "arcpool": "./bin/pm2Wrapper.js"
     },
     "dependencies": {
         "@bundlr-network/client": "^0.9.0",

@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import path from "path";
 
 const pm2 = require('pm2');
@@ -27,7 +28,7 @@ const buildScriptPath = () => {
             pm2.start({
               script    : buildScriptPath(),
               name      : process.argv[3],
-              args: process.argv
+              args: process.argv.slice(2)
             }, function(err: any, _apps: any) {
               if (err) {
                 console.error("Error connecting to pm2...");

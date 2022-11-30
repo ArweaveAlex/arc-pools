@@ -91,7 +91,8 @@ A pools.json file will be generated looking similar to the one below
             "consumer_key": "",
             "consumer_secret": "",
             "token": "",
-            "token_secret": ""
+            "token_secret": "",
+            "bearer_token": ""
         }
     }
 }
