@@ -168,7 +168,7 @@ async function mineTweetsByStream() {
 
     await Promise.race([
       // stream for 14 seconds
-      new Promise(resolve => setTimeout(resolve, 4 * 1000)),
+      new Promise(resolve => setTimeout(resolve, 14 * 1000)),
       (async function () {
         stream.on(ETwitterStreamEvent.Data, (tweet) => {
             if(!lockProc) {

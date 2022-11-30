@@ -54,7 +54,7 @@ A pools.json file will be generated looking similar to the one below
 ```
 {
     "POOL_NAME": {
-        "appType": "Alex-Archiving-Pool-v1.8-Testing",
+        "appType": "Alex-Archiving-Pool-v1.4",
         "contracts": {
             "nft": {
                 "id": "",

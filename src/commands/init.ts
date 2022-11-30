@@ -35,7 +35,7 @@ const command: CommandInterface = {
 
 let poolJson = 
      {
-        "appType": "Alex-Archiving-Pool-v1.11-Testing", 
+        "appType": "Alex-Archiving-Pool-v1.4", 
         "contracts": {
             "nft": {
                 "id": "",

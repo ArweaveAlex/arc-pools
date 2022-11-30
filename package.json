@@ -1,6 +1,6 @@
 {
     "name": "arcpool",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "main": "./bin/index.js",
     "repository": "https://github.com/ArweaveAlex/arc-pools.git",
     "author": "NickJ202",

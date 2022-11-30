@@ -7,7 +7,7 @@ export const APP_TITLE = "arcpool";
  *  so the code runs in global install
  *  as well as local ts-node run 
  */
-export const BASE_DIR = path.join(__dirname, "").split("arc-pools")[0] + "arc-pools";
+export const BASE_DIR = path.join(__dirname, "").split("arcpool")[0] + "arcpool";
 
 export const NFT_CONTRACT_PATH = path.join(BASE_DIR, "bin/contracts/NFT/contract.js");
 export const NFT_JSON_PATH = path.join(BASE_DIR, "bin/contracts/NFT/init.json");
