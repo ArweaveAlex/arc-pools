@@ -23,7 +23,8 @@ export const CLI_ARGS = {
         dlist: "dlist",
         dstop: "dstop",
         init: "init",
-        fund: "fund"
+        fund: "fund",
+        balance: "balance"
     },
     options: {
         source: "source",

@@ -32,6 +32,7 @@ Commands                                Description
 create <pool id>                        Create a pool using pools.json
 dlist                                   list all daemon mining processes
 dstop <daemon name>                     Stop a daemon mining process by name
+fund <pool id>                          Fun the bundlr wallet for a pool
 help                                    Display help text
 init <pool id>                          Initialize pools.json
 mine <pool id>                          Mine artifacts for a given pool
@@ -119,9 +120,17 @@ __To add another pool, follow the same steps as above in the same directory with
 
 ## Mining artifacts into a pool
 
-__The mining process will not run without funds in the pool wallet. In this case, go to [Alex](https://alex.arweave.dev) and contribute to your pool__
+__The mining process will not run without funds in the pool wallet. In this case, go to [Alex](https://alex.arweave.dev) and contribute to your pool, wait for these funds to show in the pool wallet before proceeding.__ The pool wallet can be found in the wallets directory in the directory where you run arcpool. Check the pool via the sonar link provided at creation to see if the state has updated with the contribution.
 
-Run the client mine command from within the directory containing pools.json. It can be run with different options:
+__After contribution funds have come through, we need to fund bundlr from the pool wallet as the final step, run the arcpool fund command, then wait 20-30 minutes for the funds to come through. Check with arcpool balance, once it shows bundlr funds proceed with mining__
+
+###### Fund bundlr from the pool wallet
+```arcpool fund russia-ukrain-test```
+
+###### Check the bundlr funds on the wallet
+```arcpool balance russia-ukrain-test```
+
+__Run the client mine command from within the directory containing pools.json. It can be run with different options:__
 
 ###### Mine tweets into the test pool from above, regular mine command streams tweets for 20 seconds.
 ```arcpool mine russia-ukraine-test --source twitter```

@@ -145,6 +145,8 @@ async function mineTweetsByMention(mentionTag: string) {
             if (r.data.data) allTweets = allTweets.concat(r.data.data);
         } while (r.meta.next_token);
 
+        console.log(allTweets);
+
         // get the parent tweets from the mentions above
         // and remove duplicate ids
         let ids = allTweets.map((t: any) => {
