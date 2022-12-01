@@ -134,7 +134,7 @@ __After contribution funds have come through, we need to fund bundlr from the po
 
 __Run the client mine command from within the directory containing pools.json. It can be run with different options:__
 
-###### Mine tweets into the test pool from above, regular mine command streams tweets for 20 seconds.
+###### Mine tweets into the test pool from above, runs 100 tweets at a time
 ```arcpool mine russia-ukraine-test --source twitter```
 
 ###### Mine all tweets where users commented/quoted on twitter with "@thealexarchive #ukraine", this --mention-tag value can be whatever you want.

@@ -76,6 +76,9 @@ export async function run(config: PoolConfigType, argv: minimist.ParsedArgs) {
     const method = argv["method"];
     const mentionTag = argv["mention-tag"];
     const username = argv["username"];
+    const v1 = argv["v1"];
+
+    console.log(argv)
 
     switch (method) {
         case undefined: case CLI_ARGS.sources.twitter.methods.stream:
@@ -102,30 +105,7 @@ export async function run(config: PoolConfigType, argv: minimist.ParsedArgs) {
 }
 
 
-// v1 streaming
-// async function mineTweetsByStream() {
-//     console.log(`Mining Tweets by stream ...`);
-//     twitter.on('tweet', listTweet);
 
-//     twitter.on('error', (e: any) => {
-//         console.error(`tStream error: ${e}`)
-//     })
-//     const trackKeyWords = poolConfig.keywords
-//     const trackUsers = poolConfig.twitter.userIds
-//     console.log(`Tracking key words: ${trackKeyWords}`);
-//     console.log(`Tracking users: ${trackUsers}`)
-//     twitter.track(trackKeyWords)
-//     twitter.follow(trackUsers)
-//     setTimeout(() => { lockProcess = true; processTweets(); }, 20000);
-// }
-
-
-/*
- * Start a twitter stream, aggregate them into a list
- * then mine them onto Arweave synchronously so if it 
- * fails in the middle we don't end up with partial
- * atomic assets
- */
 
 // Delete the stream rules before and after this run.
 // Before to clear out any previous leftovers from failed runs
@@ -136,17 +116,15 @@ async function deleteStreamRules() {
         await twitterV2Bearer.v2.updateStreamRules({
             delete: { ids: rules.data.map(rule => rule.id) },
         });
-
-        console.log("Deleted rules: ");
-        console.log(rules);
     }
 }
 
+
+// Start a twitter stream, process to arweave one by one
 async function mineTweetsByStream() {
     await deleteStreamRules();
 
     const stream = twitterV2Bearer.v2.searchStream({autoConnect: false});
-    let lockProc = false;
 
     let rules = poolConfig.keywords.map((keyword: string) => {
         return {
@@ -159,36 +137,18 @@ async function mineTweetsByStream() {
         add: rules,
     });
 
-    twitterV2Bearer.v2.getStream
+    await stream.connect({ autoReconnect: false });
 
-    const eventTweetIds = [] as string[];
-    const itTweetIds = [] as string[];
+    let tweetIds = [];
+    let i = 0;
 
-    await stream.connect({ autoReconnect: true });
-
-    await Promise.race([
-      // stream for 14 seconds
-      new Promise(resolve => setTimeout(resolve, 14 * 1000)),
-      (async function () {
-        stream.on(ETwitterStreamEvent.Data, (tweet) => {
-            if(!lockProc) {
-                console.log("pushing new tweet: " + tweet.data.text); 
-                eventTweetIds.push(tweet.data.id);
-            }
-        });
-
-        for await (const tweet of stream) {
-          itTweetIds.push(tweet.data.id);
-        }
-      })(),
-    ]);
-
-    lockProc = true;
-
-    await deleteStreamRules();
-
-    await processIds(itTweetIds);
-
+    for await (const tweet of stream) {
+        if(i > 100) break;
+        tweetIds.push(tweet.data.id);
+        i++;
+    }
+    console.log(tweetIds);
+    await processIds(tweetIds);
     process.exit(1);
 }
 
@@ -286,6 +246,8 @@ async function mineTweetsByUser(username: string) {
     }
 }
 
+// fetch 10 at a time for rate limit and speed
+// converts v2 tweets to v1
 async function processIds(ids: string[]) {
     // aggregate 10 parent tweets at once
     let allTweets: any[] = [];
@@ -370,15 +332,6 @@ async function listTweet(tweet: any) {
         twitter.on('tweet', () => { });
     }
     return;
-}
-
-async function processTweets() {
-    console.log(tweets.length);
-    for (let i = 0; i < tweets.length; i++) {
-        await processTweet(tweets[i]);
-    }
-    console.log("Finished processing all tweets...");
-    process.exit(1);
 }
 
 async function processTweet(tweet: any) {
