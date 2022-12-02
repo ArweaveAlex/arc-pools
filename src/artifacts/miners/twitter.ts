@@ -122,34 +122,42 @@ async function deleteStreamRules() {
 
 // Start a twitter stream, process to arweave one by one
 async function mineTweetsByStream() {
-    await deleteStreamRules();
+    try {
+        await deleteStreamRules();
 
-    const stream = twitterV2Bearer.v2.searchStream({autoConnect: false});
+        const stream = twitterV2Bearer.v2.searchStream({autoConnect: false});
 
-    let rules = poolConfig.keywords.map((keyword: string) => {
-        return {
-            value: keyword, 
-            tag: keyword.toLowerCase().replace(/\s/g, '')
+        let rules = poolConfig.keywords.map((keyword: string) => {
+            return {
+                value: keyword, 
+                tag: keyword.toLowerCase().replace(/\s/g, '')
+            }
+        });
+
+        await twitterV2Bearer.v2.updateStreamRules({
+            add: rules,
+        });
+
+        await stream.connect({ autoReconnect: false });
+
+        let tweetIds = [];
+        let i = 0;
+
+        for await (const tweet of stream) {
+            if(i > 100) break;
+            tweetIds.push(tweet.data.id);
+            i++;
         }
-    });
-
-    await twitterV2Bearer.v2.updateStreamRules({
-        add: rules,
-    });
-
-    await stream.connect({ autoReconnect: false });
-
-    let tweetIds = [];
-    let i = 0;
-
-    for await (const tweet of stream) {
-        if(i > 100) break;
-        tweetIds.push(tweet.data.id);
-        i++;
+        stream.close();
+        console.log(tweetIds);
+        await processIds(tweetIds);
+        process.exit(1);
+    } catch (e: any) {
+        console.log("Twitter mining failed error: ");
+        console.log(e);
+        process.exit(1);
     }
-    console.log(tweetIds);
-    await processIds(tweetIds);
-    process.exit(1);
+    
 }
 
 /*
@@ -394,8 +402,7 @@ async function processTweet(tweet: any) {
 
         const subTags = [
             { name: "Application", value: "TwittAR" },
-            { name: "Tweet-ID", value: `${tweet.id_str ?? "unknown"}` },
-            { name: "Content-Type", value: "application/json" }
+            { name: "Tweet-ID", value: `${tweet.id_str ?? "unknown"}` }
         ]
 
         const additionalPaths: { [key: string]: any } = { "": "" };

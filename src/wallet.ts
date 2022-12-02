@@ -57,8 +57,9 @@ export async function createWallet(poolArg: string) {
     }
 
     const mnemonic = await bip39.generateMnemonic();
-    let mnemonicFile = path.join("", "wallets/" + poolArg + "-mnemonic.txt");
-    fs.writeFileSync(mnemonicFile, JSON.stringify(mnemonic));
+    console.log("\x1b[31m", "\n*** Write the following seed phrase down ***\n");
+    console.log("\x1b[32m", mnemonic);
+    console.log("\x1b[31m", "\n*** THERE IS NO WAY TO RECOVER YOUR SEED PHRASE SO WRITE IT DOWN AND KEEP IT OUT OF OTHERS HANDS ***\n");
     const keyfile: any = await jwkFromMnemonic(mnemonic);
     const address = await arClient.arweave.wallets.jwkToAddress(keyfile);
     let walletFile = "wallets/" + poolArg + "-" + address + ".json";
