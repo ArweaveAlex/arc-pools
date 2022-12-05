@@ -128,7 +128,7 @@ __After contribution funds have come through, we need to fund bundlr from the po
 
 __Run the client mine command from within the directory containing pools.json. It can be run with different options:__
 
-###### Mine tweets into the test pool from above, runs 100 tweets at a time
+###### Mine tweets into the test pool from above
 ```arcpool mine russia-ukraine-test --source twitter```
 
 ###### Mine all tweets where users commented/quoted on twitter with "@thealexarchive #ukraine", this --mention-tag value can be whatever you want.
@@ -144,9 +144,9 @@ __Run the client mine command from within the directory containing pools.json. I
 
 ## Daemon mode mining
 
-__The mining commands run a finite process which will end after 20 seconds for tweets and each 1 article for wikipedia.__ If we wish to run these forever use daemon mode by passing the `--d` flag to any of the above mining commands. Daemon mode is built on top of pm2.
+__The mining commands run either a finite process or in the foreground.__ If we wish to run these forever use daemon mode by passing the `--d` flag to any of the above mining commands. Daemon mode is built on top of pm2.
 
-###### Mine tweets into the pool from above, still runs for 20 seconds but the daemon mode will continue restarting the program infinetly. Note the `--d` flag.
+###### Mine tweets into the pool from above, daemon mode will continue restarting the program infinetly if it shuts down. Note the `--d` flag.
 
 ```arcpool mine russia-ukraine-test --source twitter --d```
 

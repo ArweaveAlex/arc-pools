@@ -93,7 +93,7 @@ export const createAsset = async (
   // Deploying asset to bundlr
   try {
     const cost = await bundlr.getPrice(assetTx.size);
-    console.log("Upload costs", bundlr.utils.unitConverter(cost).toString());
+    // console.log("Upload costs", bundlr.utils.unitConverter(cost).toString());
     try{
         await bundlr.fund(cost.multipliedBy(1.1).integerValue());
     } catch (e: any){
@@ -101,7 +101,7 @@ export const createAsset = async (
         throw new Error(e);
     }
     const assetBundlrResponse = await assetTx.upload();
-    console.log("Bundlr asset ID: " + assetBundlrResponse.id);
+    // console.log("Bundlr asset ID: " + assetBundlrResponse.id);
     assetId = assetBundlrResponse.id
   } catch (err) {
     throw new Error("Error while uploading to bundlr: " + err);
@@ -134,7 +134,7 @@ async function deployToWarp(
     const signer = new ArweaveSigner(jwk);
     const dataItem = createData(dataAndTags.data, signer, { tags: dataAndTags.tags });
     await dataItem.sign(signer);
-    console.log("Warp ID: " + dataItem.id);
+    // console.log("Warp ID: " + dataItem.id);
 
     await warp.createContract.deployBundled(dataItem.getRaw());
     return dataItem.id;
@@ -201,6 +201,8 @@ async function createDataAndTags(
           transferable: false,
           dateCreated: dNow.toString(),
           owner: tokenHolder
+        }).replace(/[\u007F-\uFFFF]/g, function(chr) {
+          return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4)
         })
       }
     ]

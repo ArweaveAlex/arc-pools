@@ -62,6 +62,13 @@ const command: CommandInterface = {
 
         try {
             controlWallet = JSON.parse(fs.readFileSync(controlWalletPath).toString());
+            const controlWalletAddress = await arClient.arweave.wallets.jwkToAddress(controlWallet);
+            let controlWalletBalance  = await arClient.arweave.wallets.getBalance(controlWalletAddress);
+            if(controlWalletBalance == 0) {
+                exitProcess(`Control wallet is empty`, 1);
+            }
+
+
             nftSrc = fs.readFileSync(NFT_CONTRACT_PATH, "utf8");
             nftInitState = JSON.parse(fs.readFileSync(NFT_JSON_PATH, "utf8"));
             poolSrc = fs.readFileSync(POOL_CONTRACT_PATH, "utf8");
