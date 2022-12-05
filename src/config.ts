@@ -5,9 +5,11 @@ export const APP_TITLE = "arcpool";
 /**
  *  Find the base directory of the repo
  *  so the code runs in global install
- *  as well as local ts-node run 
+ *  as well as local ts-node run and
+ *  global install from local repo "npm install --global"
  */
-export const BASE_DIR = path.join(__dirname, "").split("arcpool")[0] + "arcpool";
+let dirIndex = path.join(__dirname, "").indexOf("arc-pools") > -1 ? "arc-pools" : "arcpool";
+export let BASE_DIR = path.join(__dirname, "").split(dirIndex)[0] + dirIndex;
 
 export const NFT_CONTRACT_PATH = path.join(BASE_DIR, "bin/contracts/NFT/contract.js");
 export const NFT_JSON_PATH = path.join(BASE_DIR, "bin/contracts/NFT/init.json");
