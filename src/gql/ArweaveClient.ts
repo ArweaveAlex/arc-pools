@@ -78,7 +78,7 @@ export default class ArweaveClient {
 
     async getAllPools() {
         console.log(`Fetching Pools ...`);
-        const collections: any = [];
+        const pools: any = [];
         const POOL_IDS = await this.getPoolIds();
         for (let i = 0; i < POOL_IDS.length; i++) {
             try {
@@ -86,13 +86,13 @@ export default class ArweaveClient {
                 contract.setEvaluationOptions({
                     allowBigInt: true
                 });
-                collections.push({ id: POOL_IDS[i], state: (await contract.readState()).cachedValue.state });
+                pools.push({ id: POOL_IDS[i], state: (await contract.readState()).cachedValue.state });
             }
             catch (error: any) {
                 console.error(error)
             }
         }
 
-        return collections;
+        return pools;
     }
 }
