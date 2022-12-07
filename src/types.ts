@@ -51,5 +51,6 @@ export type PoolConfigType = {
         userIds: string[]
     },
     keywords: string[],
-    twitterApiKeys: any
+    twitterApiKeys: any,
+    clarifaiApiKey: string
 }

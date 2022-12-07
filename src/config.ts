@@ -35,6 +35,7 @@ export const CLI_ARGS = {
         dname: "dname",
         poolConfig: "pool-conf",
         controlWallet: "control-wallet",
+        contentModeration: "content-moderation",
         image: "image"
     },
     sources: {
@@ -63,3 +64,8 @@ export const TAGS = {
 }
 
 export const FALLBACK_IMAGE = "8HqSqy_nNRSTPv-q-j7_iHGTp6lEA5K77TP4BPuXGyA";
+
+export const MODERATION_THRESHOLDS = {
+    explicit: 0.10,
+    suggestive: 0.80
+}

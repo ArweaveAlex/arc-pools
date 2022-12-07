@@ -1,6 +1,6 @@
 {
     "name": "arcpool",
-    "version": "1.1.4",
+    "version": "1.1.5",
     "main": "./bin/index.js",
     "repository": "https://github.com/ArweaveAlex/arc-pools.git",
     "author": "NickJ202",
@@ -17,6 +17,7 @@
         "arweave": "^1.11.4",
         "axios": "^0.26.1",
         "bip39-web-crypto": "^4.0.1",
+        "clarifai-nodejs-grpc": "^8.0.0",
         "cli-color": "^2.0.3",
         "clui": "^0.3.6",
         "esbuild": "^0.15.15",
