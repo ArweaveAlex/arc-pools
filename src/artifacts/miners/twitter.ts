@@ -88,28 +88,28 @@ export async function run(config: PoolConfigType, argv: minimist.ParsedArgs) {
 
     contentModeration = cMod;
 
-    // switch (method) {
-    //     case undefined: case CLI_ARGS.sources.twitter.methods.stream:
-    //         if (!method) {
-    //             console.log(`Defaulting to stream method ...`);
-    //         }
-    //         mineTweetsByStream();
-    //         return;
-    //     case CLI_ARGS.sources.twitter.methods.mention:
-    //         if (!mentionTag) {
-    //             exitProcess(`Mention tag not provided`, 1);
-    //         }
-    //         mineTweetsByMention(mentionTag);
-    //         return;
-    //     case CLI_ARGS.sources.twitter.methods.user:
-    //         if (!username) {
-    //             exitProcess(`Username not provided`, 1);
-    //         }
-    //         mineTweetsByUser(username);
-    //         return;
-    //     default:
-    //         exitProcess(`Invalid method provided`, 1);
-    // }
+    switch (method) {
+        case undefined: case CLI_ARGS.sources.twitter.methods.stream:
+            if (!method) {
+                console.log(`Defaulting to stream method ...`);
+            }
+            mineTweetsByStream();
+            return;
+        case CLI_ARGS.sources.twitter.methods.mention:
+            if (!mentionTag) {
+                exitProcess(`Mention tag not provided`, 1);
+            }
+            mineTweetsByMention(mentionTag);
+            return;
+        case CLI_ARGS.sources.twitter.methods.user:
+            if (!username) {
+                exitProcess(`Username not provided`, 1);
+            }
+            mineTweetsByUser(username);
+            return;
+        default:
+            exitProcess(`Invalid method provided`, 1);
+    }
 }
 
 
@@ -487,9 +487,9 @@ async function processTweetV2(tweet: any) {
                             }
                         }
                         await processMediaURL(variants[0].url, mediaDir, i)
-                    } else {
+                    } else if (mobj.type === "photo" || mobj.type === "image"){
                         if(contentModeration) {
-                            let s = await shouldUploadContent(url, mobj.type, poolConfig);
+                            let s = await shouldUploadContent(url, "image", poolConfig);
                             if(!s){
                                 continue;
                             }

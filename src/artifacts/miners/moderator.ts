@@ -36,7 +36,7 @@ export async function shouldUploadContent(
             }
         } else if (type === "video") {
             for (const frame of res.outputs[0].data.frames) {
-                console.log(`\nframe:\n`)
+                // console.log(`\nframe:\n`)
                 for (const c of  frame.data.concepts) {
                     // console.log(c.name + " : " + c.value);
                     if (c.name === "explicit") {

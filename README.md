@@ -20,6 +20,7 @@ An arweave wallet is needed for creating a pool.
 Usage: arcpool [commands] [options]
 
 Options                                 Description
+--content-moderation                    Use content moderation on twitter mining
 --control-wallet <wallet file>          Specifies a wallet to use in the pool creation
 --dname <string>                        Specifies the daemon name to stop
 --image <path to image file>            Specifies an image to use for pool
