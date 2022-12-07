@@ -58,7 +58,10 @@ export const TAGS = {
         poolName: "Pool-Name"
     },
     values: {
-        poolv1: "Alex-Archiving-Pool-v1.2"    
+        poolVersions: {
+            "1.2": "Alex-Archiving-Pool-v1.2",
+            "1.4": "Alex-Archiving-Pool-v1.4"
+        }
     }
 }
 

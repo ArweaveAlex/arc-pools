@@ -30,7 +30,10 @@ export default class ArweaveClient {
                 tags: {
                     value: {
                         name: TAGS.keys.appType,
-                        values: [TAGS.values.poolv1]
+                        values: [
+                            TAGS.values.poolVersions["1.2"],
+                            TAGS.values.poolVersions["1.4"],
+                        ]
                     },
                     type: "[TagFilter!]"
                 },
