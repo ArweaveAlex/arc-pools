@@ -2,7 +2,7 @@
 
 [Alex](https://alex.arweave.dev). is a decentralized archival platform that leverages the immutable and permanent data storage of Arweave and includes a mechanism that encourages end user participation.
 
-Users contribute to collections and they receive “artifacts” back into their wallet as they are minted. Artifacts are NFTs of items the collection is storing. Since the artifacts are stored on Arweave, they cannot be changed or removed in any way by anyone.
+Users contribute to pools and they receive “artifacts” back into their wallet as they are minted. Artifacts are NFTs of items the pool is storing. Since the artifacts are stored on Arweave, they cannot be changed or removed in any way by anyone.
 
 This repository is the client tool for creating the pools and mining artifacts.
 
@@ -10,7 +10,7 @@ This repository is the client tool for creating the pools and mining artifacts.
 ## Requirements
 `arcpool` requires NodeJS and NPM installed. 
 
-An arweave wallet is needed for creating a collection. 
+An arweave wallet is needed for creating a pool. 
 [Arweave Wallet](https://docs.arweave.org/info/wallets/arweave-wallet)
 [ArConnect](https://arconnect.io)
 ## Installing Alex. CLI
@@ -109,8 +109,8 @@ __Example:__
 
 ```arcpool create russia-ukraine-test --control-wallet wallet.json --image background.jpg```
 
-If the transaction is successful, you will see a new wallet and seed phrase file in a `wallets` directory. __KEEP THESE FILES SAFE. THEY ARE FOR YOUR COLLECTIONS CONTRIBUTION AND MINING PROCESS.__
-Visit https://alex.arweave.dev/#/collections to view your new pool.
+If the transaction is successful, you will see a new wallet and seed phrase file in a `wallets` directory. __KEEP THESE FILES SAFE. THEY ARE FOR YOUR POOLS CONTRIBUTION AND MINING PROCESS.__
+Visit https://alex.arweave.dev/#/pools to view your new pool.
 
 __To add another pool, follow the same steps as above in the same directory with the pools.json__
 
