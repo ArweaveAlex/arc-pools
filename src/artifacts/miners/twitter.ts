@@ -150,7 +150,9 @@ async function mineTweetsByStream() {
         for await (const tweet of stream) {
             let finalTweet: any = {}
             finalTweet = tweet.data;
-            finalTweet.full_text = tweet.data.text;
+            if(!finalTweet.full_text) {
+                finalTweet.full_text = tweet.data.text;
+            }
             finalTweet.includes = tweet.includes;
             for(let i=0; i<tweet.includes.users.length; i++) {
                 if(tweet.includes.users[i].id === tweet.data.author_id) {
@@ -483,7 +485,8 @@ async function processTweetV2(tweet: any) {
                         if(contentModeration) {
                             let s = await shouldUploadContent(variants[0].url, mobj.type, poolConfig);
                             if(!s){
-                                continue;
+                                console.log("ignoring explicit");
+                                return;
                             }
                         }
                         await processMediaURL(variants[0].url, mediaDir, i)
@@ -491,7 +494,8 @@ async function processTweetV2(tweet: any) {
                         if(contentModeration) {
                             let s = await shouldUploadContent(url, "image", poolConfig);
                             if(!s){
-                                continue;
+                                console.log("ignoring explicit");
+                                return;
                             }
                         }
                         await processMediaURL(url, mediaDir, i)
