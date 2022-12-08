@@ -15,7 +15,6 @@ import {
     Tweetv2SearchParams,
     TweetV2UserTimelineParams,
     TweetStream,
-    TweetSearchV2StreamParams,
     TTweetv2Expansion,
     TTweetv2MediaField,
     TTweetv2PlaceField,
@@ -113,7 +112,22 @@ export async function run(config: PoolConfigType, argv: minimist.ParsedArgs) {
 }
 
 
-
+function modTweet(tweet: any) {
+    let finalTweet: any = {}
+    finalTweet = tweet.data;
+    if(!finalTweet.full_text) {
+        finalTweet.full_text = tweet.data.text;
+    }
+    finalTweet.includes = tweet.includes;
+    for(let i=0; i<tweet.includes.users.length; i++) {
+        if(tweet.includes.users[i].id === tweet.data.author_id) {
+            let user = tweet.includes.users[i];
+            user.screen_name = user.username;
+            finalTweet.user = user;
+        }
+    }
+    return finalTweet;
+}
 
 // Delete the stream rules before and after this run.
 // Before to clear out any previous leftovers from failed runs
@@ -146,22 +160,11 @@ async function mineTweetsByStream() {
         await twitterV2Bearer.v2.updateStreamRules({
             add: rules,
         });
+
         await stream.connect({ autoReconnect: false });
+
         for await (const tweet of stream) {
-            let finalTweet: any = {}
-            finalTweet = tweet.data;
-            if(!finalTweet.full_text) {
-                finalTweet.full_text = tweet.data.text;
-            }
-            finalTweet.includes = tweet.includes;
-            for(let i=0; i<tweet.includes.users.length; i++) {
-                if(tweet.includes.users[i].id === tweet.data.author_id) {
-                    let user = tweet.includes.users[i];
-                    user.screen_name = user.username;
-                    finalTweet.user = user;
-                }
-            }
-            
+            let finalTweet = modTweet(tweet);
             await processTweetV2(finalTweet);
         }
 
@@ -202,7 +205,6 @@ async function mineTweetsByMention(mentionTag: string) {
             if (r.data.data) allTweets = allTweets.concat(r.data.data);
         } while (r.meta.next_token);
 
-        console.log(allTweets);
 
         // get the parent tweets from the mentions above
         // and remove duplicate ids
@@ -214,11 +216,9 @@ async function mineTweetsByMention(mentionTag: string) {
             return self.indexOf(item) == pos;
         });
 
-        console.log(ids);
-
         await processIds(ids);
     } catch (e: any) {
-        console.log(e.data);
+        console.log(e);
     }
 }
 
@@ -275,18 +275,19 @@ async function processIds(ids: string[]) {
     let allTweets: any[] = [];
     for (var j = 0; j < ids.length; j += 10) {
         // console.log("Fetching tweet ids: " + ids.slice(j, j + 10));
-        let rParents = await twitterV2.v1.tweets(ids.slice(j, j + 5));
-        if (rParents.length > 0) {
+        let rParents = await twitterV2.v2.tweets(ids.slice(j, j + 5), lookupParams);
+        console.log(rParents);
+        if (rParents.data.length > 0) {
             allTweets = allTweets.concat(rParents)
         };
     }
 
-    for (let j = 0; j < allTweets.length; j++) {
-        let dup = await isDuplicate(allTweets[j]);
+    for (const tweet of allTweets) {
+        let finalTweet = modTweet(tweet);
+        let dup = await isDuplicate(finalTweet);
         if (!dup) {
-            let t = allTweets[j];
-            if (!t.text) t.text = t.full_text;
-            await processTweet(t);
+            // console.log(finalTweet);
+            // await processTweetV2(finalTweet);
         } else {
             console.log("Tweet already mined skipping: " + generateTweetName(allTweets[j]))
         }
@@ -485,7 +486,7 @@ async function processTweetV2(tweet: any) {
                         if(contentModeration) {
                             let s = await shouldUploadContent(variants[0].url, mobj.type, poolConfig);
                             if(!s){
-                                console.log("ignoring explicit");
+                                // console.log("ignoring explicit");
                                 return;
                             }
                         }
@@ -494,7 +495,7 @@ async function processTweetV2(tweet: any) {
                         if(contentModeration) {
                             let s = await shouldUploadContent(url, "image", poolConfig);
                             if(!s){
-                                console.log("ignoring explicit");
+                                // console.log("ignoring explicit");
                                 return;
                             }
                         }
@@ -502,7 +503,7 @@ async function processTweetV2(tweet: any) {
                     }
                 }
             } catch (e: any) {
-                console.error(`while archiving media: ${e}`)
+                console.error(`Error while archiving media: ${e}`)
                 console.log(e);
             }
 
@@ -605,10 +606,10 @@ async function processTweetV2(tweet: any) {
 
 
 let expansions: TTweetv2Expansion[] = ['attachments.poll_ids','attachments.media_keys','author_id','referenced_tweets.id','in_reply_to_user_id','edit_history_tweet_ids','geo.place_id','entities.mentions.username','referenced_tweets.id.author_id']
-let mediaFields: TTweetv2MediaField[] = ['duration_ms','height','media_key','preview_image_url','type','url','width','public_metrics','non_public_metrics','organic_metrics','alt_text','variants']
+let mediaFields: TTweetv2MediaField[] = ['duration_ms','height','media_key','preview_image_url','type','url','width','alt_text','variants']
 let placeFields: TTweetv2PlaceField[] = ['contained_within','country','country_code','full_name','geo','id','name','place_type']
 let pollFields: TTweetv2PollField[] = ['duration_minutes','end_datetime','id','options','voting_status']
-let tweetFields: TTweetv2TweetField[] = ['attachments','author_id','context_annotations','conversation_id','created_at','entities','geo','id','in_reply_to_user_id','lang','public_metrics','non_public_metrics','promoted_metrics','organic_metrics','edit_controls','possibly_sensitive','referenced_tweets','reply_settings','source','text','withheld']
+let tweetFields: TTweetv2TweetField[] = ['attachments','author_id','context_annotations','conversation_id','created_at','entities','geo','id','in_reply_to_user_id','lang','edit_controls','possibly_sensitive','referenced_tweets','reply_settings','source','text','withheld']
 let userFields: TTweetv2UserField[] = ['created_at','description','entities','id','location','name','pinned_tweet_id','profile_image_url','protected','public_metrics','url','username','verified','withheld']
 
 let streamParams = {
@@ -619,4 +620,13 @@ let streamParams = {
     'tweet.fields': tweetFields,
     'user.fields': userFields,
     backfill_minutes: 0
+}
+
+let lookupParams = {
+    'expansions': expansions,
+    'media.fields': mediaFields,
+    'place.fields': placeFields,
+    'poll.fields': pollFields,
+    'tweet.fields': tweetFields,
+    'user.fields': userFields
 }

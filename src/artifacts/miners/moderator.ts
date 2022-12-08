@@ -15,7 +15,7 @@ export async function shouldUploadContent(
 ) {
     poolConfig = config;
     try {
-        console.log(`\n Moderating ${type}...`);
+        // console.log(`\n Moderating ${type}...`);
         await new Promise(resolve => setTimeout(resolve, 1000));
         let res: any = await asyncWrapper(
             url, 
