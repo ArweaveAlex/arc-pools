@@ -40,6 +40,7 @@
         "@types/cli-color": "^2.0.2",
         "@types/figlet": "^1.5.5",
         "@types/human-crypto-keys": "^0.1.0",
+        "@types/mime": "^3.0.1",
         "@types/mime-types": "^2.1.1",
         "@types/minimist": "^1.2.2",
         "@types/node": "^18.11.9"

@@ -5,7 +5,7 @@ import Bundlr from "@bundlr-network/client";
 import { Contract } from "warp-contracts";
 
 import { createAsset } from "../assets";
-import { ArweaveClient } from "../../gql";
+import { ArweaveClient } from "../../arweave-client";
 import { exitProcess } from "../../utils";
 import { PoolConfigType } from "../../types";
 
@@ -29,7 +29,7 @@ export async function run(config: PoolConfigType) {
   }
   bundlr = new Bundlr(poolConfig.bundlrNode, "arweave", keys);
 
-  contract = arClient.smartweave.contract(poolConfig.contracts.pool.id);
+  contract = arClient.warp.contract(poolConfig.contracts.pool.id);
 
   let articles = [];
   for (let i = 0; i < config.keywords.length; i++) {

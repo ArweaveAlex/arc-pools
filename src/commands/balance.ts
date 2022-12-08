@@ -8,7 +8,7 @@ import {
     CLI_ARGS,
     POOL_FILE
 } from "../config";
-import { ArweaveClient } from "../gql";
+import { ArweaveClient } from "../arweave-client";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.balance,
@@ -20,7 +20,7 @@ const command: CommandInterface = {
         let bundlr = new Bundlr(poolConfig.bundlrNode, "arweave", keys);
 
         const arClient = new ArweaveClient();
-        let balance  = await arClient.arweave.wallets.getBalance(poolConfig.state.owner.pubkey);
+        let balance  = await arClient.arweavePost.wallets.getBalance(poolConfig.state.owner.pubkey);
         let bundlrBalance = await bundlr.getBalance(poolConfig.state.owner.pubkey);
         
 
