@@ -56,7 +56,8 @@ export const CLI_ARGS = {
 export const TAGS = {
     keys: {
         appType:"App-Type",
-        poolName: "Pool-Name"
+        poolName: "Pool-Name",
+        uploaderTxId: "Uploader-Tx-Id",
     },
     values: {
         poolVersions: {
@@ -64,6 +65,17 @@ export const TAGS = {
             "1.4": "Alex-Archiving-Pool-v1.4"
         }
     }
+}
+
+export const STORAGE = {
+    none: "N/A"
+}
+
+export const PAGINATOR = 100;
+
+export const CURSORS = {
+    p1: "P1",
+    end: "END"
 }
 
 export const FALLBACK_IMAGE = "8HqSqy_nNRSTPv-q-j7_iHGTp6lEA5K77TP4BPuXGyA";

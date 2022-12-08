@@ -27,7 +27,7 @@ const Twitter = require("node-tweet-stream");
 
 import { createAsset, generateTweetName } from "../assets";
 import { checkPath, walk, processMediaURL } from ".";
-import { ArweaveClient } from "../../gql";
+import { ArweaveClient } from "../../arweave-client";
 import { exitProcess } from "../../utils";
 import { PoolConfigType } from "../../types";
 import { CLI_ARGS } from "../../config";
@@ -68,7 +68,7 @@ export async function run(config: PoolConfigType, argv: minimist.ParsedArgs) {
 
     bundlr = new Bundlr(poolConfig.bundlrNode, "arweave", keys);
 
-    contract = arClient.smartweave.contract(poolConfig.contracts.pool.id);
+    contract = arClient.warp.contract(poolConfig.contracts.pool.id);
 
     LoggerFactory.INST.logLevel("error", "DefaultStateEvaluator");
     LoggerFactory.INST.logLevel("error", "HandlerBasedContract");
@@ -134,11 +134,11 @@ async function mineTweetsByStream() {
     let stream: TweetStream;
     try {
         await deleteStreamRules();
-        stream = twitterV2Bearer.v2.searchStream({...streamParams, autoConnect: false});
+        stream = twitterV2Bearer.v2.searchStream({ ...streamParams, autoConnect: false });
 
         let rules = poolConfig.keywords.map((keyword: string) => {
             return {
-                value: keyword, 
+                value: keyword,
                 tag: keyword.toLowerCase().replace(/\s/g, '')
             }
         });
@@ -152,24 +152,24 @@ async function mineTweetsByStream() {
             finalTweet = tweet.data;
             finalTweet.full_text = tweet.data.text;
             finalTweet.includes = tweet.includes;
-            for(let i=0; i<tweet.includes.users.length; i++) {
-                if(tweet.includes.users[i].id === tweet.data.author_id) {
+            for (let i = 0; i < tweet.includes.users.length; i++) {
+                if (tweet.includes.users[i].id === tweet.data.author_id) {
                     let user = tweet.includes.users[i];
                     user.screen_name = user.username;
                     finalTweet.user = user;
                 }
             }
-            
+
             await processTweetV2(finalTweet);
         }
 
-    } catch (e: any) {
+    }
+    catch (e: any) {
         stream.close()
         console.log("Twitter mining failed error: ");
         console.log(e);
         process.exit(1);
     }
-    
 }
 
 /*
@@ -246,21 +246,21 @@ async function mineTweetsByUser(username: string) {
             let params: TweetV2UserTimelineParams = {
                 max_results: 100
             };
-            if(r) params.pagination_token = r.meta.next_token;
-    
+            if (r) params.pagination_token = r.meta.next_token;
+
             r = await twitterV2.v2.userTimeline(
                 uid,
                 params
-            ); 
-            if(r.data.data) allTweets = allTweets.concat(r.data.data);
-        } while(r.meta.next_token);
-    
+            );
+            if (r.data.data) allTweets = allTweets.concat(r.data.data);
+        } while (r.meta.next_token);
+
         console.log(`${allTweets.length} tweets fetched`);
-    
-        let ids = allTweets.map((t: any) => { 
+
+        let ids = allTweets.map((t: any) => {
             return t.id
         });
-    
+
         console.log(ids);
         await processIds(ids);
     }
@@ -328,7 +328,7 @@ async function isDuplicate(tweet: any) {
         ]
     });
 
-    const response = await arClient.arweave.api.post("/graphql", query());
+    const response = await arClient.arweavePost.api.post("/graphql", query());
 
     if (response.data && response.data.data) {
         if (response.data.data.transactions) {
@@ -465,7 +465,6 @@ async function processTweet(tweet: any) {
     }
 }
 
-
 async function processTweetV2(tweet: any) {
     const tmpdir = await tmp.dir({ unsafeCleanup: true });
     try {
@@ -480,17 +479,17 @@ async function processTweetV2(tweet: any) {
                     const url = mobj.url;
                     if ((mobj.type === "video" || mobj.type === "animated_gif") && mobj?.variants) {
                         const variants = mobj?.variants.sort((a: any, b: any) => ((a.bitrate ?? 1000) > (b.bitrate ?? 1000) ? -1 : 1))
-                        if(contentModeration) {
+                        if (contentModeration) {
                             let s = await shouldUploadContent(variants[0].url, mobj.type, poolConfig);
-                            if(!s){
+                            if (!s) {
                                 continue;
                             }
                         }
                         await processMediaURL(variants[0].url, mediaDir, i)
-                    } else if (mobj.type === "photo" || mobj.type === "image"){
-                        if(contentModeration) {
+                    } else if (mobj.type === "photo" || mobj.type === "image") {
+                        if (contentModeration) {
                             let s = await shouldUploadContent(url, "image", poolConfig);
-                            if(!s){
+                            if (!s) {
                                 continue;
                             }
                         }
@@ -591,7 +590,8 @@ async function processTweetV2(tweet: any) {
             console.log(`Error creating asset stopping processing...\n ${e}`);
             process.exit(1);
         }
-    } catch (e: any) {
+    } 
+    catch (e: any) {
         console.log(`general error: ${e.stack ?? e.message}`)
         if (tmpdir) {
             await tmpdir.cleanup()
@@ -599,13 +599,12 @@ async function processTweetV2(tweet: any) {
     }
 }
 
-
-let expansions: TTweetv2Expansion[] = ['attachments.poll_ids','attachments.media_keys','author_id','referenced_tweets.id','in_reply_to_user_id','edit_history_tweet_ids','geo.place_id','entities.mentions.username','referenced_tweets.id.author_id']
-let mediaFields: TTweetv2MediaField[] = ['duration_ms','height','media_key','preview_image_url','type','url','width','public_metrics','non_public_metrics','organic_metrics','alt_text','variants']
-let placeFields: TTweetv2PlaceField[] = ['contained_within','country','country_code','full_name','geo','id','name','place_type']
-let pollFields: TTweetv2PollField[] = ['duration_minutes','end_datetime','id','options','voting_status']
-let tweetFields: TTweetv2TweetField[] = ['attachments','author_id','context_annotations','conversation_id','created_at','entities','geo','id','in_reply_to_user_id','lang','public_metrics','non_public_metrics','promoted_metrics','organic_metrics','edit_controls','possibly_sensitive','referenced_tweets','reply_settings','source','text','withheld']
-let userFields: TTweetv2UserField[] = ['created_at','description','entities','id','location','name','pinned_tweet_id','profile_image_url','protected','public_metrics','url','username','verified','withheld']
+let expansions: TTweetv2Expansion[] = ['attachments.poll_ids', 'attachments.media_keys', 'author_id', 'referenced_tweets.id', 'in_reply_to_user_id', 'edit_history_tweet_ids', 'geo.place_id', 'entities.mentions.username', 'referenced_tweets.id.author_id']
+let mediaFields: TTweetv2MediaField[] = ['duration_ms', 'height', 'media_key', 'preview_image_url', 'type', 'url', 'width', 'public_metrics', 'non_public_metrics', 'organic_metrics', 'alt_text', 'variants']
+let placeFields: TTweetv2PlaceField[] = ['contained_within', 'country', 'country_code', 'full_name', 'geo', 'id', 'name', 'place_type']
+let pollFields: TTweetv2PollField[] = ['duration_minutes', 'end_datetime', 'id', 'options', 'voting_status']
+let tweetFields: TTweetv2TweetField[] = ['attachments', 'author_id', 'context_annotations', 'conversation_id', 'created_at', 'entities', 'geo', 'id', 'in_reply_to_user_id', 'lang', 'public_metrics', 'non_public_metrics', 'promoted_metrics', 'organic_metrics', 'edit_controls', 'possibly_sensitive', 'referenced_tweets', 'reply_settings', 'source', 'text', 'withheld']
+let userFields: TTweetv2UserField[] = ['created_at', 'description', 'entities', 'id', 'location', 'name', 'pinned_tweet_id', 'profile_image_url', 'protected', 'public_metrics', 'url', 'username', 'verified', 'withheld']
 
 let streamParams = {
     'expansions': expansions,

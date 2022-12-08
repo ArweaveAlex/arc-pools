@@ -21,13 +21,11 @@ export function validatePoolConfig(args: ArgumentsInterface): PoolConfigType {
         exitProcess(`Pool Not Found`, 1);
     }
 
-    // TODO - validate JSON
-
     return POOLS_JSON[poolArg];
 }
 
 export function validateControlWalletPath(path: string): string {
-    if (!path) {
+    if (!path || typeof path === "boolean") {
         exitProcess(`Control wallet path not provided`, 1);
     }
 

@@ -19,5 +19,5 @@
     "outDir": "bin",
     "resolveJsonModule": true
   },
-  "include": ["src", "src/**/*.json"],
+  "include": ["src", "src/**/*.json", "src/arweave-client/index.ts"],
 }

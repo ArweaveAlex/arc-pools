@@ -1,9 +1,8 @@
-import { ArweaveClient } from './gql';
+import { ArweaveClient } from './arweave-client';
 
 import { getKeyPairFromMnemonic } from "human-crypto-keys";
 import { webcrypto } from 'crypto'
 import fs from 'fs';
-import path from 'path';
 
 const bip39 = require('bip39-web-crypto');
 
@@ -61,11 +60,12 @@ export async function createWallet(poolArg: string) {
     console.log("\x1b[32m", mnemonic);
     console.log("\x1b[31m", "\n*** THERE IS NO WAY TO RECOVER YOUR SEED PHRASE SO WRITE IT DOWN AND KEEP IT OUT OF OTHERS HANDS ***\n");
     const keyfile: any = await jwkFromMnemonic(mnemonic);
-    const address = await arClient.arweave.wallets.jwkToAddress(keyfile);
+    const address = await arClient.arweavePost.wallets.jwkToAddress(keyfile);
     let walletFile = "wallets/" + poolArg + "-" + address + ".json";
     fs.writeFileSync(walletFile, JSON.stringify(keyfile));
     console.log("New pool wallet file created: " + walletFile);
     console.log("Wallet Address: " + address);
+    console.log("\n");
     const encryptedKeyfile = btoa(JSON.stringify(keyfile));
     let r: WalletReturn = {
         file: walletFile,
