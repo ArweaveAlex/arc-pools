@@ -75,7 +75,8 @@ let poolJson =
             "token": "",
             "token_secret": "",
             "bearer_token": ""
-        }
+        },
+        "clarifaiApiKey": ""
     };
 
 

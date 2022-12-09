@@ -90,7 +90,8 @@ A pools.json file will be generated looking similar to the one below
             "token": "",
             "token_secret": "",
             "bearer_token": ""
-        }
+        },
+        "clarifaiApiKey": ""
     }
 }
 ```
@@ -101,6 +102,7 @@ __Modify the pools.json file to generate your pool.__ Modify the following confi
 3. `state.briefDescription` is a brief description of your pool. It can contain Text.
 4. `keywords` is a list of the main keywords to track in the mining process. This is the core driving data that instructs the mining programs of what to pull from Twitter and Wikipedia.
 5. `twitterApiKeys` is for mining from Twitter. Get twitter API credentials with elevated access and enter them into `twitterApiKeys`.
+6. `clarifaiApiKey` if you plan to use content moderation on tweets in the mining process, you can get an api key from clarifai and put it here.
 
 __Lastly run the client from within the directory containing pools.json.__
 
