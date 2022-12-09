@@ -1,5 +1,3 @@
-import { ContractDefinitionLoader } from "warp-contracts";
-
 const {ClarifaiStub, grpc} = require("clarifai-nodejs-grpc");
 
 import { MODERATION_THRESHOLDS } from "../../config";
