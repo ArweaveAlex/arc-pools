@@ -111,24 +111,6 @@ export async function run(config: PoolConfigType, argv: minimist.ParsedArgs) {
     }
 }
 
-
-function modTweet(tweet: any) {
-    let finalTweet: any = {}
-    finalTweet = tweet.data;
-    if(!finalTweet.full_text) {
-        finalTweet.full_text = tweet.data.text;
-    }
-    finalTweet.includes = tweet.includes;
-    for(let i=0; i<tweet.includes.users.length; i++) {
-        if(tweet.includes.users[i].id === tweet.data.author_id) {
-            let user = tweet.includes.users[i];
-            user.screen_name = user.username;
-            finalTweet.user = user;
-        }
-    }
-    return finalTweet;
-}
-
 // Delete the stream rules before and after this run.
 // Before to clear out any previous leftovers from failed runs
 async function deleteStreamRules() {
@@ -276,7 +258,6 @@ async function processIds(ids: string[]) {
     for (var j = 0; j < ids.length; j += 10) {
         // console.log("Fetching tweet ids: " + ids.slice(j, j + 10));
         let rParents = await twitterV2.v2.tweets(ids.slice(j, j + 5), lookupParams);
-        console.log(rParents);
         if (rParents.data.length > 0) {
             allTweets = allTweets.concat(rParents)
         };
@@ -286,12 +267,47 @@ async function processIds(ids: string[]) {
         let finalTweet = modTweet(tweet);
         let dup = await isDuplicate(finalTweet);
         if (!dup) {
-            // console.log(finalTweet);
-            // await processTweetV2(finalTweet);
+            await processTweetV2(finalTweet);
         } else {
             console.log("Tweet already mined skipping: " + generateTweetName(allTweets[j]))
         }
     }
+}
+
+// reshape v2 tweet for Alex, for backwards compatibility
+function modTweet(tweet: any) {
+    let finalTweet: any = {};
+
+    let isListData = tweet.data.length && tweet.data.length > 0;
+
+    finalTweet = tweet.data;
+
+    if(isListData) {
+        // for the lookup data is a list
+        finalTweet = tweet.data[0];
+    }
+
+    if(!finalTweet.full_text) {
+        finalTweet.full_text = finalTweet.text;
+    }
+
+    finalTweet.includes = tweet.includes;
+
+    // find the author of the tweet
+    // push that onto top level as the user
+    for(let i=0; i<tweet.includes.users.length; i++) {
+        let author_id = tweet.data.author_id;
+        if(isListData) {
+            author_id = tweet.data[0].author_id
+        }
+        if(tweet.includes.users[i].id === author_id) {
+            let user = tweet.includes.users[i];
+            user.screen_name = user.username;
+            finalTweet.user = user;
+        }
+    }
+
+    return finalTweet;
 }
 
 async function isDuplicate(tweet: any) {
@@ -344,128 +360,6 @@ async function isDuplicate(tweet: any) {
     }
 
     return false;
-}
-
-
-async function processTweet(tweet: any) {
-    const tmpdir = await tmp.dir({ unsafeCleanup: true });
-
-    try {
-        if (tweet?.extended_entities?.media?.length > 0) {
-            try {
-                const mediaDir = path.join(tmpdir.path, "media")
-                if (!await checkPath(mediaDir)) {
-                    await mkdir(mediaDir)
-                }
-                for (let i = 0; i < tweet.extended_entities.media.length; i++) {
-                    const mobj = tweet.extended_entities.media[i]
-                    const url = mobj.media_url
-                    if ((mobj.type === "video" || mobj.type === "animated_gif") && mobj?.video_info?.variants) {
-                        const variants = mobj?.video_info?.variants.sort((a: any, b: any) => ((a.bitrate ?? 1000) > (b.bitrate ?? 1000) ? -1 : 1))
-                        await processMediaURL(variants[0].url, mediaDir, i)
-                    } else {
-                        await processMediaURL(url, mediaDir, i)
-                    }
-                }
-            } catch (e: any) {
-                console.error(`while archiving media: ${e.stack}`)
-            }
-
-        }
-
-        if (tweet.entities.urls?.length > 0) {
-            try {
-                for (let i = 0; i < tweet.entities.urls.length; i++) {
-                    const u = tweet.entities.urls[i]
-                    const url = u.expanded_url
-                    // tweets sometimes reference themselves
-                    if (url === `https://twitter.com/i/web/status/${tweet.id}`) {
-                        continue;
-                    }
-                    const headres = await axios.head(url).catch((e) => {
-                        console.log(`heading ${url} - ${e.message}`)
-                    })
-                    if (!headres) { continue }
-                    const contentType = headres.headers["content-type"]?.split(";")[0]?.toLowerCase() ?? "text/html"
-                    const linkPath = path.join(tmpdir.path, `/links/${i}`)
-                    if (!await checkPath(linkPath)) {
-                        await mkdir(linkPath, { recursive: true })
-                    }
-                    // if it links a web page:
-                    if (contentType === "text/html") {
-                        // add to article DB.
-                        // await article.addUrl(url)
-                    } else {
-                        await processMediaURL(url, linkPath, i)
-                    }
-                }
-            } catch (e: any) {
-                console.error(`While processing URLs: ${e.stack ?? e.message}`)
-            }
-
-        }
-
-        const subTags = [
-            { name: "Application", value: "TwittAR" },
-            { name: "Tweet-ID", value: `${tweet.id ?? "unknown"}` }
-        ]
-
-        const additionalPaths: { [key: string]: any } = { "": "" };
-
-        for await (const f of walk(tmpdir.path)) {
-            const relPath = path.relative(tmpdir.path, f)
-            try {
-                const mimeType = mime.contentType(mime.lookup(relPath) || "application/octet-stream") as string;
-                const tx = bundlr.createTransaction(
-                    await fs.promises.readFile(path.resolve(f)),
-                    { tags: [...subTags, { name: "Content-Type", value: mimeType }] }
-                )
-                await tx.sign();
-                const id = tx.id;
-                const cost = await bundlr.getPrice(tx.size);
-                // console.log("Upload costs", bundlr.utils.unitConverter(cost).toString());
-                // console.log("Bundlr subpath upload id for tweet: " + id);
-                fs.rmSync(path.resolve(f));
-                try {
-                    await bundlr.fund(cost.multipliedBy(1.1).integerValue());
-                } catch (e: any) {
-                    console.log(`Error funding bundlr twitter.ts, probably not enough funds in arweave wallet stopping process...\n ${e}`);
-                    process.exit(1);
-                }
-                await tx.upload();
-                if (!id) { throw new Error("Upload Error") }
-                additionalPaths[relPath] = { id: id };
-            } catch (e: any) {
-                fs.rmSync(path.resolve(f));
-                console.log(`Error uploading ${f} for ${tweet.id_str} - ${e}`)
-                continue
-            }
-        }
-
-        try {
-            if (tmpdir) {
-                await tmpdir.cleanup()
-            }
-
-            await createAsset(
-                bundlr,
-                contract,
-                tweet,
-                additionalPaths,
-                poolConfig,
-                "application/json",
-                ""
-            );
-        } catch (e: any) {
-            console.log(`Error creating asset stopping processing...\n ${e}`);
-            process.exit(1);
-        }
-    } catch (e: any) {
-        console.log(`general error: ${e.stack ?? e.message}`)
-        if (tmpdir) {
-            await tmpdir.cleanup()
-        }
-    }
 }
 
 async function processTweetV2(tweet: any) {
