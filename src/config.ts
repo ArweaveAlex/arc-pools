@@ -26,7 +26,8 @@ export const CLI_ARGS = {
         dstop: "dstop",
         init: "init",
         fund: "fund",
-        balance: "balance"
+        balance: "balance",
+        sindex: "sindex"
     },
     options: {
         source: "source",
@@ -58,6 +59,8 @@ export const TAGS = {
         appType:"App-Type",
         poolName: "Pool-Name",
         uploaderTxId: "Uploader-Tx-Id",
+        poolId: "Pool-Id",
+        artifactType: "Artifact-Type"
     },
     values: {
         poolVersions: {
