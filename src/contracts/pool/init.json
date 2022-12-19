@@ -11,5 +11,6 @@
 	"tokens": {},
 	"totalContributions": "0",
 	"totalSupply": "10000000",
-	"timestamp": "0"
+	"timestamp": "0",
+	"canEvolve": true
 }

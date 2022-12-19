@@ -29,6 +29,7 @@ export interface PoolStateType {
     totalContributions: string
     totalSupply: string
     balance: string
+    canEvolve: boolean
 }
 
 export type PoolConfigType = {

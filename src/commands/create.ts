@@ -141,7 +141,8 @@ const command: CommandInterface = {
             tokens: {},
             totalContributions: "0",
             totalSupply: "10000000",
-            balance: "0"
+            balance: "0",
+            canEvolve: true
         }
 
         const tags = [

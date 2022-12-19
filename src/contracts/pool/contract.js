@@ -27,6 +27,7 @@ function addOrUpdateIntStrings(object, key, qty) {
 }
 async function handle(state, action) {
     const caller = action.caller;
+    const canEvolve = state.canEvolve;
     switch (action.input.function) {
         case "contribute": {
             const contribution = BigInt(SmartWeave.transaction.quantity);
@@ -63,6 +64,17 @@ async function handle(state, action) {
                 state.totalContributions = (totalContributions + contribution).toString();
             }
             return { state };
+        }
+        case "evolve": {
+            if (canEvolve) {
+                if (state.owner !== caller) {
+                  throw new ContractError('Only the owner can evolve a contract.');
+                }
+            
+                state.evolve = input.value;
+            
+                return { state };
+            }
         }
         default: {
             throw new ContractError(`No action ${action.input.function} exists. Please send a valid action.`);
