@@ -64,6 +64,7 @@ export const TAGS = {
         artifactType: "Artifact-Type",
         // this ones for the search index
         alexPoolId: "Alex-Pool-Id",
+        initialOwner: "Initial-Owner"
     },
     values: {
         poolVersions: {

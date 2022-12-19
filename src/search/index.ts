@@ -5,18 +5,19 @@ import { GQLResponseType, PoolConfigType } from "../types";
 import { getGQLData } from "../gql";
 import { POOL_FILE, POOL_SEARCH_CONTRACT_PATH, TAGS } from "../config";
 import { exitProcess, getTagValue } from "../utils";
-import { checkPath } from '../artifacts/miners';
+import { checkPath, walk } from '../artifacts/miners';
 import Bundlr from "@bundlr-network/client";
 import { ArgumentsInterface } from '../interfaces';
 import { ArweaveClient } from '../arweave-client';
 
 
-let INDEX_OBJ = {};
 let FILE_DIR = "sindex";
-let INDEX_FILE = FILE_DIR + "/index.json";
-let DATA_FILE = FILE_DIR + "/searchdata";
 let INDEX_COUNTER = 0;
 let ID_CHAR = '`*';
+let OWNER_CHAR = '`%';
+let FILE_INDEXES = ['1', '2', '3', '4', '5'];
+let POOL_DIR = "";
+
 
 export async function indexPool(
     poolConfig: PoolConfigType,
@@ -28,6 +29,10 @@ export async function indexPool(
     const arClient = new ArweaveClient();
     let poolWallet = JSON.parse(fs.readFileSync(poolConfig.walletPath).toString());
 
+
+    // create the index contract from the index files
+    // if it already exists create the index files 
+    // and update the index contract with the new indeces
     try {
 
         if(!POOLS_JSON[poolArg].contracts.poolSearchIndex){
@@ -80,20 +85,24 @@ export async function indexPool(
             console.log(`Pool File Updated`);
         }
 
-        let poolId = POOLS_JSON[poolArg].contracts.poolSearchIndex.id;
+        let poolIndexId = POOLS_JSON[poolArg].contracts.poolSearchIndex.id;
 
-        const contract = arClient.warp.contract(poolId)
+        console.log(`Top Level pool index id ${poolIndexId}`);
+
+        const contract = arClient.warp.contract(poolIndexId)
+            .connect(poolWallet)
             .setEvaluationOptions({ allowBigInt: true });
 
-        let currentState = (await contract.readState() as any).cachedValue.state;
-
-        console.log(currentState);
+        // let currentState = (await contract.readState() as any).cachedValue.state;
 
         let indeces = await indexFiles(poolConfig, poolWallet);
 
-        currentState.indeces = indeces;
-
-        console.log(currentState);
+        const result = await contract.writeInteraction(
+            { 
+                function: "update", 
+                searchIndeces: indeces
+            }
+        );
 
     } catch (e: any){
         console.log(e);
@@ -105,26 +114,31 @@ async function indexFiles(
     poolConfig: PoolConfigType,
     poolWallet: any
 ) {
-    const tags = [
-        { "name": TAGS.keys.appType, "value": "Alex-Search-Index-v0" },
-        { "name": TAGS.keys.alexPoolId, "value": poolConfig.contracts.pool.id },
-        { "name": "Content-Type", "value": "text/plain" }
-    ];
+    let ids = [];
 
-    let bundlr = new Bundlr(poolConfig.bundlrNode, "arweave", poolWallet);
+    for await (const f of walk(FILE_DIR)) {
+        const tags = [
+            { "name": TAGS.keys.appType, "value": "Alex-Search-Index-v0" },
+            { "name": TAGS.keys.alexPoolId, "value": poolConfig.contracts.pool.id },
+            { "name": "Content-Type", "value": "text/plain" }
+        ];
+    
+        let bundlr = new Bundlr(poolConfig.bundlrNode, "arweave", poolWallet);
+    
+        const tx = bundlr.createTransaction(
+            await fs.promises.readFile(f),
+            { tags: tags }
+        );
+    
+        await tx.sign();
+        const id = tx.id;
+        await tx.upload();
+    
+        console.log(`Search index id - ${id}`);
+        ids.push(id);
+    }
 
-    const tx = bundlr.createTransaction(
-        await fs.promises.readFile(DATA_FILE),
-        { tags: tags }
-    );
-
-    await tx.sign();
-    const id = tx.id;
-    await tx.upload();
-
-    console.log(`Search index id - ${id}`);
-
-    return [id];
+    return ids;
 }
 
 // build the search index structure for a pool
@@ -137,6 +151,14 @@ export async function fetchPool(poolConfig: PoolConfigType) {
 
     if (!await checkPath(FILE_DIR)) {
         mkdirSync(FILE_DIR);
+    }
+
+    POOL_DIR = FILE_DIR + '/' + poolConfig.contracts.pool.id;
+
+    if (!await checkPath(
+        POOL_DIR
+    )) {
+        mkdirSync(POOL_DIR);
     }
 
     // // fetch every artifact for a pool
@@ -180,6 +202,7 @@ async function extractUsefulTxt(
         INDEX_COUNTER++;
         try {
             let aType = getTagValue(artifacts[i].node.tags, TAGS.keys.artifactType);
+            let owner = getTagValue(artifacts[i].node.tags, TAGS.keys.initialOwner);
             let aData = await fetch(getTxEndpoint(artifacts[i].node.id));
             console.log(INDEX_COUNTER);
             if(aType === "Alex-Messaging"){
@@ -187,7 +210,12 @@ async function extractUsefulTxt(
                 let stext = parsed.text? strip(parsed.text) : "";
                 let uname = parsed.user.username ? strip(parsed.user.name) : ""
                 let name = parsed.user.name ? strip(parsed.user.name) : "";
-                artifactString = artifactString + name + uname + stext + ID_CHAR + artifacts[i].node.id + ID_CHAR;
+                artifactString = artifactString 
+                    + name 
+                    + uname 
+                    + stext 
+                    + ID_CHAR + artifacts[i].node.id + ID_CHAR
+                    + OWNER_CHAR + owner + OWNER_CHAR;
             } else if (aType === "Alex-Webpage") {
                 // text = text + extractWikipediaSearch(await aData.text());
             }
@@ -198,9 +226,12 @@ async function extractUsefulTxt(
 
     console.log(artifactString);
 
+    // spread the data out over 5 index files
+    let randomIndex = FILE_INDEXES[Math.floor(Math.random()*FILE_INDEXES.length)];
+    let dataFile = POOL_DIR + "/" + randomIndex;
 
     fs.appendFile(
-        DATA_FILE,
+        dataFile,
         artifactString,
         () => {}
     );
@@ -212,7 +243,9 @@ function strip(s: any) {
         .replaceAll('\t','')
         .replaceAll('\r','')
         .replaceAll('\n','')
-        .replaceAll(ID_CHAR,'');
+        .replaceAll(ID_CHAR,'')
+        .replaceAll(OWNER_CHAR,'')
+        .toLowerCase();
 }
 
 function extractWikipediaSearch(article: string){

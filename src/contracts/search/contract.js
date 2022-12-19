@@ -8,9 +8,9 @@ function handle(state, action) {
         throw new ContractError('Only the owner can update this contracts state.');
       }
   
-      state = input.value;
+      state.searchIndeces = input.searchIndeces;
   
-      return state;
+      return { state };
     }
   
     if (input.function === 'evolve' && state.canEvolve) {
