@@ -14,6 +14,7 @@ export let BASE_DIR = path.join(__dirname, "").split(dirIndex)[0] + dirIndex;
 export const NFT_CONTRACT_PATH = path.join(BASE_DIR, "bin/contracts/NFT/contract.js");
 export const NFT_JSON_PATH = path.join(BASE_DIR, "bin/contracts/NFT/init.json");
 export const POOL_CONTRACT_PATH = path.join(BASE_DIR, "bin/contracts/pool/contract.js");
+export const POOL_SEARCH_CONTRACT_PATH = path.join(BASE_DIR, "bin/contracts/search/contract.js");
 
 export const POOL_FILE = "pools.json";
 
@@ -60,7 +61,9 @@ export const TAGS = {
         poolName: "Pool-Name",
         uploaderTxId: "Uploader-Tx-Id",
         poolId: "Pool-Id",
-        artifactType: "Artifact-Type"
+        artifactType: "Artifact-Type",
+        // this ones for the search index
+        alexPoolId: "Alex-Pool-Id",
     },
     values: {
         poolVersions: {
