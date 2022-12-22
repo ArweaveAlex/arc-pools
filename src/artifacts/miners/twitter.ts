@@ -282,12 +282,12 @@ function modTweet(tweet: any) {
 
     finalTweet = tweet.data;
 
-    if(isListData) {
+    if (isListData) {
         // for the lookup data is a list
         finalTweet = tweet.data[0];
     }
 
-    if(!finalTweet.full_text) {
+    if (!finalTweet.full_text) {
         finalTweet.full_text = finalTweet.text;
     }
 
@@ -295,12 +295,12 @@ function modTweet(tweet: any) {
 
     // find the author of the tweet
     // push that onto top level as the user
-    for(let i=0; i<tweet.includes.users.length; i++) {
+    for (let i = 0; i < tweet.includes.users.length; i++) {
         let author_id = tweet.data.author_id;
-        if(isListData) {
+        if (isListData) {
             author_id = tweet.data[0].author_id
         }
-        if(tweet.includes.users[i].id === author_id) {
+        if (tweet.includes.users[i].id === author_id) {
             let user = tweet.includes.users[i];
             user.screen_name = user.username;
             finalTweet.user = user;
@@ -363,148 +363,149 @@ async function isDuplicate(tweet: any) {
 }
 
 async function processTweetV2(tweet: any) {
-    const tmpdir = await tmp.dir({ unsafeCleanup: true });
-    try {
-        if (tweet?.includes?.media?.length > 0) {
-            try {
-                const mediaDir = path.join(tmpdir.path, "media")
-                if (!await checkPath(mediaDir)) {
-                    await mkdir(mediaDir)
-                }
-                for (let i = 0; i < tweet.includes.media.length; i++) {
-                    const mobj = tweet.includes.media[i];
-                    const url = mobj.url;
-                    if ((mobj.type === "video" || mobj.type === "animated_gif") && mobj?.variants) {
-                        const variants = mobj?.variants.sort((a: any, b: any) => ((a.bitrate ?? 1000) > (b.bitrate ?? 1000) ? -1 : 1))
-                        if (contentModeration) {
-                            let s = await shouldUploadContent(variants[0].url, mobj.type, poolConfig);
-                            if(!s){
-                                // console.log("ignoring explicit");
-                                return;
-                            }
-                        }
-                        await processMediaURL(variants[0].url, mediaDir, i)
-                    } else if (mobj.type === "photo" || mobj.type === "image") {
-                        if (contentModeration) {
-                            let s = await shouldUploadContent(url, "image", poolConfig);
-                            if(!s){
-                                // console.log("ignoring explicit");
-                                return;
-                            }
-                        }
-                        await processMediaURL(url, mediaDir, i)
-                    }
-                }
-            } catch (e: any) {
-                console.error(`Error while archiving media: ${e}`)
-                console.log(e);
-            }
+    console.log(tweet);
+    // const tmpdir = await tmp.dir({ unsafeCleanup: true });
+    // try {
+    //     if (tweet?.includes?.media?.length > 0) {
+    //         try {
+    //             const mediaDir = path.join(tmpdir.path, "media")
+    //             if (!await checkPath(mediaDir)) {
+    //                 await mkdir(mediaDir)
+    //             }
+    //             for (let i = 0; i < tweet.includes.media.length; i++) {
+    //                 const mobj = tweet.includes.media[i];
+    //                 const url = mobj.url;
+    //                 if ((mobj.type === "video" || mobj.type === "animated_gif") && mobj?.variants) {
+    //                     const variants = mobj?.variants.sort((a: any, b: any) => ((a.bitrate ?? 1000) > (b.bitrate ?? 1000) ? -1 : 1))
+    //                     if (contentModeration) {
+    //                         let s = await shouldUploadContent(variants[0].url, mobj.type, poolConfig);
+    //                         if (!s) {
+    //                             // console.log("ignoring explicit");
+    //                             return;
+    //                         }
+    //                     }
+    //                     await processMediaURL(variants[0].url, mediaDir, i)
+    //                 } else if (mobj.type === "photo" || mobj.type === "image") {
+    //                     if (contentModeration) {
+    //                         let s = await shouldUploadContent(url, "image", poolConfig);
+    //                         if (!s) {
+    //                             // console.log("ignoring explicit");
+    //                             return;
+    //                         }
+    //                     }
+    //                     await processMediaURL(url, mediaDir, i)
+    //                 }
+    //             }
+    //         } catch (e: any) {
+    //             console.error(`Error while archiving media: ${e}`)
+    //             console.log(e);
+    //         }
 
-        }
+    //     }
 
-        if (tweet.entities.urls?.length > 0) {
-            try {
-                for (let i = 0; i < tweet.entities.urls.length; i++) {
-                    const u = tweet.entities.urls[i]
-                    const url = u.expanded_url
-                    // tweets sometimes reference themselves
-                    if (url === `https://twitter.com/i/web/status/${tweet.id_str}`) {
-                        continue;
-                    }
-                    const headres = await axios.head(url).catch((e) => {
-                        console.log(`heading ${url} - ${e.message}`)
-                    })
-                    if (!headres) { continue }
-                    const contentType = headres.headers["content-type"]?.split(";")[0]?.toLowerCase() ?? "text/html"
-                    const linkPath = path.join(tmpdir.path, `/links/${i}`)
-                    if (!await checkPath(linkPath)) {
-                        await mkdir(linkPath, { recursive: true })
-                    }
-                    // if it links a web page:
-                    if (contentType === "text/html") {
-                        // add to article DB.
-                        // await article.addUrl(url)
-                    } else {
-                        await processMediaURL(url, linkPath, i)
-                    }
-                }
-            } catch (e: any) {
-                console.error(`While processing URLs: ${e.stack ?? e.message}`)
-            }
+    //     if (tweet.entities.urls?.length > 0) {
+    //         try {
+    //             for (let i = 0; i < tweet.entities.urls.length; i++) {
+    //                 const u = tweet.entities.urls[i]
+    //                 const url = u.expanded_url
+    //                 // tweets sometimes reference themselves
+    //                 if (url === `https://twitter.com/i/web/status/${tweet.id_str}`) {
+    //                     continue;
+    //                 }
+    //                 const headres = await axios.head(url).catch((e) => {
+    //                     console.log(`heading ${url} - ${e.message}`)
+    //                 })
+    //                 if (!headres) { continue }
+    //                 const contentType = headres.headers["content-type"]?.split(";")[0]?.toLowerCase() ?? "text/html"
+    //                 const linkPath = path.join(tmpdir.path, `/links/${i}`)
+    //                 if (!await checkPath(linkPath)) {
+    //                     await mkdir(linkPath, { recursive: true })
+    //                 }
+    //                 // if it links a web page:
+    //                 if (contentType === "text/html") {
+    //                     // add to article DB.
+    //                     // await article.addUrl(url)
+    //                 } else {
+    //                     await processMediaURL(url, linkPath, i)
+    //                 }
+    //             }
+    //         } catch (e: any) {
+    //             console.error(`While processing URLs: ${e.stack ?? e.message}`)
+    //         }
 
-        }
+    //     }
 
-        const subTags = [
-            { name: "Application", value: "TwittAR" },
-            { name: "Tweet-ID", value: `${tweet.id_str ?? "unknown"}` }
-        ]
+    //     const subTags = [
+    //         { name: "Application", value: "TwittAR" },
+    //         { name: "Tweet-ID", value: `${tweet.id_str ?? "unknown"}` }
+    //     ]
 
-        const additionalPaths: { [key: string]: any } = { "": "" };
+    //     const additionalPaths: { [key: string]: any } = { "": "" };
 
-        for await (const f of walk(tmpdir.path)) {
-            const relPath = path.relative(tmpdir.path, f)
-            try {
-                const mimeType = mime.contentType(mime.lookup(relPath) || "application/octet-stream") as string;
-                const tx = bundlr.createTransaction(
-                    await fs.promises.readFile(path.resolve(f)),
-                    { tags: [...subTags, { name: "Content-Type", value: mimeType }] }
-                )
-                await tx.sign();
-                const id = tx.id;
-                const cost = await bundlr.getPrice(tx.size);
-                // console.log("Upload costs", bundlr.utils.unitConverter(cost).toString());
-                // console.log("Bundlr subpath upload id for tweet: " + id);
-                fs.rmSync(path.resolve(f));
-                try {
-                    await bundlr.fund(cost.multipliedBy(1.1).integerValue());
-                } catch (e: any) {
-                    console.log(`Error funding bundlr twitter.ts, probably not enough funds in arweave wallet stopping process...\n ${e}`);
-                    process.exit(1);
-                }
-                await tx.upload();
-                if (!id) { throw new Error("Upload Error") }
-                additionalPaths[relPath] = { id: id };
-            } catch (e: any) {
-                fs.rmSync(path.resolve(f));
-                console.log(`Error uploading ${f} for ${tweet.id_str} - ${e}`)
-                continue
-            }
-        }
+    //     for await (const f of walk(tmpdir.path)) {
+    //         const relPath = path.relative(tmpdir.path, f)
+    //         try {
+    //             const mimeType = mime.contentType(mime.lookup(relPath) || "application/octet-stream") as string;
+    //             const tx = bundlr.createTransaction(
+    //                 await fs.promises.readFile(path.resolve(f)),
+    //                 { tags: [...subTags, { name: "Content-Type", value: mimeType }] }
+    //             )
+    //             await tx.sign();
+    //             const id = tx.id;
+    //             const cost = await bundlr.getPrice(tx.size);
+    //             // console.log("Upload costs", bundlr.utils.unitConverter(cost).toString());
+    //             // console.log("Bundlr subpath upload id for tweet: " + id);
+    //             fs.rmSync(path.resolve(f));
+    //             try {
+    //                 await bundlr.fund(cost.multipliedBy(1.1).integerValue());
+    //             } catch (e: any) {
+    //                 console.log(`Error funding bundlr twitter.ts, probably not enough funds in arweave wallet stopping process...\n ${e}`);
+    //                 process.exit(1);
+    //             }
+    //             await tx.upload();
+    //             if (!id) { throw new Error("Upload Error") }
+    //             additionalPaths[relPath] = { id: id };
+    //         } catch (e: any) {
+    //             fs.rmSync(path.resolve(f));
+    //             console.log(`Error uploading ${f} for ${tweet.id_str} - ${e}`)
+    //             continue
+    //         }
+    //     }
 
-        try {
-            if (tmpdir) {
-                await tmpdir.cleanup()
-            }
+    //     try {
+    //         if (tmpdir) {
+    //             await tmpdir.cleanup()
+    //         }
 
-            await createAsset(
-                bundlr,
-                contract,
-                tweet,
-                additionalPaths,
-                poolConfig,
-                "application/json",
-                ""
-            );
-        } catch (e: any) {
-            console.log(`Error creating asset stopping processing...\n ${e}`);
-            process.exit(1);
-        }
-    } 
-    catch (e: any) {
-        console.log(`general error: ${e.stack ?? e.message}`)
-        if (tmpdir) {
-            await tmpdir.cleanup()
-        }
-    }
+    //         await createAsset(
+    //             bundlr,
+    //             contract,
+    //             tweet,
+    //             additionalPaths,
+    //             poolConfig,
+    //             "application/json",
+    //             ""
+    //         );
+    //     } catch (e: any) {
+    //         console.log(`Error creating asset stopping processing...\n ${e}`);
+    //         process.exit(1);
+    //     }
+    // }
+    // catch (e: any) {
+    //     console.log(`general error: ${e.stack ?? e.message}`)
+    //     if (tmpdir) {
+    //         await tmpdir.cleanup()
+    //     }
+    // }
 }
 
 
-let expansions: TTweetv2Expansion[] = ['attachments.poll_ids','attachments.media_keys','author_id','referenced_tweets.id','in_reply_to_user_id','edit_history_tweet_ids','geo.place_id','entities.mentions.username','referenced_tweets.id.author_id']
-let mediaFields: TTweetv2MediaField[] = ['duration_ms','height','media_key','preview_image_url','type','url','width','alt_text','variants']
-let placeFields: TTweetv2PlaceField[] = ['contained_within','country','country_code','full_name','geo','id','name','place_type']
-let pollFields: TTweetv2PollField[] = ['duration_minutes','end_datetime','id','options','voting_status']
-let tweetFields: TTweetv2TweetField[] = ['attachments','author_id','context_annotations','conversation_id','created_at','entities','geo','id','in_reply_to_user_id','lang','edit_controls','possibly_sensitive','referenced_tweets','reply_settings','source','text','withheld']
-let userFields: TTweetv2UserField[] = ['created_at','description','entities','id','location','name','pinned_tweet_id','profile_image_url','protected','public_metrics','url','username','verified','withheld']
+let expansions: TTweetv2Expansion[] = ['attachments.poll_ids', 'attachments.media_keys', 'author_id', 'referenced_tweets.id', 'in_reply_to_user_id', 'edit_history_tweet_ids', 'geo.place_id', 'entities.mentions.username', 'referenced_tweets.id.author_id']
+let mediaFields: TTweetv2MediaField[] = ['duration_ms', 'height', 'media_key', 'preview_image_url', 'type', 'url', 'width', 'alt_text', 'variants']
+let placeFields: TTweetv2PlaceField[] = ['contained_within', 'country', 'country_code', 'full_name', 'geo', 'id', 'name', 'place_type']
+let pollFields: TTweetv2PollField[] = ['duration_minutes', 'end_datetime', 'id', 'options', 'voting_status']
+let tweetFields: TTweetv2TweetField[] = ['attachments', 'author_id', 'context_annotations', 'conversation_id', 'created_at', 'entities', 'geo', 'id', 'in_reply_to_user_id', 'lang', 'edit_controls', 'possibly_sensitive', 'referenced_tweets', 'reply_settings', 'source', 'text', 'withheld']
+let userFields: TTweetv2UserField[] = ['created_at', 'description', 'entities', 'id', 'location', 'name', 'pinned_tweet_id', 'profile_image_url', 'protected', 'public_metrics', 'url', 'username', 'verified', 'withheld']
 
 let streamParams = {
     'expansions': expansions,

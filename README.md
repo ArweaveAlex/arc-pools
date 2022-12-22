@@ -124,6 +124,7 @@ __The mining process will not run without funds in the pool wallet. In this case
 __After contribution funds have come through, we need to fund bundlr from the pool wallet as the final step, run the arcpool fund command, then wait 20-30 minutes for the funds to come through. Check with arcpool balance, once it shows bundlr funds proceed with mining__
 
 ###### Fund bundlr from the pool wallet
+###### (Note: This command will use half of the contribution amount to fund bundlr, this is the only time you need to run this command as the mining process will continually fund bundlr moving forward)
 ```arcpool fund russia-ukraine-test```
 
 ###### Check the bundlr funds on the wallet
