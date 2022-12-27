@@ -34,8 +34,3 @@ export function getTxEndpoint(txId: string) {
 export function getRedstoneEndpoint(nftSrc: string, page: number) {
     return `https://gateway.redstone.finance/gateway/contracts-by-source?id=${nftSrc}&page=${page}`;
 }
-
-
-export function getRedstoneContractEndpoint(txId: string) {
-    return `https://gateway.redstone.finance/gateway/contract?txId=${txId}`;
-}

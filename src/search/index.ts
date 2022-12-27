@@ -25,6 +25,19 @@ import {
 
 let INDEX_COUNTER = 0;
 
+function getPoolDir(poolId: string) {
+    return INDEX_FILE_DIR + '/' + poolId;
+}
+
+function getFinalIndexFile(poolDir: string) {
+    return poolDir + FINAL_INDEX_FILE_NAME;
+}
+
+function getDataFile(poolDir: string) {
+    // spread the data out over 5 index files
+    let randomIndex = FILE_INDEXES[Math.floor(Math.random()*FILE_INDEXES.length)];
+    return poolDir + INDECES_DIR + randomIndex;
+}
 
 export async function indexPool(
     poolConfig: PoolConfigType,
@@ -122,7 +135,7 @@ async function indexFiles(
 ) {
     let ids = [];
 
-    let poolDir = INDEX_FILE_DIR + '/' + poolConfig.contracts.pool.id;
+    let poolDir = getPoolDir(poolConfig.contracts.pool.id);
 
     if (!await checkPath(
         poolDir
@@ -163,7 +176,7 @@ export async function fetchPool(poolConfig: PoolConfigType) {
         mkdirSync(INDEX_FILE_DIR);
     }
 
-    let poolDir = INDEX_FILE_DIR + '/' + poolConfig.contracts.pool.id;
+    let poolDir = getPoolDir(poolConfig.contracts.pool.id);
 
     if (!await checkPath(
         poolDir
@@ -171,12 +184,12 @@ export async function fetchPool(poolConfig: PoolConfigType) {
         mkdirSync(poolDir);
     }
 
-    let finalIndexFile = poolDir + FINAL_INDEX_FILE_NAME;
+    let finalIndexFile = getFinalIndexFile(poolDir);
 
     let page = 1;
     let pageLimit = 0;
     let firstRun = true;
-    let lastFinalIndex;
+    let lastFinalIndex: any;
 
     if (await checkPath(
         finalIndexFile
@@ -195,8 +208,6 @@ export async function fetchPool(poolConfig: PoolConfigType) {
             poolConfig.contracts.nft.src, 
             page
         ));
-
-        console.log(page);
 
         let parsed = JSON.parse(await redstoneData.text());
         let artifacts = parsed.contracts;
@@ -244,17 +255,12 @@ async function extractUsefulTxt(
     let artifactString = "";
     for(let i=0; i<artifacts.length; i++){
         INDEX_COUNTER++;
+        console.log(INDEX_COUNTER);
         try {
             let contractId = artifacts[i].contractId;
-            // let contract = await fetch(getRedstoneContractEndpoint(contractId));
-            // let parsed = JSON.parse(await contract.text());
-            // let tags = decodeTags(parsed);
-            // let aType = getTagValue(tags, TAGS.keys.artifactType);
             let owner = artifacts[i].owner;
             let aData = await fetch(getTxEndpoint(contractId));
             let cType = aData.headers.get("Content-Type");
-
-            console.log(INDEX_COUNTER);
 
             if(cType.indexOf("application/json") > -1){
                 let parsed = JSON.parse(await aData.text());
@@ -269,16 +275,13 @@ async function extractUsefulTxt(
             } else if (cType.indexOf("text/html") > -1) {
                 // text = text + extractWikipediaSearch(await aData.text());
             }
+
         } catch (e: any) {
             console.log(e);
         }
     }
 
-    console.log(artifactString);
-
-    // spread the data out over 5 index files
-    let randomIndex = FILE_INDEXES[Math.floor(Math.random()*FILE_INDEXES.length)];
-    let dataFile = poolDir + INDECES_DIR + randomIndex;
+    let dataFile = getDataFile(poolDir);
 
     fs.appendFile(
         dataFile,
