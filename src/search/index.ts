@@ -17,14 +17,18 @@ import {
     OWNER_CHAR,
     FILE_INDEXES,
     INDECES_DIR,
-    FINAL_INDEX_FILE_NAME
+    FINAL_INDEX_FILE_NAME,
+    REDSTONE_PAGE_LIMIT
 } from "../config";
 import { 
     getTxEndpoint,
     getRedstoneEndpoint
 } from '../utils';
 
-const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+const progressBar = new cliProgress.SingleBar(
+    {stopOnComplete: true}, 
+    cliProgress.Presets.shades_classic
+);
 let INDEX_COUNTER = 0;
 
 function getPoolDir(poolId: string) {
@@ -203,8 +207,8 @@ export async function fetchPool(poolConfig: PoolConfigType) {
         lastFinalIndex = JSON.parse(
             fs.readFileSync(finalIndexFile).toString()
         );
-        console.log("Last artifact fetched - ");
-        console.log(lastFinalIndex);
+        // console.log("Last artifact fetched - ");
+        // console.log(lastFinalIndex);
         page = lastFinalIndex.page;
     }
 
@@ -223,16 +227,25 @@ export async function fetchPool(poolConfig: PoolConfigType) {
         // pick up where we left off in the page
         if(firstRun && lastFinalIndex) {
             artifacts = artifacts.slice(lastFinalIndex.indexOnPage + 1);
+            INDEX_COUNTER = ((page - 1) * REDSTONE_PAGE_LIMIT) 
+                            + lastFinalIndex.indexOnPage + 1;
         }
 
-        if(firstRun) {
-            progressBar.start(parsed.paging.total, 0);
+        
+        if(firstRun == true) {
+            let startAt = 0;
+            if(lastFinalIndex) {
+                startAt = ((page - 1) * REDSTONE_PAGE_LIMIT) 
+                          + lastFinalIndex.indexOnPage + 1;
+            }
+            firstRun = false;
+            progressBar.start(parsed.paging.total, startAt);
         }
 
-        firstRun = false;
 
         if(artifacts.length == 0) {
-            console.log("No new artifacts detected...");
+            console.log("\nNo new artifacts detected...");
+            progressBar.stop();
             break;
         }
 

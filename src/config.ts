@@ -110,3 +110,5 @@ export const INDECES_DIR = "/indeces/";
 
 // file for picking up where we left off when indexing
 export const FINAL_INDEX_FILE_NAME = "/finalindex";
+
+export const REDSTONE_PAGE_LIMIT = 5000;
