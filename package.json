@@ -19,6 +19,7 @@
         "bip39-web-crypto": "^4.0.1",
         "clarifai-nodejs-grpc": "^8.0.0",
         "cli-color": "^2.0.3",
+        "cli-progress": "^3.11.2",
         "clui": "^0.3.6",
         "esbuild": "^0.15.15",
         "esbuild-node-externals": "^1.5.0",

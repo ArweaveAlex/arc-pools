@@ -1,6 +1,13 @@
 import fs, { mkdirSync } from 'fs';
 
+const cliProgress = require('cli-progress');
+
 import { PoolConfigType } from "../types";
+import { exitProcess } from "../utils";
+import { checkPath, walk } from '../artifacts/miners';
+import Bundlr from "@bundlr-network/client";
+import { ArgumentsInterface } from '../interfaces';
+import { ArweaveClient } from '../arweave-client';
 import { 
     POOL_FILE, 
     POOL_SEARCH_CONTRACT_PATH, 
@@ -12,17 +19,12 @@ import {
     INDECES_DIR,
     FINAL_INDEX_FILE_NAME
 } from "../config";
-import { exitProcess, getTagValue } from "../utils";
-import { checkPath, walk } from '../artifacts/miners';
-import Bundlr from "@bundlr-network/client";
-import { ArgumentsInterface } from '../interfaces';
-import { ArweaveClient } from '../arweave-client';
 import { 
     getTxEndpoint,
     getRedstoneEndpoint
 } from '../utils';
 
-
+const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 let INDEX_COUNTER = 0;
 
 function getPoolDir(poolId: string) {
@@ -33,10 +35,14 @@ function getFinalIndexFile(poolDir: string) {
     return poolDir + FINAL_INDEX_FILE_NAME;
 }
 
+function getIndecesDir(poolDir: string) {
+    return poolDir + INDECES_DIR;
+}
+
 function getDataFile(poolDir: string) {
     // spread the data out over 5 index files
     let randomIndex = FILE_INDEXES[Math.floor(Math.random()*FILE_INDEXES.length)];
-    return poolDir + INDECES_DIR + randomIndex;
+    return getIndecesDir(poolDir) + randomIndex;
 }
 
 export async function indexPool(
@@ -143,7 +149,7 @@ async function indexFiles(
         exitProcess("Pool index directory does not exist, please please run arcpool fetch <POOL_NAME>", 1)
     }
 
-    for await (const f of walk(poolDir + INDECES_DIR)) {
+    for await (const f of walk(getIndecesDir(poolDir))) {
         const tags = [
             { "name": TAGS.keys.appType, "value": "Alex-Search-Index-v0" },
             { "name": TAGS.keys.alexPoolId, "value": poolConfig.contracts.pool.id },
@@ -219,6 +225,10 @@ export async function fetchPool(poolConfig: PoolConfigType) {
             artifacts = artifacts.slice(lastFinalIndex.indexOnPage + 1);
         }
 
+        if(firstRun) {
+            progressBar.start(parsed.paging.total, 0);
+        }
+
         firstRun = false;
 
         if(artifacts.length == 0) {
@@ -255,7 +265,7 @@ async function extractUsefulTxt(
     let artifactString = "";
     for(let i=0; i<artifacts.length; i++){
         INDEX_COUNTER++;
-        console.log(INDEX_COUNTER);
+        progressBar.update(INDEX_COUNTER);
         try {
             let contractId = artifacts[i].contractId;
             let owner = artifacts[i].owner;
@@ -268,6 +278,7 @@ async function extractUsefulTxt(
                 let uname = parsed.user.username ? strip(parsed.user.name) : ""
                 let name = parsed.user.name ? strip(parsed.user.name) : "";
                 artifactString = artifactString 
+                    + name
                     + uname 
                     + stext 
                     + ID_CHAR + contractId + ID_CHAR
