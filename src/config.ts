@@ -28,7 +28,8 @@ export const CLI_ARGS = {
         init: "init",
         fund: "fund",
         balance: "balance",
-        sindex: "sindex"
+        sindex: "sindex",
+        fetch: "fetch"
     },
     options: {
         source: "source",
@@ -91,3 +92,21 @@ export const MODERATION_THRESHOLDS = {
     explicit: 0.10,
     suggestive: 0.80
 }
+
+// top level data directory for indexing
+export const INDEX_FILE_DIR = "sindex";
+
+// characters surrounding artifact ids in index file
+export const ID_CHAR = '`*';
+
+// characters surrounding owver pubkey in index file
+export const OWNER_CHAR = '`%';
+
+// arbitrary spread of index files
+export const FILE_INDEXES = ['1', '2', '3', '4', '5'];
+
+// subdir to INDEX_FILE_DIR
+export const INDECES_DIR = "/indeces/";
+
+// file for picking up where we left off when indexing
+export const FINAL_INDEX_FILE_NAME = "/finalindex";

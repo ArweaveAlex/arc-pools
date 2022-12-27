@@ -1,30 +1,36 @@
 import fs, { mkdirSync } from 'fs';
-import mime from "mime-types";
 
-import { GQLResponseType, PoolConfigType } from "../types";
-import { getGQLData } from "../gql";
-import { POOL_FILE, POOL_SEARCH_CONTRACT_PATH, TAGS } from "../config";
+import { PoolConfigType } from "../types";
+import { 
+    POOL_FILE, 
+    POOL_SEARCH_CONTRACT_PATH, 
+    TAGS,
+    INDEX_FILE_DIR,
+    ID_CHAR,
+    OWNER_CHAR,
+    FILE_INDEXES,
+    INDECES_DIR,
+    FINAL_INDEX_FILE_NAME
+} from "../config";
 import { exitProcess, getTagValue } from "../utils";
 import { checkPath, walk } from '../artifacts/miners';
 import Bundlr from "@bundlr-network/client";
 import { ArgumentsInterface } from '../interfaces';
 import { ArweaveClient } from '../arweave-client';
+import { 
+    getTxEndpoint,
+    getRedstoneEndpoint
+} from '../utils';
 
 
-let FILE_DIR = "sindex";
 let INDEX_COUNTER = 0;
-let ID_CHAR = '`*';
-let OWNER_CHAR = '`%';
-let FILE_INDEXES = ['1', '2', '3', '4', '5'];
-let POOL_DIR = "";
 
 
 export async function indexPool(
     poolConfig: PoolConfigType,
     args: ArgumentsInterface
 ) {
-    const poolPath: string = POOL_FILE;
-    const POOLS_JSON = JSON.parse(fs.readFileSync(poolPath).toString());
+    const poolsJsonForSave = JSON.parse(fs.readFileSync(POOL_FILE).toString());
     const poolArg = args.commandValues[0];
     const arClient = new ArweaveClient();
     let poolWallet = JSON.parse(fs.readFileSync(poolConfig.walletPath).toString());
@@ -35,16 +41,16 @@ export async function indexPool(
     // and update the index contract with the new indeces
     try {
 
-        if(!POOLS_JSON[poolArg].contracts.poolSearchIndex){
-            POOLS_JSON[poolArg].contracts.poolSearchIndex = {
+        if(!poolsJsonForSave[poolArg].contracts.poolSearchIndex){
+            poolsJsonForSave[poolArg].contracts.poolSearchIndex = {
                 "id": null,
                 "src": null
             }
         }
 
         if(
-            !POOLS_JSON[poolArg].contracts.poolSearchIndex.id
-            || POOLS_JSON[poolArg].contracts.poolSearchIndex.id === ""
+            !poolsJsonForSave[poolArg].contracts.poolSearchIndex.id
+            || poolsJsonForSave[poolArg].contracts.poolSearchIndex.id === ""
         ) {
 
             // create the index contract
@@ -78,14 +84,14 @@ export async function indexPool(
                 tags: tags
             });
 
-            POOLS_JSON[poolArg].contracts.poolSearchIndex.id = poolDeployment.contractTxId;
-            POOLS_JSON[poolArg].contracts.poolSearchIndex.src = poolDeployment.srcTxId;
+            poolsJsonForSave[poolArg].contracts.poolSearchIndex.id = poolDeployment.contractTxId;
+            poolsJsonForSave[poolArg].contracts.poolSearchIndex.src = poolDeployment.srcTxId;
 
-            fs.writeFileSync(poolPath, JSON.stringify(POOLS_JSON, null, 4));
+            fs.writeFileSync(POOL_FILE, JSON.stringify(poolsJsonForSave, null, 4));
             console.log(`Pool File Updated`);
         }
 
-        let poolIndexId = POOLS_JSON[poolArg].contracts.poolSearchIndex.id;
+        let poolIndexId = poolsJsonForSave[poolArg].contracts.poolSearchIndex.id;
 
         console.log(`Top Level pool index id ${poolIndexId}`);
 
@@ -97,7 +103,7 @@ export async function indexPool(
 
         let indeces = await indexFiles(poolConfig, poolWallet);
 
-        const result = await contract.writeInteraction(
+        await contract.writeInteraction(
             { 
                 function: "update", 
                 searchIndeces: indeces
@@ -116,7 +122,15 @@ async function indexFiles(
 ) {
     let ids = [];
 
-    for await (const f of walk(FILE_DIR)) {
+    let poolDir = INDEX_FILE_DIR + '/' + poolConfig.contracts.pool.id;
+
+    if (!await checkPath(
+        poolDir
+    )) {
+        exitProcess("Pool index directory does not exist, please please run arcpool fetch <POOL_NAME>", 1)
+    }
+
+    for await (const f of walk(poolDir + INDECES_DIR)) {
         const tags = [
             { "name": TAGS.keys.appType, "value": "Alex-Search-Index-v0" },
             { "name": TAGS.keys.alexPoolId, "value": poolConfig.contracts.pool.id },
@@ -145,78 +159,114 @@ async function indexFiles(
 export async function fetchPool(poolConfig: PoolConfigType) {
     console.log(`Indexing pool id - ${poolConfig.contracts.pool.id}`);
 
-    let poolId = poolConfig.contracts.pool.id;
-
-    let cursor = null;
-
-    if (!await checkPath(FILE_DIR)) {
-        mkdirSync(FILE_DIR);
+    if (!await checkPath(INDEX_FILE_DIR)) {
+        mkdirSync(INDEX_FILE_DIR);
     }
 
-    POOL_DIR = FILE_DIR + '/' + poolConfig.contracts.pool.id;
+    let poolDir = INDEX_FILE_DIR + '/' + poolConfig.contracts.pool.id;
 
     if (!await checkPath(
-        POOL_DIR
+        poolDir
     )) {
-        mkdirSync(POOL_DIR);
+        mkdirSync(poolDir);
+    }
+
+    let finalIndexFile = poolDir + FINAL_INDEX_FILE_NAME;
+
+    let page = 1;
+    let pageLimit = 0;
+    let firstRun = true;
+    let lastFinalIndex;
+
+    if (await checkPath(
+        finalIndexFile
+    )) {
+        lastFinalIndex = JSON.parse(
+            fs.readFileSync(finalIndexFile).toString()
+        );
+        console.log("Last artifact fetched - ");
+        console.log(lastFinalIndex);
+        page = lastFinalIndex.page;
     }
 
     // // fetch every artifact for a pool
     do {
-        const artifacts: GQLResponseType[] = await getGQLData({
-            ids: null,
-            tagFilters: [
-                {
-                    name: TAGS.keys.poolId,
-                    values: [
-                        poolId
-                    ]
-                }
-            ],
-            uploader: null,
-            cursor: cursor,
-            reduxCursor: null
-        }); 
-        if(artifacts[artifacts.length - 1]){
-            cursor = artifacts[artifacts.length - 1].cursor; 
-        } else {
-            cursor = null;
+        let redstoneData = await fetch(getRedstoneEndpoint(
+            poolConfig.contracts.nft.src, 
+            page
+        ));
+
+        console.log(page);
+
+        let parsed = JSON.parse(await redstoneData.text());
+        let artifacts = parsed.contracts;
+
+        pageLimit = parsed.paging.pages;
+
+        // pick up where we left off in the page
+        if(firstRun && lastFinalIndex) {
+            artifacts = artifacts.slice(lastFinalIndex.indexOnPage + 1);
         }
 
-        extractUsefulTxt(artifacts);
+        firstRun = false;
 
-    } while (cursor != null);
+        if(artifacts.length == 0) {
+            console.log("No new artifacts detected...");
+            break;
+        }
+
+        extractUsefulTxt(artifacts, poolDir);
+
+        // save the index of the final contract 
+        // so we can pick up here next time
+        if(page == pageLimit) {
+            let finalContract = parsed.contracts[parsed.contracts.length - 1];
+            finalContract.page = page;
+            finalContract.indexOnPage = parsed.contracts.length - 1;
+            fs.writeFile(
+                finalIndexFile,
+                JSON.stringify(finalContract),
+                () => {}
+            );
+        }
+
+        page++;
+
+    } while (page <= pageLimit);
 
     
 }
 
-export function getTxEndpoint(txId: string) {
-    return `https://arweave.net/${txId}`;
-}
-
 async function extractUsefulTxt(
-    artifacts: GQLResponseType[]
+    artifacts: any,
+    poolDir: string
 ) {
     let artifactString = "";
     for(let i=0; i<artifacts.length; i++){
         INDEX_COUNTER++;
         try {
-            let aType = getTagValue(artifacts[i].node.tags, TAGS.keys.artifactType);
-            let owner = getTagValue(artifacts[i].node.tags, TAGS.keys.initialOwner);
-            let aData = await fetch(getTxEndpoint(artifacts[i].node.id));
+            let contractId = artifacts[i].contractId;
+            // let contract = await fetch(getRedstoneContractEndpoint(contractId));
+            // let parsed = JSON.parse(await contract.text());
+            // let tags = decodeTags(parsed);
+            // let aType = getTagValue(tags, TAGS.keys.artifactType);
+            let owner = artifacts[i].owner;
+            let aData = await fetch(getTxEndpoint(contractId));
+            let cType = aData.headers.get("Content-Type");
+
             console.log(INDEX_COUNTER);
-            if(aType === "Alex-Messaging"){
+
+            if(cType.indexOf("application/json") > -1){
                 let parsed = JSON.parse(await aData.text());
                 let stext = parsed.text? strip(parsed.text) : "";
                 let uname = parsed.user.username ? strip(parsed.user.name) : ""
                 let name = parsed.user.name ? strip(parsed.user.name) : "";
                 artifactString = artifactString 
-                    + name 
                     + uname 
                     + stext 
-                    + ID_CHAR + artifacts[i].node.id + ID_CHAR
+                    + ID_CHAR + contractId + ID_CHAR
                     + OWNER_CHAR + owner + OWNER_CHAR;
-            } else if (aType === "Alex-Webpage") {
+            } else if (cType.indexOf("text/html") > -1) {
                 // text = text + extractWikipediaSearch(await aData.text());
             }
         } catch (e: any) {
@@ -228,7 +278,7 @@ async function extractUsefulTxt(
 
     // spread the data out over 5 index files
     let randomIndex = FILE_INDEXES[Math.floor(Math.random()*FILE_INDEXES.length)];
-    let dataFile = POOL_DIR + "/" + randomIndex;
+    let dataFile = poolDir + INDECES_DIR + randomIndex;
 
     fs.appendFile(
         dataFile,
