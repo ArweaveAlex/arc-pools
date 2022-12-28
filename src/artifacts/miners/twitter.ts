@@ -218,7 +218,7 @@ async function mineTweetsByUser(username: string) {
         console.log(`User ID - [`, clc.green(`'${user.data.id}'`), `]`);
     }
     catch {
-        exitProcess(`User not found`, 1)
+        exitProcess(`User not found`, 1);
     }
 
     if (user) {

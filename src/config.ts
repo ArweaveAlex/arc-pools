@@ -39,7 +39,8 @@ export const CLI_ARGS = {
         poolConfig: "pool-conf",
         controlWallet: "control-wallet",
         contentModeration: "content-moderation",
-        image: "image"
+        image: "image",
+        clear: "clear"
     },
     sources: {
         twitter: {

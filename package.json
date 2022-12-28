@@ -28,6 +28,7 @@
         "fs-extra": "^10.1.0",
         "gql-query-builder": "^3.7.2",
         "human-crypto-keys": "^0.1.4",
+        "jsdom": "^20.0.3",
         "mime": "^3.0.0",
         "minimist": "^1.2.7",
         "node-tweet-stream": "^2.1.0",

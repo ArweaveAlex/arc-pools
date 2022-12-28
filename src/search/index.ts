@@ -1,4 +1,4 @@
-import fs, { mkdirSync } from 'fs';
+import fs, { mkdirSync, RmDirOptions } from 'fs';
 
 const cliProgress = require('cli-progress');
 
@@ -187,11 +187,18 @@ export async function fetchPool(poolConfig: PoolConfigType) {
     }
 
     let poolDir = getPoolDir(poolConfig.contracts.pool.id);
+    let indecesDir = getIndecesDir(poolDir);
 
     if (!await checkPath(
         poolDir
     )) {
         mkdirSync(poolDir);
+    }
+
+    if (!await checkPath(
+        indecesDir
+    )) {
+        mkdirSync(indecesDir);
     }
 
     let finalIndexFile = getFinalIndexFile(poolDir);
@@ -297,7 +304,10 @@ async function extractUsefulTxt(
                     + ID_CHAR + contractId + ID_CHAR
                     + OWNER_CHAR + owner + OWNER_CHAR;
             } else if (cType.indexOf("text/html") > -1) {
-                // text = text + extractWikipediaSearch(await aData.text());
+                artifactString = artifactString 
+                    + strip(extractWikipediaSearch(await aData.text()))
+                    + ID_CHAR + contractId + ID_CHAR
+                    + OWNER_CHAR + owner + OWNER_CHAR;
             }
 
         } catch (e: any) {
@@ -306,6 +316,8 @@ async function extractUsefulTxt(
     }
 
     let dataFile = getDataFile(poolDir);
+    console.log(dataFile);
+    console.log(artifactString);
 
     fs.appendFile(
         dataFile,
@@ -313,6 +325,20 @@ async function extractUsefulTxt(
         () => {}
     );
 
+}
+
+export async function clearLocalIndex(poolConfig: PoolConfigType) {
+    let poolDir = getPoolDir(poolConfig.contracts.pool.id);
+
+    if (!await checkPath(
+        poolDir
+    )) {
+        console.log("Pool index directory does not exist nothing to clear");
+        return;
+    }
+
+    console.log("Removing local pool index...");
+    fs.rmdirSync(poolDir, { recursive: true });
 }
 
 function strip(s: any) {
@@ -326,7 +352,12 @@ function strip(s: any) {
 }
 
 function extractWikipediaSearch(article: string){
-    return article;
+    let articleString = "";
+    var titles = article.match(/<title[^>]*>([^<]+)<\/title>/);
+    if(titles.length > 0) {
+        articleString = articleString + titles[1];
+    }
+    return articleString;
 }
 
 
