@@ -31,6 +31,7 @@ export function getTxEndpoint(txId: string) {
     return `https://arweave.net/${txId}`;
 }
 
+// &sort=asc is important to indexing program
 export function getRedstoneEndpoint(nftSrc: string, page: number) {
-    return `https://gateway.redstone.finance/gateway/contracts-by-source?id=${nftSrc}&page=${page}`;
+    return `https://gateway.redstone.finance/gateway/contracts-by-source?id=${nftSrc}&page=${page}&sort=asc`;
 }

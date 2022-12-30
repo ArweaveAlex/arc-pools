@@ -316,8 +316,6 @@ async function extractUsefulTxt(
     }
 
     let dataFile = getDataFile(poolDir);
-    console.log(dataFile);
-    console.log(artifactString);
 
     fs.appendFile(
         dataFile,
