@@ -1,14 +1,19 @@
+export enum ArtifactEnum {
+    Messaging = "Alex-Messaging",
+    Webpage = "Alex-Webpage"
+}
+
 export type GQLResponseType = {
     cursor: string | null
     node: {
-      id: string
-      tags: KeyValueType[]
-      data: {
-        size: string
-        type: string
-      }
+        id: string
+        tags: KeyValueType[]
+        data: {
+            size: string
+            type: string
+        }
     }
-  }
+}
 
 export interface PoolType {
     id: string

@@ -8,6 +8,7 @@ import { createAsset } from "../assets";
 import { ArweaveClient } from "../../arweave-client";
 import { exitProcess } from "../../utils";
 import { PoolConfigType } from "../../types";
+import { CONTENT_TYPES } from "../../config";
 
 const arClient = new ArweaveClient();
 
@@ -64,7 +65,7 @@ export async function run(config: PoolConfigType) {
     if (!sentList.includes(articles[i])) {
       // await delay(6000);
       console.log("Found non duplicate article to send: " + articles[i])
-      let res = await scrapePage(articles[i]);
+      await scrapePage(articles[i]);
       fs.appendFileSync('data/wikiarticlessent.txt', articles[i] + "\n");
       break;
     }
@@ -73,10 +74,6 @@ export async function run(config: PoolConfigType) {
 
 function onlyUnique(value: any, index: any, self: any) {
   return self.indexOf(value) === index;
-}
-
-function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 const getPage = async (query: string) => {
@@ -134,8 +131,7 @@ const scrapePage = async (query: string) => {
     const content = await getPage(query);
     currentArticleURL = content.url();
     const html = parseHTML(await content.html(), content.title);
-    const categories = await content.categories();
-    const newCats = categories.map((word: any) => word.replace('Category:', ""));
+    await content.categories();
 
     createAsset(
       bundlr,
@@ -143,7 +139,7 @@ const scrapePage = async (query: string) => {
       html,
       {},
       poolConfig,
-      "text/html",
+      CONTENT_TYPES.textHtml,
       `${content.title} Wikipedia Page`
     );
   }

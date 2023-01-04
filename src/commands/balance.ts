@@ -2,12 +2,9 @@ import fs from "fs";
 import Bundlr from "@bundlr-network/client";
 
 import { PoolConfigType } from "../types";
-import { validatePoolConfig, validateControlWalletPath } from "../validations";
+import { validatePoolConfig } from "../validations";
 import { ArgumentsInterface, CommandInterface } from "../interfaces";
-import {
-    CLI_ARGS,
-    POOL_FILE
-} from "../config";
+import { CLI_ARGS } from "../config";
 import { ArweaveClient } from "../arweave-client";
 
 const command: CommandInterface = {
@@ -24,8 +21,8 @@ const command: CommandInterface = {
         let bundlrBalance = await bundlr.getBalance(poolConfig.state.owner.pubkey);
         
 
-        console.log("Arweave balance: " + balance);
-        console.log("Bundlr balance: " + bundlrBalance);
+        console.log(`Arweave balance: ${balance}`);
+        console.log(`Bundlr balance: ${bundlrBalance}`);
     }
 }
 

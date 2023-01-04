@@ -1,6 +1,6 @@
 import { ArweaveClient } from "../arweave-client";
 import { unquoteJsonKeys } from "../utils";
-import { CURSORS, PAGINATOR } from "../config";
+import { PAGINATOR } from "../config";
 import { GQLResponseType, TagFilterType } from "../types";
 
 export async function getGQLData(args: {
@@ -11,7 +11,6 @@ export async function getGQLData(args: {
     reduxCursor: string | null
 }): Promise<GQLResponseType[]> {
 
-    let nextCursor: string | null;
     const arClient = new ArweaveClient();
     const data: GQLResponseType[] = [];
 
@@ -59,12 +58,6 @@ export async function getGQLData(args: {
         const responseData = response.data.data.transactions.edges;
         if (responseData.length > 0) {
             data.push(...responseData);
-            if (responseData.length < PAGINATOR) {
-                nextCursor = CURSORS.end;
-            }
-            else {
-                nextCursor = responseData[responseData.length - 1].cursor;
-            }
         }
     }
 

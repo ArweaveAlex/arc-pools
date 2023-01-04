@@ -24,7 +24,7 @@ Options                                 Description
 --control-wallet <wallet file>          Specifies a wallet to use in the pool creation
 --dname <string>                        Specifies the daemon name to stop
 --image <path to image file>            Specifies an image to use for pool
---mention-tag <twitter username>        Username for twitter with --method user (do not in
+--mention-tag <twitter username>        Username for twitter with --method user (do not include @ or #)
 --method <user or mention>              Used to pull user or mentions for twitter
 --source <twitter or wikipedia>         Specifies the data source
 

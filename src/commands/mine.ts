@@ -1,4 +1,4 @@
-import * as twitter from "../artifacts/miners/twitter";
+import * as twitter from "../artifacts/miners/twitter/miner";
 import * as wikipedia from "../artifacts/miners/wikipedia";
 
 import source from "../options/source";
@@ -19,7 +19,6 @@ const command: CommandInterface = {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
 
         const { source } = args.argv;
-
         if (!source) {
             exitProcess(`No Source Provided`, 1);
         }

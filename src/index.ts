@@ -4,6 +4,7 @@ import path from "path";
 import minimist from "minimist";
 
 import { ArgumentsInterface, CommandInterface, OptionInterface } from "./interfaces";
+import { checkProcessEnv } from "./utils";
 import { APP_TITLE, CLI_ARGS } from "./config";
 
 (async function () {
@@ -11,7 +12,7 @@ import { APP_TITLE, CLI_ARGS } from "./config";
     let command = argv._[0];
     const commandValues = argv._.slice(1);
 
-    const fileFilter = process.argv[0].indexOf("ts-node") > -1 ? '.ts' : '.js';
+    const fileFilter = checkProcessEnv(process.argv[0]);
 
     const commandFiles = fs.readdirSync(path.join(__dirname, "commands")).filter((file) => file.endsWith(fileFilter));
     const commands: Map<string, CommandInterface> = new Map();
