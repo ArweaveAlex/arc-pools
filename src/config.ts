@@ -60,22 +60,47 @@ export const TAGS = {
         appType: "App-Type",
         appVersion: "App-Version",
         application: "Application",
+        artifactName: "Artifact-Name",
+        artifactSeries: "Artifact-Series",
+        artifactType: "Artifact-Type",
+        associationId: "Association-Id",
+        associationSequence: "Association-Sequence",
         contentType: "Content-Type",
         contractSrc: "Contract-Src",
+        dateCreated: "Date-Created",
+        description: "Description",
+        implements: "Implements",
+        initialOwner: "Initial-Owner",
+        initState: "Init-State",
+        keywords: "Keywords",
+        mediaIds: "Media-Ids",
         poolId: "Pool-Id",
         poolName: "Pool-Name",
+        title: "Title",
+        topic: "Topic",
         tweetId: "Tweet-ID",
+        type: "Type",
         uploaderTxId: "Uploader-Tx-Id",
     },
     values: {
         ansVersion: "ANS-110",
+        ansTypes: {
+            socialPost: "social-post",
+            webPage: "web-page"
+        },
         appName: "SmartWeaveContract",
         appVersion: "0.3.0",
         application: "Alex.",
+        initState: {
+            name: (name: string) => `Artifact - ${name}`,
+            ticker: (assetId: string) => `ATOMIC-ASSET-${assetId}`,
+            title: (name: string) => `Alex Artifact - ${name}`
+        },
         poolVersions: {
             "1.2": "Alex-Archiving-Pool-v1.2",
             "1.4": "Alex-Archiving-Pool-v1.4"
-        }
+        },
+        topic: (topic: string) => `Topic: ${topic}`
     }
 }
 
@@ -84,7 +109,7 @@ export const CONTENT_TYPES = {
     json: "application/json",
     octetStream: "application/octet-stream",
     textHtml: "text/html",
-    webpage: "web-page",
+    webpage: "web-page"
 }
 
 export const STORAGE = {
@@ -96,6 +121,11 @@ export const PAGINATOR = 100;
 export const CURSORS = {
     p1: "P1",
     end: "END"
+}
+
+export const MANIFEST = {
+    type: "arweave/paths",
+    version: "0.1.0"
 }
 
 export const FALLBACK_IMAGE = "8HqSqy_nNRSTPv-q-j7_iHGTp6lEA5K77TP4BPuXGyA";

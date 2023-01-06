@@ -1,16 +1,14 @@
 import fs from "fs";
+import axios from "axios";
 import clc from "cli-color";
 import tmp from "tmp-promise";
 import * as path from "path";
 import mime from "mime-types";
 import { mkdir } from "fs/promises";
-import * as tApiV2 from "twitter-api-v2";
 import * as gql from "gql-query-builder";
 
-import Bundlr from "@bundlr-network/client";
-import { Contract, LoggerFactory } from "warp-contracts";
-
-import { ArweaveClient } from "../../../arweave-client";
+import { PoolClient } from "../../../clients/pool";
+import { ArweaveClient } from "../../../clients/arweave";
 
 import {
   walk,
@@ -21,113 +19,163 @@ import {
 } from "../../../utils";
 import { createAsset } from "../../assets";
 import { TAGS, LOOKUP_PARAMS, CONTENT_TYPES } from "../../../config";
-import { PoolConfigType } from "../../../types";
+import { IPoolClient } from "../../../types";
 import { shouldUploadContent } from "../moderator";
 
 const arClient = new ArweaveClient();
 
 // Fetch 10 at a time for rate limit and speed
 // Converts v2 tweets to v1
-export async function processIds(
-  ids: string[], 
-  poolConfig: PoolConfigType, 
+export async function processIdsV2(poolClient: IPoolClient, args: {
+  ids: string[],
   contentModeration: boolean
-) {
-  let twitterV2: tApiV2.TwitterApi = new tApiV2.TwitterApi({
-    appKey: poolConfig.twitterApiKeys.consumer_key,
-    appSecret: poolConfig.twitterApiKeys.consumer_secret,
-    accessToken: poolConfig.twitterApiKeys.token,
-    accessSecret: poolConfig.twitterApiKeys.token_secret,
-  });
+}) {
+  let tweets = await getTweetsfromIds(poolClient, { ids: args.ids });
 
-  const walletKey = JSON.parse(fs.readFileSync(poolConfig.walletPath).toString());
-  const bundlr = new Bundlr(poolConfig.bundlrNode, "arweave", walletKey);
-  const contract = arClient.warp.contract(poolConfig.contracts.pool.id);
-
-  LoggerFactory.INST.logLevel("error", "DefaultStateEvaluator");
-  LoggerFactory.INST.logLevel("error", "HandlerBasedContract");
-  LoggerFactory.INST.logLevel("error", "HandlerExecutorFactory");
-
-  let allTweets: any[] = [];
-  for (var j = 0; j < ids.length; j += 10) {
-    const splitIds: string[] = ids.slice(j, j + 10);
-
-    let rParents = await twitterV2.v2.tweets(splitIds, LOOKUP_PARAMS);
-    if (rParents.data.length > 0) {
-      allTweets = allTweets.concat(rParents)
-    };
-  }
-
-  for (const tweet of allTweets) {
-    let finalTweet = modTweet(tweet);
+  for (const tweet of tweets) {
     // TODO - Uncomment dup
-    let dup = await isDuplicate(finalTweet, poolConfig);
-    if (!dup) {
-      await processTweetV2(
-        finalTweet, 
-        poolConfig, 
-        contentModeration, 
-        bundlr,
-        contract
-      );
-    } else {
-      console.log(clc.red(`Tweet already mined: ${generateTweetName(finalTweet)}`));
-    }
+    // let dup = await isDuplicate(poolClient, { tweet: finalTweet });
+    // if (!dup) {
+    await processThreadV2(poolClient, {
+      tweet: tweet,
+      contentModeration: args.contentModeration
+    });
+    // } else {
+    //   console.log(clc.red(`Tweet already mined: ${generateAssetName(finalTweet)}`));
+    // }
   }
 }
 
-export async function processTweetV2(
-  tweet: any, 
-  poolConfig: PoolConfigType, 
-  contentModeration: boolean, 
-  bundlr: Bundlr,
-  contract: Contract
-) {
-  const tmpdir = await tmp.dir({ unsafeCleanup: true });
-  await processMedia(tweet, tmpdir, poolConfig, contentModeration);
-  const additionalMediaPaths = await processAdditionalMediaPaths(tweet, tmpdir, bundlr)
+/** 
+ * Take one tweet as argument, check if it is part of a conversation
+ * Get thread tweets and run processTweetV2 with associationId - conversationId
+ * If tweet is not part of a thread, run processTweetV2 with associationId - null (No Association-Id Tag)
+**/
+export async function processThreadV2(poolClient: IPoolClient, args: {
+  tweet: any,
+  contentModeration: boolean
+}) {
+  const finalParentTweet = modTweet(args.tweet);
   
+  let associationId: string | null = null;
+  let associationSequence: string | null = "0";
+
+  if (!finalParentTweet.conversation_id) {
+    return;
+  }
+
+  const thread = await getThread(poolClient, {
+    conversationId: finalParentTweet.conversation_id
+  });
+
+  if (thread && thread.length > 0) {
+    const childTweets = await getTweetsfromIds(poolClient, { ids: thread.map((tweet: any) => tweet.id) });
+    
+    // associationId = finalParentTweet.conversation_id;
+
+        processTweetV2(poolClient, {
+          tweet: modTweet(childTweets[0]),
+          contentModeration: args.contentModeration,
+          associationId: associationId,
+          associationSequence: "0"
+        });
+
+    // for (let i = 1; i < childTweets.length + 1; i++) {
+    //     const finalChildTweet = modTweet(childTweets[i - 1]);
+
+    //     processTweetV2(poolClient, {
+    //       tweet: finalChildTweet,
+    //       contentModeration: args.contentModeration,
+    //       associationId: associationId,
+    //       associationSequence: i.toString()
+    //     });
+    // }
+  }
+
+  // processTweetV2(poolClient, {
+  //   tweet: finalParentTweet,
+  //   contentModeration: args.contentModeration,
+  //   associationId: associationId,
+  //   associationSequence: associationSequence
+  // });
+}
+
+export async function processTweetV2(poolClient: IPoolClient, args: {
+  tweet: any,
+  contentModeration: boolean,
+  associationId: string | null,
+  associationSequence: string  | null
+}) {
+  
+  const tmpdir = await tmp.dir({ unsafeCleanup: true });
+
+  const additionalMediaPaths = await processAdditionalMediaPaths(poolClient, {
+    tweet: args.tweet,
+    tmpdir: tmpdir
+  });
+
+  await processMedia(poolClient, {
+    tweet: args.tweet,
+    tmpdir: tmpdir,
+    contentModeration: args.contentModeration
+  });
+
   if (tmpdir) {
     await tmpdir.cleanup()
   }
 
-  await createAsset(
-    bundlr,
-    contract,
-    tweet,
-    additionalMediaPaths,
-    poolConfig,
-    CONTENT_TYPES.json,
-    null
-  );
+  await createAsset(poolClient, {
+    content: args.tweet,
+    contentType: CONTENT_TYPES.json,
+    additionalMediaPaths: additionalMediaPaths,
+    associationId: args.associationId,
+    associationSequence: args.associationSequence,
+    title: null
+  })
 }
 
-async function processAdditionalMediaPaths(
-  tweet: any, 
-  tmpdir: any,
-  bundlr: Bundlr
-) {
+async function getThread(poolClient: IPoolClient, args: {
+  conversationId: string
+}) {
+
+  const response = await axios.get(`https://api.twitter.com/2/tweets/search/recent?query=conversation_id:${args.conversationId}&tweet.fields=in_reply_to_user_id,author_id,created_at,conversation_id&max_results=100`, {
+    headers: {
+      Authorization: `Bearer ${poolClient.poolConfig.twitterApiKeys.bearer_token}`
+    }
+  });
+
+  if (response.data && response.data.data && response.data.data.length > 0) {
+    return response.data.data;
+  }
+
+  return null
+}
+
+async function processAdditionalMediaPaths(poolClient: IPoolClient, args: {
+  tweet: any,
+  tmpdir: any
+}) {
 
   const subTags = [
     { name: TAGS.keys.application, value: TAGS.values.application },
-    { name: TAGS.keys.tweetId, value: `${tweet.id_str ?? "unknown"}` }
+    { name: TAGS.keys.tweetId, value: `${args.tweet.id_str ?? "unknown"}` }
   ]
   const additionalMediaPaths: { [key: string]: any } = {};
 
-  for await (const f of walk(tmpdir.path)) {
-    const relPath = path.relative(tmpdir.path, f)
+  for await (const f of walk(args.tmpdir.path)) {
+    const relPath = path.relative(args.tmpdir.path, f)
     try {
       const mimeType = mime.contentType(mime.lookup(relPath) || CONTENT_TYPES.octetStream) as string;
-      const tx = bundlr.createTransaction(
+      const tx = poolClient.bundlr.createTransaction(
         await fs.promises.readFile(path.resolve(f)),
         { tags: [...subTags, { name: TAGS.keys.contentType, value: mimeType }] }
       )
       await tx.sign();
       const id = tx.id;
-      const cost = await bundlr.getPrice(tx.size);
+      const cost = await poolClient.bundlr.getPrice(tx.size);
       fs.rmSync(path.resolve(f));
       try {
-        await bundlr.fund(cost.multipliedBy(1.1).integerValue());
+        await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
       } catch (e: any) {
         exitProcess(`Error funding bundlr - stopping process\n ${e}`, 1)
       }
@@ -136,29 +184,32 @@ async function processAdditionalMediaPaths(
       additionalMediaPaths[relPath] = { id: id };
     } catch (e: any) {
       fs.rmSync(path.resolve(f));
-      console.log(`Error uploading ${f} for ${tweet.id_str} - ${e}`)
-      continue
+      exitProcess(`Error uploading ${f} for ${args.tweet.id_str} - ${e}`, 1);
     }
   }
 
   return additionalMediaPaths;
 }
 
-async function processMedia(tweet: any, tmpdir: any, poolConfig: PoolConfigType, contentModeration: boolean) {
-  if (tweet?.includes?.media?.length > 0) {
+async function processMedia(poolClient: PoolClient, args: {
+  tweet: any,
+  tmpdir: any,
+  contentModeration: boolean
+}) {
+  if (args.tweet?.includes?.media?.length > 0) {
     try {
-      const mediaDir = path.join(tmpdir.path, "media")
+      const mediaDir = path.join(args.tmpdir.path, "media")
       if (!await checkPath(mediaDir)) {
         await mkdir(mediaDir)
       }
-      for (let i = 0; i < tweet.includes.media.length; i++) {
-        const mediaObject = tweet.includes.media[i];
+      for (let i = 0; i < args.tweet.includes.media.length; i++) {
+        const mediaObject = args.tweet.includes.media[i];
         const url = mediaObject.url;
 
         if (mediaObject && mediaObject.variants && (mediaObject.type === "video" || mediaObject.type === "animated_gif")) {
           const variants = mediaObject?.variants.sort((a: any, b: any) => ((a.bitrate ?? 1000) > (b.bitrate ?? 1000) ? -1 : 1))
-          if (contentModeration) {
-            let contentCheck = await shouldUploadContent(variants[0].url, mediaObject.type, poolConfig);
+          if (args.contentModeration) {
+            let contentCheck = await shouldUploadContent(variants[0].url, mediaObject.type, poolClient.poolConfig);
             if (!contentCheck) {
               return;
             }
@@ -166,8 +217,8 @@ async function processMedia(tweet: any, tmpdir: any, poolConfig: PoolConfigType,
           await processMediaURL(variants[0].url, mediaDir, i)
         } else {
           if (mediaObject.type === "photo" || mediaObject.type === "image") {
-            if (contentModeration) {
-              let contentCheck = await shouldUploadContent(url, "image", poolConfig);
+            if (args.contentModeration) {
+              let contentCheck = await shouldUploadContent(url, "image", poolClient.poolConfig);
               if (!contentCheck) {
                 return;
               }
@@ -178,10 +229,24 @@ async function processMedia(tweet: any, tmpdir: any, poolConfig: PoolConfigType,
       }
     }
     catch (e: any) {
-      console.error(`Error while archiving media: ${e}`)
-      console.log(e);
+      exitProcess(`Error while archiving media: ${e}`, 1);
     }
   }
+}
+
+async function getTweetsfromIds(poolClient: IPoolClient, args: {
+  ids: string[]
+}) {
+  let allTweets: any[] = [];
+  for (let j = 0; j < args.ids.length; j += 10) {
+    const splitIds: string[] = args.ids.slice(j, j + 10);
+
+    let tweets = await poolClient.twitterV2.v2.tweets(splitIds, LOOKUP_PARAMS);
+    if (tweets.data.length > 0) {
+      allTweets = allTweets.concat(tweets);
+    };
+  }
+  return allTweets;
 }
 
 // Reshape v2 tweet for Alex backwards compatibility
@@ -218,8 +283,8 @@ export function modTweet(tweet: any) {
 }
 
 // TODO - Remove GQL Query Builder user getGQLData
-async function isDuplicate(tweet: any, poolConfig: PoolConfigType) {
-  let tName = generateTweetName(tweet);
+async function isDuplicate(poolClient: IPoolClient, args: { tweet: any }) {
+  let tName = generateAssetName(args.tweet);
 
   const query = () => gql.query({
     operation: "transactions",
@@ -230,7 +295,7 @@ async function isDuplicate(tweet: any, poolConfig: PoolConfigType) {
           values: [tName]
         }, {
           name: "Pool-Id",
-          values: [poolConfig.contracts.pool.id]
+          values: [poolClient.poolConfig.contracts.pool.id]
         }],
         type: "[TagFilter!]"
       }
@@ -270,25 +335,37 @@ async function isDuplicate(tweet: any, poolConfig: PoolConfigType) {
   return false;
 }
 
-export function generateTweetName(tweet: any) {
+export function generateAssetName(tweet: any) {
   if (tweet) {
     if (tweet.text) {
       if (tweet.text.length > 30) {
-        return 'Username: ' + tweet.user.name + ', Tweet: ' + truncateString(tweet.text, 30);
+        return `Username: ${tweet.user.name}, Tweet: ${truncateString(tweet.text, 30)}`
       } else {
-        return 'Username: ' + tweet.user.name + ', Tweet: ' + tweet.text;
+        return `Username: ${tweet.user.name}, Tweet: ${tweet.text}`
       }
     } else if (tweet.full_text) {
       if (tweet.full_text.length > 30) {
-        return 'Username: ' + tweet.user.name + ', Tweet: ' + truncateString(tweet.full_text, 30);
+        return `Username: ${tweet.user.name}, Tweet: ${truncateString(tweet.full_text, 30)}`
       } else {
-        return 'Username: ' + tweet.user.name + ', Tweet: ' + tweet.full_text;
+        return `Username: ${tweet.user.name}, Tweet: ${tweet.full_text}`
       }
     } else {
-      return 'Username: ' + tweet.user.name + ', Tweet Id: ' + tweet.id;
-    } 
+      return `Username: ${tweet.user.name}, Tweet: ${tweet.id}`
+    }
   }
   else {
     return 'Username: unknown'
+  }
+}
+
+// Delete the stream rules before and after this run.
+// Before to clear out any previous leftovers from failed runs
+export async function deleteStreamRules(poolClient: IPoolClient) {
+  const rules = await poolClient.twitterV2Bearer.v2.streamRules();
+
+  if (rules.data?.length) {
+    await poolClient.twitterV2Bearer.v2.updateStreamRules({
+      delete: { ids: rules.data.map(rule => rule.id) },
+    });
   }
 }

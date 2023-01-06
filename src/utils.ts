@@ -8,7 +8,7 @@ import { KeyValueType } from "./types";
 
 export function exitProcess(message: string, status: 0 | 1): void {
     console.log(status === 0 ? clc.green(message) : clc.red(message));
-    process.exit(status)
+    process.exit(status);
 }
 
 export function displayJsonUpdate(poolTitle: string, key: string, value: string): void {

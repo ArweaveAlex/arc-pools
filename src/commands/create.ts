@@ -3,7 +3,7 @@ import clc from "cli-color";
 import mime from 'mime';
 import path from "path";
 
-import { ArweaveClient } from "../arweave-client";
+import { ArweaveClient } from "../clients/arweave";
 import { getPools } from "../gql/pools";
 import { exitProcess, displayJsonUpdate } from "../utils";
 import { PoolType, PoolStateType, PoolConfigType } from "../types";
@@ -81,7 +81,7 @@ const command: CommandInterface = {
                 const tx = await arClient.arweavePost.createTransaction({
                     data: image
                 });
-                tx.addTag("Content-Type", type);
+                tx.addTag(TAGS.keys.contentType, type);
                 await arClient.arweavePost.transactions.sign(tx, controlWallet);
                 await arClient.arweavePost.transactions.post(tx);
                 console.log(`Pool image posted, Arweave Tx Id - [`, clc.green(`'${tx.id}'`), `]`);

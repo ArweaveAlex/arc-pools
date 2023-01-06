@@ -15,11 +15,11 @@
     "noImplicitReturns": true,
     "noImplicitAny": false,
     "noImplicitThis": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "strictNullChecks": false,
     "outDir": "bin",
     "resolveJsonModule": true
   },
-  "include": ["src", "src/**/*.json", "src/arweave-client/index.ts"],
+  "include": ["src", "src/**/*.json", "src/clients/arweave/index.ts"],
 }

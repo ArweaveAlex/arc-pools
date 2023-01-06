@@ -26,5 +26,5 @@ export default class ArweaveClient {
         logging: LOGGING
     });
     
-    warp = WarpFactory.forMainnet({ ...defaultCacheOptions, inMemory: true });
+    warp: any = WarpFactory.forMainnet({ ...defaultCacheOptions, inMemory: true });
 }

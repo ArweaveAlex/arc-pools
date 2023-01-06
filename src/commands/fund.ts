@@ -5,7 +5,7 @@ import { PoolConfigType } from "../types";
 import { validatePoolConfig } from "../validations";
 import { ArgumentsInterface, CommandInterface } from "../interfaces";
 import { CLI_ARGS } from "../config";
-import { ArweaveClient } from "../arweave-client";
+import { ArweaveClient } from "../clients/arweave";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.fund,

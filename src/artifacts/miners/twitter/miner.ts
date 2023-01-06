@@ -1,58 +1,26 @@
-import fs from "fs";
 import clc from "cli-color";
 import minimist from "minimist";
 import * as tApiV2 from "twitter-api-v2";
 
-import Bundlr from "@bundlr-network/client";
-import { Contract, LoggerFactory } from "warp-contracts";
+import { PoolClient } from "../../../clients/pool";
 
-import { ArweaveClient } from "../../../arweave-client";
-
+import {
+  processIdsV2,
+  processThreadV2,
+  deleteStreamRules
+} from ".";
 import { exitProcess } from "../../../utils";
-import { PoolConfigType } from "../../../types";
+import { PoolConfigType, IPoolClient } from "../../../types";
 import { CLI_ARGS, STREAM_PARAMS } from "../../../config";
 
-import { modTweet, processIds, processTweetV2 } from ".";
-
-const arClient = new ArweaveClient();
-
-let poolConfig: PoolConfigType;
-
-let twitterV2: tApiV2.TwitterApi;
-let twitterV2Bearer: tApiV2.TwitterApi;
 let contentModeration: boolean;
 
-let walletKey: string;
-let bundlr: Bundlr;
-let contract: Contract;
+export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
+  const poolClient = new PoolClient(poolConfig);
 
-
-// TODO - TwitterClient Class / Add bundlr - contract to ArweaveClient Class
-export async function run(config: PoolConfigType, argv: minimist.ParsedArgs) {
-  poolConfig = config;
-
-  try {
-    walletKey = JSON.parse(fs.readFileSync(poolConfig.walletPath).toString());
-  }
-  catch {
+  if (!poolClient.walletKey) {
     exitProcess(`Invalid Pool Wallet Configuration`, 1);
   }
-
-  twitterV2Bearer = new tApiV2.TwitterApi(poolConfig.twitterApiKeys.bearer_token);
-
-  LoggerFactory.INST.logLevel("error", "DefaultStateEvaluator");
-  LoggerFactory.INST.logLevel("error", "HandlerBasedContract");
-  LoggerFactory.INST.logLevel("error", "HandlerExecutorFactory");
-
-  twitterV2 = new tApiV2.TwitterApi({
-    appKey: poolConfig.twitterApiKeys.consumer_key,
-    appSecret: poolConfig.twitterApiKeys.consumer_secret,
-    accessToken: poolConfig.twitterApiKeys.token,
-    accessSecret: poolConfig.twitterApiKeys.token_secret,
-  });
-
-  bundlr = new Bundlr(poolConfig.bundlrNode, "arweave", walletKey);
-  contract = arClient.warp.contract(poolConfig.contracts.pool.id);
 
   const method = argv["method"];
   const mentionTag = argv["mention-tag"];
@@ -65,71 +33,57 @@ export async function run(config: PoolConfigType, argv: minimist.ParsedArgs) {
       if (!method) {
         console.log(`Defaulting to stream method ...`);
       }
-      mineTweetsByStream();
+      mineTweetsByStream(poolClient);
       return;
     case CLI_ARGS.sources.twitter.methods.mention:
       if (!mentionTag) {
         exitProcess(`Mention tag not provided`, 1);
       }
-      mineTweetsByMention(mentionTag);
+      mineTweetsByMention(poolClient, { mentionTag: mentionTag });
       return;
     case CLI_ARGS.sources.twitter.methods.user:
       if (!username) {
         exitProcess(`Username not provided`, 1);
       }
-      mineTweetsByUser(username);
+      mineTweetsByUser(poolClient, { username: username });
       return;
     default:
       exitProcess(`Invalid method provided`, 1);
   }
 }
 
-// Delete the stream rules before and after this run.
-// Before to clear out any previous leftovers from failed runs
-async function deleteStreamRules() {
-  const rules = await twitterV2Bearer.v2.streamRules();
-
-  if (rules.data?.length) {
-    await twitterV2Bearer.v2.updateStreamRules({
-      delete: { ids: rules.data.map(rule => rule.id) },
-    });
-  }
-}
-
 // Start a twitter stream, process to Arweave one by one
-async function mineTweetsByStream() {
-  console.log("Mining tweets by stream...");
+async function mineTweetsByStream(poolClient: IPoolClient) {
+  console.log(`Mining tweets by stream ...`);
   let stream: tApiV2.TweetStream;
-  try {
-    await deleteStreamRules();
-    stream = twitterV2Bearer.v2.searchStream({ ...STREAM_PARAMS, autoConnect: false });
 
-    let rules = poolConfig.keywords.map((keyword: string) => {
+  try {
+    await deleteStreamRules(poolClient);
+    stream = poolClient.twitterV2Bearer.v2.searchStream({ ...STREAM_PARAMS, autoConnect: false });
+
+    let rules = poolClient.poolConfig.keywords.map((keyword: string) => {
       return {
         value: keyword,
         tag: keyword.toLowerCase().replace(/\s/g, '')
       }
     });
 
-    await twitterV2Bearer.v2.updateStreamRules({
+    await poolClient.twitterV2Bearer.v2.updateStreamRules({
       add: rules,
     });
 
     await stream.connect({ autoReconnect: false });
 
     for await (const tweet of stream) {
-      let finalTweet = modTweet(tweet);
-      await processTweetV2(
-        finalTweet,
-        poolConfig,
-        contentModeration,
-        bundlr,
-        contract
-      );
+      await processThreadV2(poolClient, {
+        tweet: tweet,
+        contentModeration: contentModeration
+      });
     }
 
   }
   catch (e: any) {
+    console.log(e)
     if (stream) {
       stream.close();
     }
@@ -142,12 +96,12 @@ async function mineTweetsByStream() {
  * this will grab those and mine them to the pool
  * @param mentionTag: string
  */
-async function mineTweetsByMention(mentionTag: string) {
+async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: string }) {
   console.log(`Mining Tweets by mention ...`);
-  console.log(`Mention Tag - [`, clc.green(`'${mentionTag}'`), `]`);
+  console.log(`Mention Tag - [`, clc.green(`'${args.mentionTag}'`), `]`);
 
   try {
-    let query = mentionTag;
+    let query = args.mentionTag;
     let resultSet: any;
     let allTweets: any[] = [];
     do {
@@ -157,7 +111,7 @@ async function mineTweetsByMention(mentionTag: string) {
         "tweet.fields": ['referenced_tweets']
       };
       if (resultSet) params.next_token = resultSet.meta.next_token;
-      resultSet = await twitterV2.v2.search(
+      resultSet = await poolClient.twitterV2.v2.search(
         query,
         params
       );
@@ -174,9 +128,13 @@ async function mineTweetsByMention(mentionTag: string) {
       return self.indexOf(item) == pos;
     });
 
-    await processIds(ids, poolConfig, contentModeration);
+    await processIdsV2(poolClient, {
+      ids: ids,
+      contentModeration: contentModeration
+    });
   } catch (e: any) {
-    exitProcess(`Twitter mining failed \n${e}`, 1);  }
+    exitProcess(`Twitter mining failed \n${e}`, 1);
+  }
 }
 
 /*
@@ -184,13 +142,13 @@ async function mineTweetsByMention(mentionTag: string) {
  * ignoring duplicates
  * @param username: string 
  */
-async function mineTweetsByUser(username: string) {
+async function mineTweetsByUser(poolClient: IPoolClient, args: { username: string }) {
   console.log(`Mining Tweets by user ...`);
-  console.log(`User - [`, clc.green(`'${username}'`), `]`);
+  console.log(`User - [`, clc.green(`'${args.username}'`), `]`);
   // let user: any;
 
   // try {
-  //   user = await twitterV2.v2.userByUsername(username);
+  //   user = await poolClient.twitterV2.v2.userByUsername(args.username);
   //   console.log(`User ID - [`, clc.green(`'${user.data.id}'`), `]`);
   // }
   // catch {
@@ -203,12 +161,12 @@ async function mineTweetsByUser(username: string) {
   //   let userTimeline: any;
   //   let allTweets: any[] = [];
   //   do {
-  //     let params: TweetV2UserTimelineParams = {
+  //     let params: tApiV2.TweetV2UserTimelineParams = {
   //       max_results: 100
   //     };
   //     if (userTimeline) params.pagination_token = userTimeline.meta.next_token;
 
-  //     userTimeline = await twitterV2.v2.userTimeline(
+  //     userTimeline = await poolClient.twitterV2.v2.userTimeline(
   //       uid,
   //       params
   //     );
@@ -217,12 +175,18 @@ async function mineTweetsByUser(username: string) {
 
   //   console.log(`${allTweets.length} tweets fetched`);
 
-  // let ids = allTweets.map((tweet: any) => {
+  //   let ids = allTweets.map((tweet: any) => {
   //     return tweet.id
-  // });
+  //   });
 
-  // console.log(ids);
-  // await processIds(ids);
+  //   console.log(ids);
   // }
-  await processIds(["1610701267650723852"], poolConfig, contentModeration)
+
+  await processIdsV2(poolClient, {
+    ids: ["1610988945600577536"],
+    contentModeration: contentModeration
+  });
 }
+
+// ids: ["1610988945600577536"],
+// ids: ["1611060137342504961"],
