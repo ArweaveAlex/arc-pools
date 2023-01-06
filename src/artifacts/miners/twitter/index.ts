@@ -33,16 +33,15 @@ export async function processIdsV2(poolClient: IPoolClient, args: {
   let tweets = await getTweetsfromIds(poolClient, { ids: args.ids });
 
   for (const tweet of tweets) {
-    // TODO - Uncomment dup
-    // let dup = await isDuplicate(poolClient, { tweet: finalTweet });
-    // if (!dup) {
+    let dup = await isDuplicate(poolClient, { tweet: modTweet(tweet) });
+    if (!dup) {
     await processThreadV2(poolClient, {
       tweet: tweet,
       contentModeration: args.contentModeration
     });
-    // } else {
-    //   console.log(clc.red(`Tweet already mined: ${generateAssetName(finalTweet)}`));
-    // }
+    } else {
+      console.log(clc.red(`Tweet already mined: ${generateAssetName(modTweet(tweet))}`));
+    }
   }
 }
 
@@ -71,33 +70,26 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
   if (thread && thread.length > 0) {
     const childTweets = await getTweetsfromIds(poolClient, { ids: thread.map((tweet: any) => tweet.id) });
     
-    // associationId = finalParentTweet.conversation_id;
+    associationId = finalParentTweet.conversation_id;
+
+    for (let i = 1; i < childTweets.length + 1; i++) {
+        const finalChildTweet = modTweet(childTweets[i - 1]);
 
         processTweetV2(poolClient, {
-          tweet: modTweet(childTweets[0]),
+          tweet: finalChildTweet,
           contentModeration: args.contentModeration,
           associationId: associationId,
-          associationSequence: "0"
+          associationSequence: i.toString()
         });
-
-    // for (let i = 1; i < childTweets.length + 1; i++) {
-    //     const finalChildTweet = modTweet(childTweets[i - 1]);
-
-    //     processTweetV2(poolClient, {
-    //       tweet: finalChildTweet,
-    //       contentModeration: args.contentModeration,
-    //       associationId: associationId,
-    //       associationSequence: i.toString()
-    //     });
-    // }
+    }
   }
 
-  // processTweetV2(poolClient, {
-  //   tweet: finalParentTweet,
-  //   contentModeration: args.contentModeration,
-  //   associationId: associationId,
-  //   associationSequence: associationSequence
-  // });
+  processTweetV2(poolClient, {
+    tweet: finalParentTweet,
+    contentModeration: args.contentModeration,
+    associationId: associationId,
+    associationSequence: associationSequence
+  });
 }
 
 export async function processTweetV2(poolClient: IPoolClient, args: {

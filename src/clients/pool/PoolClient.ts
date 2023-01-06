@@ -21,9 +21,7 @@ export default class PoolClient implements IPoolClient {
     warp: any;
 
     constructor(poolConfig: PoolConfigType) {
-        LoggerFactory.INST.logLevel("error", "DefaultStateEvaluator");
-        LoggerFactory.INST.logLevel("error", "HandlerBasedContract");
-        LoggerFactory.INST.logLevel("error", "HandlerExecutorFactory");
+        LoggerFactory.INST.logLevel("fatal");
 
         this.poolConfig = poolConfig;
 
