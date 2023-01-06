@@ -269,7 +269,7 @@ async function processIds(ids: string[]) {
         if (!dup) {
             await processTweetV2(finalTweet);
         } else {
-            console.log("Tweet already mined skipping: " + generateTweetName(allTweets[j]))
+            console.log("Tweet already mined skipping: " + generateTweetName(finalTweet))
         }
     }
 }

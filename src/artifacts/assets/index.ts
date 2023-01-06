@@ -47,7 +47,6 @@ function truncateString(str: string, num: number) {
 }
 
 export const generateTweetName = (tweet: any) => {
-
   if(tweet.text){
     if(tweet.text.length > 30){
       return 'Username: ' + tweet.user.name + ', Tweet: ' + truncateString(tweet.text, 30);
