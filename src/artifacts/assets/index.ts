@@ -4,7 +4,6 @@ import { readFileSync } from 'fs';
 import { Warp, WarpFactory, defaultCacheOptions, Contract, LoggerFactory } from 'warp-contracts';
 import { ArweaveSigner } from 'arbundles/src/signing';
 import { createData } from 'arbundles';
-import { exitProcess } from '../../utils';
 
 let keys: any;
 let bundlr: Bundlr;
@@ -66,16 +65,6 @@ export const generateTweetName = (tweet: any) => {
 
 }
 
-export const generateTweetDescription = (tweet: any) => {
-   if (tweet.full_text) {
-    return tweet.full_text;
-  } else if(tweet.text){
-    return tweet.text;
-  } else {
-    return 'Username: ' + tweet.user.name + ', Tweet Id: ' + tweet.id;
-  }
-}
-
 export const createAsset = async (
     bundlrIn: Bundlr,
     contractIn: Contract,
@@ -123,8 +112,8 @@ export const createAsset = async (
     const dataAndTags = await createDataAndTags(
       assetId, 
       contentType === 'application/json' ? generateTweetName(content) : articleTitle, 
-      contentType === 'application/json' ? generateTweetDescription(content) : articleTitle, 
-      contentType === 'application/json' ? 'social-post' : 'web-page', 
+      contentType === 'application/json' ? generateTweetName(content) : articleTitle, 
+      contentType === 'application/json' ? 'application/json' : 'web-page', 
       contentType,
       additionalPaths,
       config
@@ -170,57 +159,7 @@ async function createDataAndTags(
 
   let index = contentType === 'application/json' ? { path: "tweet.json" } : { path: "index.html" };
   let paths = contentType === 'application/json' ? { "tweet.json": { id: assetId } } : { "index.html": { id: assetId } };
-  let aType = contentType === 'application/json' ? "Alex-Messaging" : "Alex-Webpage";
-
-  let tagList = [
-    { name: 'App-Name', value: 'SmartWeaveContract' },
-    { name: 'App-Version', value: '0.3.0' },
-    { name: 'Content-Type', value: "application/x.arweave-manifest+json" },
-    { name: 'Contract-Src', value: config.contracts.nft.src},
-    { name: "Pool-Id", value: config.contracts.pool.id },
-    { name: 'Title', value: name },
-    { name: 'Description', value: description },
-    { name: 'Type', value: assetType },
-    { name: "Artifact-Series", value: "Alex." },
-    { name: "Artifact-Name", value: name },
-    { name: "Initial-Owner", value: tokenHolder },
-    { name: "Date-Created", value: dNow.toString() },
-    { name: "Artifact-Type", value: aType},
-    { name: 'Keywords', value: JSON.stringify(config.keywords) },
-    { name: "Media-Ids", value: JSON.stringify(additionalPaths)},
-    { name: "Implements", value: "ANS-110" },   
-    {
-      name: 'Init-State', value: JSON.stringify({
-        ticker: "ATOMIC-ASSET-" + assetId,
-        balances: {
-          [tokenHolder]: 1
-        },
-        contentType: contentType,
-        description: `${description}`,
-        lastTransferTimestamp: null,
-        lockTime: 0,
-        maxSupply: 1,
-        title: `Alex Artifact - ${name}`,
-        name: `Artifact - ${name}`,
-        transferable: false,
-        dateCreated: dNow.toString(),
-        owner: tokenHolder
-      }).replace(/[\u007F-\uFFFF]/g, function(chr) {
-        return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4)
-      })
-    }
-  ];
-
-  if(!config.topics || config.topics.length < 1) {
-    exitProcess("Please configure topics in pools.json", 1);
-  }
-
-  for(let i = 0; i < config.topics.length; i++) {
-    tagList.push(
-      { name: "Topic:" + config.topics[i], value: config.topics[i]}
-    );
-  }
-
+  let aType = contentType === 'application/json' ? "Alex-Messaging" : "Alex-Webpage"
   return {
     data: JSON.stringify({
       manifest: "arweave/paths",
@@ -228,6 +167,44 @@ async function createDataAndTags(
       index: index,
       paths: paths
     }),
-    tags: tagList
+    tags: [
+      { name: 'App-Name', value: 'SmartWeaveContract' },
+      { name: 'App-Version', value: '0.3.0' },
+      { name: 'Content-Type', value: "application/x.arweave-manifest+json" },
+      { name: 'Contract-Src', value: config.contracts.nft.src},
+      { name: "Pool-Id", value: config.contracts.pool.id },
+      { name: 'Title', value: name },
+      { name: 'Description', value: description },
+      { name: 'Type', value: assetType },
+      { name: "Artifact-Series", value: "Alex." },
+      { name: "Artifact-Name", value: name },
+      { name: "Initial-Owner", value: tokenHolder },
+      { name: "Date-Created", value: dNow.toString() },
+      { name: "Artifact-Type", value: aType},
+      { name: 'Keywords', value: JSON.stringify(config.keywords) },
+      { name: "Media-Ids", value: JSON.stringify(additionalPaths)},
+      { name: "Implements", value: "ANS-110" },
+      { name: "Topic", value: "Topic:" + config.keywords[0]},      
+      {
+        name: 'Init-State', value: JSON.stringify({
+          ticker: "ATOMIC-ASSET-" + assetId,
+          balances: {
+            [tokenHolder]: 1
+          },
+          contentType: contentType,
+          description: `${description}`,
+          lastTransferTimestamp: null,
+          lockTime: 0,
+          maxSupply: 1,
+          title: `Alex Artifact - ${name}`,
+			    name: `Artifact - ${name}`,
+          transferable: false,
+          dateCreated: dNow.toString(),
+          owner: tokenHolder
+        }).replace(/[\u007F-\uFFFF]/g, function(chr) {
+          return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4)
+        })
+      }
+    ]
   }
 }
