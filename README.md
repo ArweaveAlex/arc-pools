@@ -92,9 +92,9 @@ A pools.json file will be generated looking similar to the one below
             "bearer_token": ""
         },
         "clarifaiApiKey": "",
-        "topics": {
+        "topics": [
             "history"
-        }
+        ]
     }
 }
 ```
