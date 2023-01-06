@@ -57,14 +57,15 @@ export type PoolConfigType = {
         image: NStringType
         timestamp: NStringType
     },
-    walletPath: string
-    bundlrNode: string
+    walletPath: string,
+    bundlrNode: string,
     twitter: {
         userIds: string[]
     },
-    keywords: string[]
+    keywords: string[],
     twitterApiKeys: any,
-    clarifaiApiKey: string
+    clarifaiApiKey: string,
+    topics: string[]
 }
 
 export type TagFilterType = { name: string, values: string[] }

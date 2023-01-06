@@ -76,7 +76,10 @@ let poolJson =
             "token_secret": "",
             "bearer_token": ""
         },
-        "clarifaiApiKey": ""
+        "clarifaiApiKey": "",
+        "topics": [
+            "history"
+        ]
     };
 
 
