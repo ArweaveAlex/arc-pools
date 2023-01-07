@@ -5,15 +5,20 @@ import { createData } from "arbundles"
 import { ArweaveSigner } from "arbundles/src/signing";
 
 import { ArtifactEnum, IPoolClient } from "../../types";
-import { generateAssetName } from "../miners/twitter";
 import { TAGS, CONTENT_TYPES, MANIFEST } from "../../config";
 import { PoolClient } from "../../clients/pool";
 import { contentType } from "mime-types";
 import { exitProcess } from "../../utils";
 
 export async function createAsset(poolClient: PoolClient, args: {
+  index: any,
+  paths: any,
   content: any,
   contentType: string,
+  artifactType: ArtifactEnum,
+  name: string,
+  description: string,
+  type: string,
   additionalMediaPaths: any,
   associationId: string | null,
   associationSequence: string | null,
@@ -24,26 +29,17 @@ export async function createAsset(poolClient: PoolClient, args: {
     contentType: args.contentType
   });
 
-  let name: string;
-  let description: string;
-  switch (args.contentType) {
-    case (CONTENT_TYPES.json as any):
-      name = generateAssetName(args.content);
-      description = generateAssetName(args.content);
-      break;
-    default:
-      name = args.title;
-      description = args.title;
-      break;
-  }
-
   const contractData = await createContractData(poolClient, {
+    index: args.index,
+    paths: args.paths,
+    contentType: args.contentType,
+    artifactType: args.artifactType,
+    type: args.type,
+    name: args.name,
+    description: args.description,
     assetId: assetId,
     associationId: args.associationId,
     associationSequence: args.associationSequence,
-    contentType: args.contentType,
-    name: name,
-    description: description,
     additionalMediaPaths: args.additionalMediaPaths
   });
 
@@ -108,9 +104,13 @@ async function deployToWarp(poolClient: IPoolClient, args: {
 }
 
 async function createContractData(poolClient: IPoolClient, args: {
+  index: any,
+  paths: any,
   assetId: string,
   associationId: string | null,
   associationSequence: string | null,
+  artifactType: ArtifactEnum,
+  type: string,
   contentType: string,
   name: string,
   description: string,
@@ -119,32 +119,12 @@ async function createContractData(poolClient: IPoolClient, args: {
   const dateTime = new Date().getTime().toString();
   const tokenHolder = await getRandomContributor(poolClient);
 
-  let index: any;
-  let paths: any;
-  let artifactType: any;
-  let type: any;
-
-  switch (args.contentType) {
-    case (CONTENT_TYPES.json as any):
-      index = { path: "tweet.json" };
-      paths = { "tweet.json": { id: args.assetId } };
-      artifactType = ArtifactEnum.Messaging;
-      type = TAGS.values.ansTypes.socialPost;
-      break;
-    default:
-      index = { path: "index.html" };
-      paths = { "index.html": { id: args.assetId } };
-      artifactType = ArtifactEnum.Messaging;
-      type = TAGS.values.ansTypes.webPage;
-      break;
-  }
-
   return {
     data: JSON.stringify({
       manifest: MANIFEST.type,
       version: MANIFEST.version,
-      index: index,
-      paths: paths
+      index: args.index,
+      paths: args.paths(args.assetId)
     }),
     tags: [
       { name: TAGS.keys.appName, value: TAGS.values.appName },
@@ -154,12 +134,12 @@ async function createContractData(poolClient: IPoolClient, args: {
       { name: TAGS.keys.poolId, value: poolClient.poolConfig.contracts.pool.id },
       { name: TAGS.keys.title, value: args.name },
       { name: TAGS.keys.description, value: args.description },
-      { name: TAGS.keys.type, value: type },
+      { name: TAGS.keys.type, value: args.type },
       { name: TAGS.keys.artifactSeries, value: TAGS.values.application },
       { name: TAGS.keys.artifactName, value: args.name },
       { name: TAGS.keys.initialOwner, value: tokenHolder },
       { name: TAGS.keys.dateCreated, value: dateTime },
-      { name: TAGS.keys.artifactType, value: artifactType },
+      { name: TAGS.keys.artifactType, value: args.artifactType },
       { name: TAGS.keys.keywords, value: JSON.stringify(poolClient.poolConfig.keywords) },
       { name: TAGS.keys.mediaIds, value: JSON.stringify(args.additionalMediaPaths) },
       { name: TAGS.keys.associationId, value: args.associationId ? args.associationId : "" },

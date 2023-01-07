@@ -15,6 +15,7 @@ import { CLI_ARGS, STREAM_PARAMS } from "../../../config";
 
 let contentModeration: boolean;
 
+// TODO - Test all methods
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
   const poolClient = new PoolClient(poolConfig);
 
@@ -187,6 +188,3 @@ async function mineTweetsByUser(poolClient: IPoolClient, args: { username: strin
     contentModeration: contentModeration
   });
 }
-
-// ids: ["1610988945600577536"],
-// ids: ["1611060137342504961"],

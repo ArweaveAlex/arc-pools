@@ -19,7 +19,7 @@ import {
 } from "../../../utils";
 import { createAsset } from "../../assets";
 import { TAGS, LOOKUP_PARAMS, CONTENT_TYPES } from "../../../config";
-import { IPoolClient } from "../../../types";
+import { ArtifactEnum, IPoolClient } from "../../../types";
 import { shouldUploadContent } from "../moderator";
 
 const arClient = new ArweaveClient();
@@ -33,78 +33,77 @@ export async function processIdsV2(poolClient: IPoolClient, args: {
   let tweets = await getTweetsfromIds(poolClient, { ids: args.ids });
 
   for (const tweet of tweets) {
-    let dup = await isDuplicate(poolClient, { tweet: modTweet(tweet) });
-    if (!dup) {
+    // let dup = await isDuplicate(poolClient, { tweet: tweet });
+    // if (!dup) { // TODO - uncomment dup
     await processThreadV2(poolClient, {
       tweet: tweet,
       contentModeration: args.contentModeration
     });
-    } else {
-      console.log(clc.red(`Tweet already mined: ${generateAssetName(modTweet(tweet))}`));
-    }
+    // }
+    // else {
+    //   console.log(clc.red(`Tweet already mined: ${generateAssetName(tweet)}`));
+    // }
   }
 }
 
 /** 
  * Take one tweet as argument, check if it is part of a conversation
  * Get thread tweets and run processTweetV2 with associationId - conversationId
- * If tweet is not part of a thread, run processTweetV2 with associationId - null (No Association-Id Tag)
+ * If tweet is not part of a thread, run processTweetV2 with associationId - null
 **/
 export async function processThreadV2(poolClient: IPoolClient, args: {
   tweet: any,
   contentModeration: boolean
 }) {
-  const finalParentTweet = modTweet(args.tweet);
-  
   let associationId: string | null = null;
   let associationSequence: string | null = "0";
 
-  if (!finalParentTweet.conversation_id) {
-    return;
-  }
-
-  const thread = await getThread(poolClient, {
-    conversationId: finalParentTweet.conversation_id
-  });
-
-  if (thread && thread.length > 0) {
-    const childTweets = await getTweetsfromIds(poolClient, { ids: thread.map((tweet: any) => tweet.id) });
-    
-    associationId = finalParentTweet.conversation_id;
-
-    for (let i = 1; i < childTweets.length + 1; i++) {
-        const finalChildTweet = modTweet(childTweets[i - 1]);
-
-        processTweetV2(poolClient, {
-          tweet: finalChildTweet,
-          contentModeration: args.contentModeration,
-          associationId: associationId,
-          associationSequence: i.toString()
-        });
-    }
-  }
-
   processTweetV2(poolClient, {
-    tweet: finalParentTweet,
+    tweet: args.tweet,
     contentModeration: args.contentModeration,
     associationId: associationId,
     associationSequence: associationSequence
   });
+
+  if (!args.tweet.conversation_id) {
+    return;
+  }
+
+  const thread = await getThread(poolClient, {
+    conversationId: args.tweet.conversation_id
+  });
+
+  if (thread && thread.length > 0) {
+    const childTweets = await getTweetsfromIds(poolClient, { ids: thread.map((tweet: any) => tweet.id) });
+
+    associationId = args.tweet.conversation_id;
+
+    let i = 1;
+    const intervalId = setInterval(() => {
+      if (i <= childTweets.length) {
+        processTweetV2(poolClient, {
+          tweet: childTweets[i - 1],
+          contentModeration: args.contentModeration,
+          associationId: associationId,
+          associationSequence: i.toString()
+        });
+        i++;
+      }
+      else {
+        clearInterval(intervalId);
+      }
+    }, 2500);
+  }
 }
 
 export async function processTweetV2(poolClient: IPoolClient, args: {
   tweet: any,
   contentModeration: boolean,
   associationId: string | null,
-  associationSequence: string  | null
+  associationSequence: string | null
 }) {
-  
-  const tmpdir = await tmp.dir({ unsafeCleanup: true });
 
-  const additionalMediaPaths = await processAdditionalMediaPaths(poolClient, {
-    tweet: args.tweet,
-    tmpdir: tmpdir
-  });
+  const tmpdir = await tmp.dir({ unsafeCleanup: true });
 
   await processMedia(poolClient, {
     tweet: args.tweet,
@@ -112,18 +111,29 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     contentModeration: args.contentModeration
   });
 
+  const additionalMediaPaths = await processAdditionalMediaPaths(poolClient, {
+    tweet: args.tweet,
+    tmpdir: tmpdir
+  });
+
   if (tmpdir) {
     await tmpdir.cleanup()
   }
 
   await createAsset(poolClient, {
+    index: { path: "tweet.json" },
+    paths: (assetId: string) => ({ "tweet.json": { id: assetId } }),
     content: args.tweet,
     contentType: CONTENT_TYPES.json,
+    artifactType: ArtifactEnum.Messaging,
+    name: generateAssetName(args.tweet),
+    description: generateAssetName(args.tweet),
+    type: TAGS.values.ansTypes.socialPost,
     additionalMediaPaths: additionalMediaPaths,
     associationId: args.associationId,
     associationSequence: args.associationSequence,
     title: null
-  })
+  });
 }
 
 async function getThread(poolClient: IPoolClient, args: {
@@ -143,6 +153,48 @@ async function getThread(poolClient: IPoolClient, args: {
   return null
 }
 
+function getUser(authorId: string, users: any[]) {
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].id === authorId) {
+      return users[i];
+    }
+  }
+  return null;
+}
+
+function getMedia(mediaKeys: string[], mediaObjects: any[]) {
+  const mediaByTweet: any[] = [];
+  for (let i = 0; i < mediaObjects.length; i++) {
+    if (mediaKeys.includes(mediaObjects[i].media_key)) {
+      mediaByTweet.push(mediaObjects[i]);
+    }
+  }
+  return mediaByTweet;
+}
+
+async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }) {
+  let allTweets: any[] = [];
+
+  for (let j = 0; j < args.ids.length; j += 10) {
+    const splitIds: string[] = args.ids.slice(j, j + 10);
+
+    let tweets = await poolClient.twitterV2.v2.tweets(splitIds, LOOKUP_PARAMS);
+    if (tweets.data.length > 0) {
+      for (let i = 0; i < tweets.data.length; i++) {
+        allTweets.push({
+          ...tweets.data[i],
+          user: getUser(tweets.data[i].author_id, tweets.includes.users),
+          includes: {
+            media: tweets.data[i].attachments?.media_keys ?
+              getMedia(tweets.data[i].attachments.media_keys, tweets.includes.media) : []
+          }
+        })
+      }
+    }
+  }
+  return allTweets;
+}
+
 async function processAdditionalMediaPaths(poolClient: IPoolClient, args: {
   tweet: any,
   tmpdir: any
@@ -150,7 +202,7 @@ async function processAdditionalMediaPaths(poolClient: IPoolClient, args: {
 
   const subTags = [
     { name: TAGS.keys.application, value: TAGS.values.application },
-    { name: TAGS.keys.tweetId, value: `${args.tweet.id_str ?? "unknown"}` }
+    { name: TAGS.keys.tweetId, value: `${args.tweet.id ?? "unknown"}` }
   ]
   const additionalMediaPaths: { [key: string]: any } = {};
 
@@ -168,15 +220,16 @@ async function processAdditionalMediaPaths(poolClient: IPoolClient, args: {
       fs.rmSync(path.resolve(f));
       try {
         await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
-      } catch (e: any) {
+      }
+      catch (e: any) {
         exitProcess(`Error funding bundlr - stopping process\n ${e}`, 1)
       }
       await tx.upload();
-      if (!id) { throw new Error("Upload Error") }
+      if (!id) exitProcess(`Upload Error`, 1);
       additionalMediaPaths[relPath] = { id: id };
     } catch (e: any) {
       fs.rmSync(path.resolve(f));
-      exitProcess(`Error uploading ${f} for ${args.tweet.id_str} - ${e}`, 1);
+      exitProcess(`Error uploading ${f} for ${args.tweet.id} - ${e}`, 1);
     }
   }
 
@@ -224,54 +277,6 @@ async function processMedia(poolClient: PoolClient, args: {
       exitProcess(`Error while archiving media: ${e}`, 1);
     }
   }
-}
-
-async function getTweetsfromIds(poolClient: IPoolClient, args: {
-  ids: string[]
-}) {
-  let allTweets: any[] = [];
-  for (let j = 0; j < args.ids.length; j += 10) {
-    const splitIds: string[] = args.ids.slice(j, j + 10);
-
-    let tweets = await poolClient.twitterV2.v2.tweets(splitIds, LOOKUP_PARAMS);
-    if (tweets.data.length > 0) {
-      allTweets = allTweets.concat(tweets);
-    };
-  }
-  return allTweets;
-}
-
-// Reshape v2 tweet for Alex backwards compatibility
-export function modTweet(tweet: any) {
-  let finalTweet: any = {};
-  let isListData = tweet.data.length && tweet.data.length > 0;
-
-  finalTweet = tweet.data;
-
-  if (isListData) {
-    finalTweet = tweet.data[0];
-  }
-  if (!finalTweet.full_text) {
-    finalTweet.full_text = finalTweet.text;
-  }
-
-  finalTweet.includes = tweet.includes;
-
-  // Find the author of the tweet
-  // Push that onto top level as the user
-  for (let i = 0; i < tweet.includes.users.length; i++) {
-    let author_id = tweet.data.author_id;
-    if (isListData) {
-      author_id = tweet.data[0].author_id
-    }
-    if (tweet.includes.users[i].id === author_id) {
-      let user = tweet.includes.users[i];
-      user.screen_name = user.username;
-      finalTweet.user = user;
-    }
-  }
-
-  return finalTweet;
 }
 
 // TODO - Remove GQL Query Builder user getGQLData
