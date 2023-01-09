@@ -184,7 +184,7 @@ async function mineTweetsByUser(poolClient: IPoolClient, args: { username: strin
   // }
 
   await processIdsV2(poolClient, {
-    ids: ["1610988945600577536"],
+    ids: ["1612437450470854657"],
     contentModeration: contentModeration
   });
 }

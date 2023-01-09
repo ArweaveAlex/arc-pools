@@ -58,13 +58,6 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
   let associationId: string | null = null;
   let associationSequence: string | null = "0";
 
-  processTweetV2(poolClient, {
-    tweet: args.tweet,
-    contentModeration: args.contentModeration,
-    associationId: associationId,
-    associationSequence: associationSequence
-  });
-
   if (!args.tweet.conversation_id) {
     return;
   }
@@ -94,6 +87,13 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
       }
     }, 2500);
   }
+
+  processTweetV2(poolClient, {
+    tweet: args.tweet,
+    contentModeration: args.contentModeration,
+    associationId: associationId,
+    associationSequence: associationSequence
+  });
 }
 
 export async function processTweetV2(poolClient: IPoolClient, args: {
