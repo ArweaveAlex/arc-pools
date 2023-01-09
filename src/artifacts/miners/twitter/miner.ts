@@ -188,3 +188,8 @@ async function mineTweetsByUser(poolClient: IPoolClient, args: { username: strin
     contentModeration: contentModeration
   });
 }
+
+// 1612437461438763011
+// 1612437458544742402 x
+// 1612437450470854657
+// 1612437455436713988

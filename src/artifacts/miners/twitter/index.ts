@@ -55,8 +55,6 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
   tweet: any,
   contentModeration: boolean
 }) {
-  let associationId: string | null = null;
-  let associationSequence: string | null = "0";
 
   if (!args.tweet.conversation_id) {
     return;
@@ -67,9 +65,19 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
   });
 
   if (thread && thread.length > 0) {
+    let associationId: string | null = null;
+    let associationSequence: string | null = "0";
+
     const childTweets = await getTweetsfromIds(poolClient, { ids: thread.map((tweet: any) => tweet.id) });
 
     associationId = args.tweet.conversation_id;
+
+    processTweetV2(poolClient, {
+      tweet: args.tweet,
+      contentModeration: args.contentModeration,
+      associationId: associationId,
+      associationSequence: associationSequence
+    });
 
     let i = 1;
     const intervalId = setInterval(() => {
@@ -87,13 +95,14 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
       }
     }, 2500);
   }
-
-  processTweetV2(poolClient, {
-    tweet: args.tweet,
-    contentModeration: args.contentModeration,
-    associationId: associationId,
-    associationSequence: associationSequence
-  });
+  else {
+    processTweetV2(poolClient, {
+      tweet: args.tweet,
+      contentModeration: args.contentModeration,
+      associationId: null,
+      associationSequence: null
+    });
+  }
 }
 
 export async function processTweetV2(poolClient: IPoolClient, args: {

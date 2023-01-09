@@ -4,5 +4,6 @@
 **/wallets
 **/cache
 **/alexfiles
-**/pools.json
+**/pools*.json
+**/sindex
 **/.DS_Store

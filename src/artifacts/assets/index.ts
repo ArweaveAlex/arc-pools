@@ -97,7 +97,6 @@ async function deployToWarp(poolClient: IPoolClient, args: {
     return dataItem.id;
   }
   catch (e: any) {
-    console.log(args.contractData)
     exitProcess(`Error deploying to warp ...\n ${e}`, 1);
   }
 
