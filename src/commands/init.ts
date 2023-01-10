@@ -1,8 +1,8 @@
 import fs from "fs";
 
-import { ArgumentsInterface, CommandInterface } from "../interfaces";
+import { ArgumentsInterface, CommandInterface } from "../config/interfaces";
 import { CLI_ARGS, POOL_FILE } from "../config";
-import { exitProcess } from "../utils";
+import { exitProcess } from "../config/utils";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.init,

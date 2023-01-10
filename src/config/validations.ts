@@ -1,7 +1,7 @@
 import fs from "fs";
 
 import { exitProcess } from "./utils";
-import { POOL_FILE } from "./config";
+import { POOL_FILE } from ".";
 import { PoolConfigType } from "./types";
 import { ArgumentsInterface } from "./interfaces";
 

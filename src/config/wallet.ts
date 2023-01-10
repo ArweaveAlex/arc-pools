@@ -1,4 +1,4 @@
-import { ArweaveClient } from './clients/arweave';
+import { ArweaveClient } from '../clients/arweave';
 
 import { getKeyPairFromMnemonic } from "human-crypto-keys";
 import { webcrypto } from 'crypto'

@@ -1,9 +1,9 @@
 import fs from "fs";
 import Bundlr from "@bundlr-network/client";
 
-import { PoolConfigType } from "../types";
-import { validatePoolConfig } from "../validations";
-import { ArgumentsInterface, CommandInterface } from "../interfaces";
+import { PoolConfigType } from "../config/types";
+import { validatePoolConfig } from "../config/validations";
+import { ArgumentsInterface, CommandInterface } from "../config/interfaces";
 import { CLI_ARGS } from "../config";
 import { ArweaveClient } from "../clients/arweave";
 

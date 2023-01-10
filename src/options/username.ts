@@ -1,4 +1,4 @@
-import { OptionInterface } from "../interfaces";
+import { OptionInterface } from "../config/interfaces";
 import { CLI_ARGS } from "../config";
 
 const option: OptionInterface = {

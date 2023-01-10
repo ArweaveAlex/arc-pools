@@ -4,10 +4,10 @@ import * as wikipedia from "../artifacts/miners/wikipedia";
 import source from "../options/source";
 import method from "../options/method";
 
-import { exitProcess } from "../utils";
-import { PoolConfigType } from "../types";
-import { validatePoolConfig } from "../validations";
-import { ArgumentsInterface, CommandInterface } from "../interfaces";
+import { exitProcess } from "../config/utils";
+import { PoolConfigType } from "../config/types";
+import { validatePoolConfig } from "../config/validations";
+import { ArgumentsInterface, CommandInterface } from "../config/interfaces";
 import { CLI_ARGS } from "../config";
 
 const command: CommandInterface = {

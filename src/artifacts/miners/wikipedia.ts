@@ -7,7 +7,7 @@
 // import { createAsset } from "../assets";
 // import { ArweaveClient } from "../../clients/arweave";
 // import { exitProcess } from "../../utils";
-import { PoolConfigType } from "../../types";
+import { PoolConfigType } from "../../config/types";
 // import { CONTENT_TYPES } from "../../config";
 
 // const arClient = new ArweaveClient();

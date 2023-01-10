@@ -5,12 +5,12 @@ import path from "path";
 
 import { ArweaveClient } from "../clients/arweave";
 import { getPools } from "../gql/pools";
-import { exitProcess, displayJsonUpdate } from "../utils";
-import { PoolType, PoolStateType, PoolConfigType } from "../types";
-import { validatePoolConfig, validateControlWalletPath } from "../validations";
-import { ArgumentsInterface, CommandInterface } from "../interfaces";
-import { createWallet } from "../wallet";
-import { sonarLink } from "../endpoints";
+import { exitProcess, displayJsonUpdate } from "../config/utils";
+import { PoolType, PoolStateType, PoolConfigType } from "../config/types";
+import { validatePoolConfig, validateControlWalletPath } from "../config/validations";
+import { ArgumentsInterface, CommandInterface } from "../config/interfaces";
+import { createWallet } from "../config/wallet";
+import { sonarLink } from "../config/endpoints";
 import {
     CLI_ARGS,
     NFT_CONTRACT_PATH,

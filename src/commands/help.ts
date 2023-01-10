@@ -2,7 +2,7 @@ import clc from "cli-color";
 import figlet from "figlet";
 import CLI from 'clui';
 
-import { ArgumentsInterface, CommandInterface } from "../interfaces";
+import { ArgumentsInterface, CommandInterface } from "../config/interfaces";
 import { APP_TITLE, CLI_ARGS } from "../config";
 
 

@@ -2,9 +2,9 @@ import { ArweaveClient } from "../clients/arweave";
 import {
     GQLResponseType,
     PoolType
-} from "../types";
+} from "../config/types";
 import { getGQLData } from "../gql";
-import { getTagValue } from "../utils";
+import { getTagValue } from "../config/utils";
 import { TAGS } from "../config";
 
 export async function getPoolIds() {

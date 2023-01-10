@@ -3,8 +3,8 @@ import clc from "cli-color";
 import path from "path";
 import minimist from "minimist";
 
-import { ArgumentsInterface, CommandInterface, OptionInterface } from "./interfaces";
-import { checkProcessEnv } from "./utils";
+import { ArgumentsInterface, CommandInterface, OptionInterface } from "./config/interfaces";
+import { checkProcessEnv } from "./config/utils";
 import { APP_TITLE, CLI_ARGS } from "./config";
 
 (async function () {

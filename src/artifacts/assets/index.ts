@@ -4,11 +4,11 @@ import clc from "cli-color";
 import { createData } from "arbundles"
 import { ArweaveSigner } from "arbundles/src/signing";
 
-import { ArtifactEnum, IPoolClient } from "../../types";
+import { ArtifactEnum, IPoolClient } from "../../config/types";
 import { TAGS, CONTENT_TYPES, MANIFEST } from "../../config";
 import { PoolClient } from "../../clients/pool";
 import { contentType } from "mime-types";
-import { exitProcess } from "../../utils";
+import { exitProcess } from "../../config/utils";
 
 export async function createAsset(poolClient: PoolClient, args: {
   index: any,
@@ -20,6 +20,7 @@ export async function createAsset(poolClient: PoolClient, args: {
   description: string,
   type: string,
   additionalMediaPaths: any,
+  profileImagePath: any,
   associationId: string | null,
   associationSequence: string | null,
   title: string | null
@@ -34,13 +35,14 @@ export async function createAsset(poolClient: PoolClient, args: {
     paths: args.paths,
     contentType: args.contentType,
     artifactType: args.artifactType,
-    type: args.type,
     name: args.name,
     description: args.description,
-    assetId: assetId,
+    type: args.type,
+    additionalMediaPaths: args.additionalMediaPaths,
+    profileImagePath: args.profileImagePath,
     associationId: args.associationId,
     associationSequence: args.associationSequence,
-    additionalMediaPaths: args.additionalMediaPaths
+    assetId: assetId,
   });
 
   const contractId = await deployToWarp(poolClient, { contractData: contractData });
@@ -103,18 +105,34 @@ async function deployToWarp(poolClient: IPoolClient, args: {
   return null;
 }
 
+// const contractData = await createContractData(poolClient, {
+//   index: args.index,
+//   paths: args.paths,
+//   contentType: args.contentType,
+//   artifactType: args.artifactType,
+//   name: args.name,
+//   description: args.description,
+//   type: args.type,
+//   additionalMediaPaths: args.additionalMediaPaths,
+//   profileImagePath: args.profileImagePath,
+//   associationId: args.associationId,
+//   associationSequence: args.associationSequence,
+//   assetId: assetId,
+// });
+
 async function createContractData(poolClient: IPoolClient, args: {
   index: any,
   paths: any,
-  assetId: string,
-  associationId: string | null,
-  associationSequence: string | null,
-  artifactType: ArtifactEnum,
-  type: string,
   contentType: string,
+  artifactType: ArtifactEnum,
   name: string,
   description: string,
-  additionalMediaPaths: any
+  type: string,
+  additionalMediaPaths: any,
+  profileImagePath: any,
+  associationId: string | null,
+  associationSequence: string | null,
+  assetId: string,
 }) {
   const dateTime = new Date().getTime().toString();
   const tokenHolder = await getRandomContributor(poolClient);
@@ -142,6 +160,7 @@ async function createContractData(poolClient: IPoolClient, args: {
       { name: TAGS.keys.artifactType, value: args.artifactType },
       { name: TAGS.keys.keywords, value: JSON.stringify(poolClient.poolConfig.keywords) },
       { name: TAGS.keys.mediaIds, value: JSON.stringify(args.additionalMediaPaths) },
+      { name: TAGS.keys.profileImage, value: JSON.stringify(args.profileImagePath) },
       { name: TAGS.keys.associationId, value: args.associationId ? args.associationId : "" },
       { name: TAGS.keys.associationSequence, value: args.associationSequence },
       { name: TAGS.keys.implements, value: TAGS.values.ansVersion },

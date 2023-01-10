@@ -1,7 +1,7 @@
 import { ArweaveClient } from "../clients/arweave";
-import { unquoteJsonKeys } from "../utils";
+import { unquoteJsonKeys } from "../config/utils";
 import { PAGINATOR } from "../config";
-import { GQLResponseType, TagFilterType } from "../types";
+import { GQLResponseType, TagFilterType } from "../config/types";
 
 export async function getGQLData(args: {
     ids: string[] | null;

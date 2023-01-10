@@ -9,8 +9,8 @@ import {
   processThreadV2,
   deleteStreamRules
 } from ".";
-import { exitProcess } from "../../../utils";
-import { PoolConfigType, IPoolClient } from "../../../types";
+import { exitProcess } from "../../../config/utils";
+import { PoolConfigType, IPoolClient } from "../../../config/types";
 import { CLI_ARGS, STREAM_PARAMS } from "../../../config";
 
 let contentModeration: boolean;
@@ -184,7 +184,7 @@ async function mineTweetsByUser(poolClient: IPoolClient, args: { username: strin
   // }
 
   await processIdsV2(poolClient, {
-    ids: ["1612437450470854657"],
+    ids: ["1612725756861235201"],
     contentModeration: contentModeration
   });
 }

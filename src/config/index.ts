@@ -76,6 +76,7 @@ export const TAGS = {
         mediaIds: "Media-Ids",
         poolId: "Pool-Id",
         poolName: "Pool-Name",
+        profileImage: "Profile-Image",
         title: "Title",
         topic: "Topic",
         tweetId: "Tweet-ID",
@@ -135,28 +136,102 @@ export const MODERATION_THRESHOLDS = {
     suggestive: 0.80
 }
 
-const expansions: tApiV2.TTweetv2Expansion[] = ['attachments.poll_ids', 'attachments.media_keys', 'author_id', 'referenced_tweets.id', 'in_reply_to_user_id', 'edit_history_tweet_ids', 'geo.place_id', 'entities.mentions.username', 'referenced_tweets.id.author_id']
-const mediaFields: tApiV2.TTweetv2MediaField[] = ['duration_ms', 'height', 'media_key', 'preview_image_url', 'type', 'url', 'width', 'alt_text', 'variants']
-const placeFields: tApiV2.TTweetv2PlaceField[] = ['contained_within', 'country', 'country_code', 'full_name', 'geo', 'id', 'name', 'place_type']
-const pollFields: tApiV2.TTweetv2PollField[] = ['duration_minutes', 'end_datetime', 'id', 'options', 'voting_status']
-const tweetFields: tApiV2.TTweetv2TweetField[] = ['attachments', 'author_id', 'context_annotations', 'conversation_id', 'created_at', 'entities', 'geo', 'id', 'in_reply_to_user_id', 'lang', 'edit_controls', 'possibly_sensitive', 'referenced_tweets', 'reply_settings', 'source', 'text', 'withheld']
-const userFields: tApiV2.TTweetv2UserField[] = ['created_at', 'description', 'entities', 'id', 'location', 'name', 'pinned_tweet_id', 'profile_image_url', 'protected', 'public_metrics', 'url', 'username', 'verified', 'withheld']
+export const TWEET_FIELDS: tApiV2.TTweetv2TweetField[] = [
+    "id",
+    "attachments", 
+    "author_id", 
+    "context_annotations", 
+    "conversation_id", 
+    "created_at", 
+    "entities", 
+    "geo", 
+    "in_reply_to_user_id", 
+    "lang", 
+    "edit_controls", 
+    "possibly_sensitive", 
+    "referenced_tweets", 
+    "reply_settings", 
+    "source", 
+    "text", 
+    "withheld", 
+    "public_metrics"
+];
+
+const EXPANSIONS: tApiV2.TTweetv2Expansion[] = [
+    "attachments.poll_ids", 
+    "attachments.media_keys", 
+    "author_id", 
+    "referenced_tweets.id", 
+    "in_reply_to_user_id", 
+    "edit_history_tweet_ids", 
+    "geo.place_id", 
+    "entities.mentions.username", 
+    "referenced_tweets.id.author_id"
+];
+
+const MEDIA_FIELDS: tApiV2.TTweetv2MediaField[] = [
+    "duration_ms", 
+    "height", 
+    "media_key", 
+    "preview_image_url", 
+    "type", 
+    "url", 
+    "width", 
+    "alt_text", 
+    "variants"
+];
+
+const PLACE_FIELDS: tApiV2.TTweetv2PlaceField[] = [
+    "name",
+    "contained_within", 
+    "country", 
+    "country_code", 
+    "full_name", 
+    "geo", 
+    "id", 
+    "place_type"
+];
+
+const POLL_FIELDS: tApiV2.TTweetv2PollField[] = [
+    "duration_minutes", 
+    "end_datetime", 
+    "id", 
+    "options", 
+    "voting_status"
+];
+
+const USER_FIELDS: tApiV2.TTweetv2UserField[] = [
+    "id",
+    "created_at", 
+    "description", 
+    "entities", 
+    "location", 
+    "name", 
+    "pinned_tweet_id", 
+    "profile_image_url", 
+    "protected", 
+    "public_metrics", 
+    "url", 
+    "username", 
+    "verified", 
+    "withheld"
+];
 
 export const STREAM_PARAMS = {
-    'expansions': expansions,
-    'media.fields': mediaFields,
-    'place.fields': placeFields,
-    'poll.fields': pollFields,
-    'tweet.fields': tweetFields,
-    'user.fields': userFields,
+    "expansions": EXPANSIONS,
+    "media.fields": MEDIA_FIELDS,
+    "place.fields": PLACE_FIELDS,
+    "poll.fields": POLL_FIELDS,
+    "tweet.fields": TWEET_FIELDS,
+    "user.fields": USER_FIELDS,
     backfill_minutes: 0
 }
 
 export const LOOKUP_PARAMS = {
-    'expansions': expansions,
-    'media.fields': mediaFields,
-    'place.fields': placeFields,
-    'poll.fields': pollFields,
-    'tweet.fields': tweetFields,
-    'user.fields': userFields
+    "expansions": EXPANSIONS,
+    "media.fields": MEDIA_FIELDS,
+    "place.fields": PLACE_FIELDS,
+    "poll.fields": POLL_FIELDS,
+    "tweet.fields": TWEET_FIELDS,
+    "user.fields": USER_FIELDS
 }

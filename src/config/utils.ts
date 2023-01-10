@@ -3,7 +3,7 @@ import * as p from "path";
 import axios from "axios";
 import clc from "cli-color";
 
-import { STORAGE } from "./config";
+import { STORAGE } from ".";
 import { KeyValueType } from "./types";
 
 export function exitProcess(message: string, status: 0 | 1): void {
