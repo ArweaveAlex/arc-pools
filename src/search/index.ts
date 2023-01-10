@@ -8,6 +8,7 @@ import { checkPath, walk } from '../artifacts/miners';
 import Bundlr from "@bundlr-network/client";
 import { ArgumentsInterface } from '../interfaces';
 import { ArweaveClient } from '../arweave-client';
+import { generateTweetName } from '../artifacts/assets';
 import { 
     POOL_FILE, 
     POOL_SEARCH_CONTRACT_PATH, 
@@ -308,10 +309,12 @@ async function extractUsefulTxt(
                 let stext = parsed.text? strip(parsed.text) : "";
                 let uname = parsed.user.username ? strip(parsed.user.name) : ""
                 let name = parsed.user.name ? strip(parsed.user.name) : "";
+                let title = generateTweetName(parsed);
                 artifactString = artifactString 
                     + name
                     + uname 
                     + stext 
+                    + title
                     + ID_CHAR + contractId + ID_CHAR
                     + OWNER_CHAR + owner + OWNER_CHAR;
             } else if (cType.indexOf("text/html") > -1) {
@@ -364,7 +367,7 @@ function extractWikipediaSearch(article: string){
     let articleString = "";
     var titles = article.match(/<title[^>]*>([^<]+)<\/title>/);
     if(titles.length > 0) {
-        articleString = articleString + titles[1];
+        articleString = articleString + titles[1] + " Wikipedia Page";
     }
     return articleString;
 }
