@@ -2,8 +2,8 @@ import fs, { mkdirSync, RmDirOptions } from 'fs';
 
 const cliProgress = require('cli-progress');
 
-import { PoolConfigType } from "../types";
-import { exitProcess } from "../utils";
+import { GQLResponseType, PoolConfigType } from "../types";
+import { exitProcess, getTagValue } from "../utils";
 import { checkPath, walk } from '../artifacts/miners';
 import Bundlr from "@bundlr-network/client";
 import { ArgumentsInterface } from '../interfaces';
@@ -24,6 +24,7 @@ import {
     getTxEndpoint,
     getRedstoneEndpoint
 } from '../utils';
+import { getGQLData } from '../gql';
 
 const progressBar = new cliProgress.SingleBar(
     {stopOnComplete: true}, 
@@ -287,8 +288,18 @@ async function extractUsefulTxt(
         INDEX_COUNTER++;
         progressBar.update(INDEX_COUNTER);
         try {
-            let contractId = artifacts[i].contractId;
-            let owner = artifacts[i].owner;
+            let contractId: string = artifacts[i].contractId;
+            const transactions: GQLResponseType[] = await getGQLData({
+                ids: [contractId],
+                tagFilters: null,
+                uploader: null,
+                cursor: null,
+                reduxCursor: null
+            });
+            if(transactions.length < 1) {
+                continue
+            }
+            let owner = getTagValue(transactions[0].node.tags, TAGS.keys.initialOwner);
             let aData = await fetch(getTxEndpoint(contractId));
             let cType = aData.headers.get("Content-Type");
 
