@@ -15,6 +15,7 @@ export let BASE_DIR = path.join(__dirname, "").split(dirIndex)[0] + dirIndex;
 export const NFT_CONTRACT_PATH = path.join(BASE_DIR, "bin/contracts/NFT/contract.js");
 export const NFT_JSON_PATH = path.join(BASE_DIR, "bin/contracts/NFT/init.json");
 export const POOL_CONTRACT_PATH = path.join(BASE_DIR, "bin/contracts/pool/contract.js");
+export const POOL_SEARCH_CONTRACT_PATH = path.join(BASE_DIR, "bin/contracts/search/contract.js");
 
 export const POOL_FILE = "pools.json";
 
@@ -27,7 +28,9 @@ export const CLI_ARGS = {
         dstop: "dstop",
         init: "init",
         fund: "fund",
-        balance: "balance"
+        balance: "balance",
+        fetch: "fetch",
+        sindex: "sindex"
     },
     options: {
         source: "source",
@@ -37,7 +40,8 @@ export const CLI_ARGS = {
         poolConfig: "pool-conf",
         controlWallet: "control-wallet",
         contentModeration: "content-moderation",
-        image: "image"
+        image: "image",
+        clear: "clear"
     },
     sources: {
         twitter: {
@@ -56,6 +60,7 @@ export const CLI_ARGS = {
 
 export const TAGS = {
     keys: {
+        alexPoolId: "Alex-Pool-Id",
         appName: "App-Name",
         appType: "App-Type",
         appVersion: "App-Version",
@@ -78,7 +83,7 @@ export const TAGS = {
         poolName: "Pool-Name",
         profileImage: "Profile-Image",
         title: "Title",
-        topic: "Topic",
+        topic: (topic: string) => `Topic:${topic}`,
         tweetId: "Tweet-ID",
         type: "Type",
         uploaderTxId: "Uploader-Tx-Id",
@@ -101,7 +106,7 @@ export const TAGS = {
             "1.2": "Alex-Archiving-Pool-v1.2",
             "1.4": "Alex-Archiving-Pool-v1.4"
         },
-        topic: (topic: string) => `Topic: ${topic}`
+        topic: (topic: string) => `Topic:${topic}`
     }
 }
 
@@ -235,3 +240,23 @@ export const LOOKUP_PARAMS = {
     "tweet.fields": TWEET_FIELDS,
     "user.fields": USER_FIELDS
 }
+
+// Top level data directory for indexing
+export const INDEX_FILE_DIR = "sindex";
+
+// Characters surrounding artifact ids in index file
+export const ID_CHAR = '`*';
+
+// Characters surrounding owver pubkey in index file
+export const OWNER_CHAR = '`%';
+
+// Arbitrary spread of index files
+export const FILE_INDEXES = ['1', '2', '3', '4', '5'];
+
+// Subdir to INDEX_FILE_DIR
+export const INDECES_DIR = "/indeces/";
+
+// File for picking up where we left off when indexing
+export const FINAL_INDEX_FILE_NAME = "/finalindex";
+
+export const REDSTONE_PAGE_LIMIT = 5000;

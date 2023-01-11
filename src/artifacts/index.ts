@@ -4,11 +4,11 @@ import clc from "cli-color";
 import { createData } from "arbundles"
 import { ArweaveSigner } from "arbundles/src/signing";
 
-import { ArtifactEnum, IPoolClient } from "../../config/types";
-import { TAGS, CONTENT_TYPES, MANIFEST } from "../../config";
-import { PoolClient } from "../../clients/pool";
+import { ArtifactEnum, IPoolClient } from "../helpers/types";
+import { TAGS, CONTENT_TYPES, MANIFEST } from "../helpers/config";
+import { PoolClient } from "../clients/pool";
 import { contentType } from "mime-types";
-import { exitProcess } from "../../config/utils";
+import { exitProcess } from "../helpers/utils";
 
 export async function createAsset(poolClient: PoolClient, args: {
   index: any,
@@ -22,8 +22,7 @@ export async function createAsset(poolClient: PoolClient, args: {
   additionalMediaPaths: any,
   profileImagePath: any,
   associationId: string | null,
-  associationSequence: string | null,
-  title: string | null
+  associationSequence: string | null
 }) {
   const assetId: string = await deployToBundlr(poolClient, {
     content: args.content,
@@ -46,7 +45,9 @@ export async function createAsset(poolClient: PoolClient, args: {
   });
 
   const contractId = await deployToWarp(poolClient, { contractData: contractData });
-  console.log(`Deployed Contract - [`, clc.green(`'${contractId}'`), `]`);
+  if (contractId) {
+    console.log(`Deployed Contract - [`, clc.green(`'${contractId}'`), `]`);
+  }
 }
 
 async function deployToBundlr(poolClient: IPoolClient, args: {
@@ -100,6 +101,7 @@ async function deployToWarp(poolClient: IPoolClient, args: {
   }
   catch (e: any) {
     console.log(clc.red(`Error deploying to warp ...\n ${e}`));
+    return null;
   }
 
   return null;
@@ -117,7 +119,7 @@ async function createContractData(poolClient: IPoolClient, args: {
   profileImagePath: any,
   associationId: string | null,
   associationSequence: string | null,
-  assetId: string,
+  assetId: string
 }) {
   const dateTime = new Date().getTime().toString();
   const tokenHolder = await getRandomContributor(poolClient);
@@ -137,12 +139,11 @@ async function createContractData(poolClient: IPoolClient, args: {
     { name: TAGS.keys.dateCreated, value: dateTime },
     { name: TAGS.keys.artifactType, value: args.artifactType },
     { name: TAGS.keys.keywords, value: JSON.stringify(poolClient.poolConfig.keywords) },
-    { name: TAGS.keys.mediaIds, value: JSON.stringify(args.additionalMediaPaths) },
-    { name: TAGS.keys.profileImage, value: JSON.stringify(args.profileImagePath) },
+    { name: TAGS.keys.mediaIds, value: args.additionalMediaPaths ? JSON.stringify(args.additionalMediaPaths) : "" },
+    { name: TAGS.keys.profileImage, value: args.profileImagePath ? JSON.stringify(args.profileImagePath) : "" },
     { name: TAGS.keys.associationId, value: args.associationId ? args.associationId : "" },
-    { name: TAGS.keys.associationSequence, value: args.associationSequence },
+    { name: TAGS.keys.associationSequence, value: args.associationSequence ? args.associationSequence : "" },
     { name: TAGS.keys.implements, value: TAGS.values.ansVersion },
-    { name: TAGS.keys.topic, value: TAGS.values.topic(poolClient.poolConfig.keywords[0]) },
     {
       name: TAGS.keys.initState, value: JSON.stringify({
         ticker: TAGS.values.initState.ticker(args.assetId),
@@ -167,7 +168,7 @@ async function createContractData(poolClient: IPoolClient, args: {
 
   for (let i = 0; i < poolClient.poolConfig.topics.length; i++) {
     tagList.push(
-      { name: "Topic:" + poolClient.poolConfig.topics[i], value: poolClient.poolConfig.topics[i] }
+      { name: TAGS.keys.topic(poolClient.poolConfig.topics[i]), value: poolClient.poolConfig.topics[i] }
     );
   }
 

@@ -3,13 +3,13 @@ import clc from "cli-color";
 import path from "path";
 import minimist from "minimist";
 
-import { ArgumentsInterface, CommandInterface, OptionInterface } from "./config/interfaces";
-import { checkProcessEnv } from "./config/utils";
-import { APP_TITLE, CLI_ARGS } from "./config";
+import { ArgumentsInterface, CommandInterface, OptionInterface } from "./helpers/interfaces";
+import { checkProcessEnv } from "./helpers/utils";
+import { APP_TITLE, CLI_ARGS } from "./helpers/config";
 
 (async function () {
     const argv = minimist(process.argv.slice(2));
-    let command = argv._[0];
+    const command = argv._[0];
     const commandValues = argv._.slice(1);
 
     const fileFilter = checkProcessEnv(process.argv[0]);
@@ -19,7 +19,9 @@ import { APP_TITLE, CLI_ARGS } from "./config";
     for (const file of commandFiles) {
         const filePath = path.join(__dirname, "commands", file);
         const { default: command } = require(filePath);
-        commands.set(command.name, command);
+        if (command) {
+            commands.set(command.name, command);
+        }
     }
 
     const optionFiles = fs.readdirSync(path.join(__dirname, "options")).filter((file) => file.endsWith(fileFilter));

@@ -5,7 +5,7 @@ import Bundlr from "@bundlr-network/client";
 import { Contract, LoggerFactory } from "warp-contracts";
 
 import { ArweaveClient } from "../arweave";
-import { PoolConfigType, IPoolClient } from "../../config/types";
+import { PoolConfigType, IPoolClient } from "../../helpers/types";
 
 export default class PoolClient implements IPoolClient {
     arClient = new ArweaveClient();

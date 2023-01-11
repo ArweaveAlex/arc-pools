@@ -1,12 +1,11 @@
-import { PoolConfigType } from "../types";
-import { validatePoolConfig } from "../validations";
-import { ArgumentsInterface, CommandInterface } from "../interfaces";
-import { CLI_ARGS } from "../config";
+import { PoolConfigType } from "../helpers/types";
+import { validatePoolConfig } from "../helpers/validations";
+import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
+import { CLI_ARGS } from "../helpers/config";
 import { 
     fetchPool,
     clearLocalIndex
 } from "../search/index";
-import { ArweaveClient } from "../arweave-client";
 import clear from "../options/clear";
 
 const command: CommandInterface = {

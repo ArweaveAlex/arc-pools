@@ -1,7 +1,7 @@
 const pm2 = require('pm2');
 
-import { ArgumentsInterface, CommandInterface } from "../config/interfaces";
-import { CLI_ARGS } from "../config";
+import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
+import { CLI_ARGS } from "../helpers/config";
 
 const displayPm2List = (list: string[]) => {
     console.log("\ndaemon processes - ")
