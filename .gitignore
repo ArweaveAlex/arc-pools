@@ -3,6 +3,7 @@
 **/build
 **/wallets
 **/cache
+**/sindex
 **/alexfiles
 **/pools*.json
 **/sindex

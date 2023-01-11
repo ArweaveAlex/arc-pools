@@ -20,6 +20,7 @@ An arweave wallet is needed for creating a pool.
 Usage: arcpool [commands] [options]
 
 Options                                 Description
+--clear                                 Clear local search index for pool
 --content-moderation                    Use content moderation on twitter mining
 --control-wallet <wallet file>          Specifies a wallet to use in the pool creation
 --dname <string>                        Specifies the daemon name to stop
@@ -34,10 +35,12 @@ balance <pool id>                       Check the Bundlr and Arweave balance for
 create <pool id>                        Create a pool using pools.json
 dlist                                   list all daemon mining processes
 dstop <daemon name>                     Stop a daemon mining process by name
+fetch <pool id>                         Fetch pool artifacts for search
 fund <pool id>                          Fun the bundlr wallet for a pool
 help                                    Display help text
 init <pool id>                          Initialize pools.json
 mine <pool id>                          Mine artifacts for a given pool
+sindex <pool id>                        Index artifacts for search
 ```
 
 
@@ -91,7 +94,10 @@ A pools.json file will be generated looking similar to the one below
             "token_secret": "",
             "bearer_token": ""
         },
-        "clarifaiApiKey": ""
+        "clarifaiApiKey": "",
+        "topics": [
+            "history"
+        ]
     }
 }
 ```
@@ -103,6 +109,7 @@ __Modify the pools.json file to generate your pool.__ Modify the following confi
 4. `keywords` is a list of the main keywords to track in the mining process. This is the core driving data that instructs the mining programs of what to pull from Twitter and Wikipedia.
 5. `twitterApiKeys` is for mining from Twitter. Get twitter API credentials with elevated access and enter them into `twitterApiKeys`.
 6. `clarifaiApiKey` if you plan to use content moderation on tweets in the mining process, you can get an api key from clarifai and put it here.
+7. `topics` A list of more general topics the pool fits into to generate ANS110 Topic tags.
 
 __Lastly run the client from within the directory containing pools.json.__
 
@@ -171,3 +178,22 @@ pid: 0    pm_id: 0    name: russia-ukraine-test    status: running
 
 ###### Stream the logs:
 ```pm2 logs```
+
+
+## Indexing a pool for search
+
+__As a pool operator you must index your pool for the artifacts to be searchable using the search bar in Alex.__ This is done using 2 commands. If there are a lot of artifacts in the pool already the fetch command will take a while so it is recommended that you start indexing early and then keep indexing after you mine new artifacts so the program will run quickly.
+
+###### Fetch a pools artifacts and build local files that will be uploaded as a search index:
+
+```arcpool fetch russia-ukraine-test```
+
+###### To fetch while also clearing the local index to do a fresh index you can run with the --clear option:
+```arcpool fetch russia-ukraine-test --clear```
+
+__After running fetch upload the index to arweave.__
+
+###### Upload the index to arweave:
+```arcpool sindex russia-ukraine-test```
+
+No other action is required this will populate Arweave with the search index and update you pools.json with the id of the index contract.

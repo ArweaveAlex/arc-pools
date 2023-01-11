@@ -44,6 +44,10 @@ let poolJson =
             "pool": {
                 "id": "",
                 "src": ""
+            },
+            "poolSearchIndex": {
+                "id": "",
+                "src": ""
             }
         },
         "state": {
@@ -76,7 +80,10 @@ let poolJson =
             "token_secret": "",
             "bearer_token": ""
         },
-        "clarifaiApiKey": ""
+        "clarifaiApiKey": "",
+        "topics": [
+            "history"
+        ]
     };
 
 
