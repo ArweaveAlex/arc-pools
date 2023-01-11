@@ -26,3 +26,12 @@ export function getTagValue(list: KeyValueType[], name: string): string {
 export function unquoteJsonKeys(json: Object): string {
     return JSON.stringify(json).replace(/"([^"]+)":/g, '$1:')
 }
+
+export function getTxEndpoint(txId: string) {
+    return `https://arweave.net/${txId}`;
+}
+
+// &sort=asc is important to indexing program
+export function getRedstoneEndpoint(nftSrc: string, page: number) {
+    return `https://gateway.redstone.finance/gateway/contracts-by-source?id=${nftSrc}&page=${page}&sort=asc`;
+}

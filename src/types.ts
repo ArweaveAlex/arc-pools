@@ -42,6 +42,10 @@ export type PoolConfigType = {
         pool: {
             id: NStringType
             src: NStringType
+        },
+        poolSearchIndex: {
+            id: NStringType,
+            src: NStringType
         }
     },
     state: {

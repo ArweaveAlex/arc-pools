@@ -14,6 +14,7 @@ export let BASE_DIR = path.join(__dirname, "").split(dirIndex)[0] + dirIndex;
 export const NFT_CONTRACT_PATH = path.join(BASE_DIR, "bin/contracts/NFT/contract.js");
 export const NFT_JSON_PATH = path.join(BASE_DIR, "bin/contracts/NFT/init.json");
 export const POOL_CONTRACT_PATH = path.join(BASE_DIR, "bin/contracts/pool/contract.js");
+export const POOL_SEARCH_CONTRACT_PATH = path.join(BASE_DIR, "bin/contracts/search/contract.js");
 
 export const POOL_FILE = "pools.json";
 
@@ -26,7 +27,9 @@ export const CLI_ARGS = {
         dstop: "dstop",
         init: "init",
         fund: "fund",
-        balance: "balance"
+        balance: "balance",
+        sindex: "sindex",
+        fetch: "fetch"
     },
     options: {
         source: "source",
@@ -36,7 +39,8 @@ export const CLI_ARGS = {
         poolConfig: "pool-conf",
         controlWallet: "control-wallet",
         contentModeration: "content-moderation",
-        image: "image"
+        image: "image",
+        clear: "clear"
     },
     sources: {
         twitter: {
@@ -58,6 +62,11 @@ export const TAGS = {
         appType:"App-Type",
         poolName: "Pool-Name",
         uploaderTxId: "Uploader-Tx-Id",
+        poolId: "Pool-Id",
+        artifactType: "Artifact-Type",
+        // this ones for the search index
+        alexPoolId: "Alex-Pool-Id",
+        initialOwner: "Initial-Owner"
     },
     values: {
         poolVersions: {
@@ -84,3 +93,23 @@ export const MODERATION_THRESHOLDS = {
     explicit: 0.10,
     suggestive: 0.80
 }
+
+// top level data directory for indexing
+export const INDEX_FILE_DIR = "sindex";
+
+// characters surrounding artifact ids in index file
+export const ID_CHAR = '`*';
+
+// characters surrounding owver pubkey in index file
+export const OWNER_CHAR = '`%';
+
+// arbitrary spread of index files
+export const FILE_INDEXES = ['1', '2', '3', '4', '5'];
+
+// subdir to INDEX_FILE_DIR
+export const INDECES_DIR = "/indeces/";
+
+// file for picking up where we left off when indexing
+export const FINAL_INDEX_FILE_NAME = "/finalindex";
+
+export const REDSTONE_PAGE_LIMIT = 5000;

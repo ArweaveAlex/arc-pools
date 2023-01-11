@@ -44,6 +44,10 @@ let poolJson =
             "pool": {
                 "id": "",
                 "src": ""
+            },
+            "poolSearchIndex": {
+                "id": "",
+                "src": ""
             }
         },
         "state": {
