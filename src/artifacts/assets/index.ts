@@ -99,26 +99,11 @@ async function deployToWarp(poolClient: IPoolClient, args: {
     return dataItem.id;
   }
   catch (e: any) {
-    exitProcess(`Error deploying to warp ...\n ${e}`, 1);
+    console.log(clc.red(`Error deploying to warp ...\n ${e}`));
   }
 
   return null;
 }
-
-// const contractData = await createContractData(poolClient, {
-//   index: args.index,
-//   paths: args.paths,
-//   contentType: args.contentType,
-//   artifactType: args.artifactType,
-//   name: args.name,
-//   description: args.description,
-//   type: args.type,
-//   additionalMediaPaths: args.additionalMediaPaths,
-//   profileImagePath: args.profileImagePath,
-//   associationId: args.associationId,
-//   associationSequence: args.associationSequence,
-//   assetId: assetId,
-// });
 
 async function createContractData(poolClient: IPoolClient, args: {
   index: any,

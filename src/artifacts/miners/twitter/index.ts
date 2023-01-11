@@ -34,16 +34,16 @@ export async function processIdsV2(poolClient: IPoolClient, args: {
   let tweets = await getTweetsfromIds(poolClient, { ids: args.ids });
 
   for (const tweet of tweets) {
-    // let dup = await isDuplicate(poolClient, { tweet: tweet });
-    // if (!dup) { // TODO - uncomment dup
-    await processThreadV2(poolClient, {
-      tweet: tweet,
-      contentModeration: args.contentModeration
-    });
-    // }
-    // else {
-    //   console.log(clc.red(`Tweet already mined: ${generateAssetName(tweet)}`));
-    // }
+    let dup = await isDuplicate(poolClient, { tweet: tweet });
+    if (!dup) {
+      await processThreadV2(poolClient, {
+        tweet: tweet,
+        contentModeration: args.contentModeration
+      });
+    }
+    else {
+      console.log(clc.red(`Tweet already mined: ${generateAssetName(tweet)}`));
+    }
   }
 }
 
@@ -207,7 +207,7 @@ async function processProfileImage(args: {
   if (!await checkPath(profileDir)) {
     await mkdir(profileDir)
   }
-  
+
   if (args.tweet?.user?.profile_image_url) {
     await processMediaURL(args.tweet.user.profile_image_url, profileDir, 0);
   }
@@ -309,10 +309,10 @@ async function isDuplicate(poolClient: IPoolClient, args: { tweet: any }) {
     variables: {
       tags: {
         value: [{
-          name: "Artifact-Name",
+          name: TAGS.keys.artifactName,
           values: [tName]
         }, {
-          name: "Pool-Id",
+          name: TAGS.keys.poolId,
           values: [poolClient.poolConfig.contracts.pool.id]
         }],
         type: "[TagFilter!]"
