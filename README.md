@@ -112,8 +112,8 @@ __Modify the pools.json file to generate your pool.__ Modify the following confi
 2. `state.description` is a long description of your pool on the [Pool Detail](https://alex.arweave.dev/#/pool/zIZXNTl-GtTDbO8eP8LpkHks5S5WhB4j82YX-N2RuGw) page of Alex. It can contain Text and/or HTML.
 3. `state.briefDescription` is a brief description of your pool on the [Home Page](https://alex.arweave.dev) of Alex.
 4. `keywords` is a list of the main keywords to track in the mining process. This is the core driving data that instructs the mining programs of what to pull from mining sources such as Twitter and Wikipedia.
-5. `twitterApiKeys` is for mining from Twitter. Get twitter API credentials with elevated access and enter them into `twitterApiKeys`, consumer_key and consumer_secret are also referred to as API key and Secret in the twitter developer platform. token and token_secret are also referred to as Access Token and Access Token Secret in the twitter developer platform. bearer_token is referred to as Bearer Token in the twitter developer platform. You can skip putting these keys in pools.json if you don't plan to mine twitter, you can also add them later.
-6. `clarifaiApiKey` if you plan to use content moderation on tweets in the mining process, you can get an api key from clarifai and put it here. This will filter out explicit content from being mined into the pool.
+5. `twitterApiKeys` is for mining from Twitter. Get twitter API credentials and enter them into `twitterApiKeys`, get elevated access from twitter for better mining this is not mandatory though. consumer_key and consumer_secret are also referred to as API key and Secret in the twitter developer platform. token and token_secret are also referred to as Access Token and Access Token Secret in the twitter developer platform. bearer_token is referred to as Bearer Token in the twitter developer platform. You can skip putting these keys in pools.json if you don't plan to mine twitter, you can also add them later.
+6. `clarifaiApiKey` if you plan to use content moderation on tweets in the mining process, you can get an api key from [Clarifai](https://www.clarifai.com/) and put it here. This will filter out explicit content from being mined into the pool. This is a bit expensive and unecessary in most situations but if you are finding a lot of explicit content in the pool it may be of value to you.
 7. `topics` A list of more general topics the pool fits into these generate ANS110 Topic tags in the data. Examples: history, funny, humor, science.
 
 __Lastly run the client from within the directory containing pools.json.__
@@ -148,7 +148,7 @@ __Run the client mine command from within the directory containing pools.json. I
 ```arcpool mine <POOL_ID> --source twitter```
 
 ###### Mine tweets into the pool and use content moderation to filter explicit content, you must have clarifaiApiKey configured in pools.json to run this. 
-```arcpool mine <POOL_ID> --source twitter```
+```arcpool mine <POOL_ID> --source twitter --content-moderation```
 
 ###### Mine all tweets where users commented/quoted on twitter with "@thealexarchive #ukraine", this --mention-tag value can be whatever you want.
 ```arcpool mine <POOL_ID> --source twitter --method mention --mention-tag "@thealexarchive #ukraine"```
