@@ -8,11 +8,14 @@ This repository is the client tool for creating the pools and mining artifacts.
 
 
 ## Requirements
-`arcpool` requires NodeJS and NPM installed. 
+`arcpool` requires NodeJS/NPM and Git installed. 
+[NodeJS](https://nodejs.org/en/download/)
+[Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
-An arweave wallet is needed for creating a pool. 
+An arweave wallet is needed for creating a pool, create one and download the .json wallet file. 
 [Arweave Wallet](https://docs.arweave.org/info/wallets/arweave-wallet)
 [ArConnect](https://arconnect.io)
+
 ## Installing Alex. CLI
 ```npm install --global arcpool```
 
@@ -51,14 +54,16 @@ Create a directory for the pool configurations and wallets. Name the directory a
 Change into the directory you created
 ```cd alexfiles```
 
-Next, create a pools.json file using the `arcpool init` command. You will edit this file and it will also be modified by the client so do not delete it after running the create and mine commands, unless you need to start over. Run the init command with a pool id of your choosing, containing no spaces. here is an example -
+Next, create a pools.json file using the `arcpool init` command. You will edit this file and it will also be modified by the client so do not delete it after running the create and mine commands, unless you need to start over. Run the init command with a POOL_ID of your choosing, containing no spaces. Here is an example -
 
-```arcpool init POOL_NAME```
+In this guide POOL_ID refers to a string of your choosing which will identify the pool locally for the client. It will not show up on alex it will just be used in cli commands to identify which pool you are working with. This can be changed at any time in pools.json.
+
+```arcpool init POOL_ID```
 
 A pools.json file will be generated looking similar to the one below
 ```
 {
-    "POOL_NAME": {
+    "POOL_ID": {
         "appType": "Alex-Archiving-Pool-v1.4",
         "contracts": {
             "nft": {
@@ -107,20 +112,20 @@ __Modify the pools.json file to generate your pool.__ Modify the following confi
 2. `state.description` is a long description of your pool. It can contain Text and/or HTML.
 3. `state.briefDescription` is a brief description of your pool. It can contain Text.
 4. `keywords` is a list of the main keywords to track in the mining process. This is the core driving data that instructs the mining programs of what to pull from Twitter and Wikipedia.
-5. `twitterApiKeys` is for mining from Twitter. Get twitter API credentials with elevated access and enter them into `twitterApiKeys`.
-6. `clarifaiApiKey` if you plan to use content moderation on tweets in the mining process, you can get an api key from clarifai and put it here.
-7. `topics` A list of more general topics the pool fits into to generate ANS110 Topic tags.
+5. `twitterApiKeys` is for mining from Twitter. Get twitter API credentials with elevated access and enter them into `twitterApiKeys`, consumer_key and consumer_secret are also referred to as API key and Secret in the twitter developer platform. token and token_secret are also referred to as Access Token and Access Token Secret in the twitter developer platform. You can skip putting these keys in pools.json if you don't plan to mine twitter, you can also add them later.
+6. `clarifaiApiKey` if you plan to use content moderation on tweets in the mining process, you can get an api key from clarifai and put it here. This will filter out explicit content from being mined into the pool.
+7. `topics` A list of more general topics the pool fits into these generate ANS110 Topic tags in the data. Examples: history, funny, humor, science.
 
 __Lastly run the client from within the directory containing pools.json.__
 
+###### ***note: do not include < > in your command when you run it, these are here to represent values specific to you.
 ```arcpool create <POOL_ID> --control-wallet <PATH_TO_WALLET.json> --image <PATH_TO_IMAGE>```
 
 __Example:__
 
 ```arcpool create russia-ukraine-test --control-wallet wallet.json --image background.jpg```
 
-If the transaction is successful, you will see a new wallet and seed phrase file in a `wallets` directory. __KEEP THESE FILES SAFE. THEY ARE FOR YOUR POOLS CONTRIBUTION AND MINING PROCESS.__
-Visit https://alex.arweave.dev/#/pools to view your new pool.
+If the transaction is successful, you will see a new wallet in a `wallets` directory, you should also have been given a seed phrase. __KEEP THE WALLET FILE SAFE. IT IS FOR YOUR POOLS CONTRIBUTION AND MINING PROCESS. ALSO WRITE DOWN THE SEED PHRASE__ Visit https://alex.arweave.dev/#/pools to view your new pool, it may take some time to show up.
 
 __To add another pool, follow the same steps as above in the same directory with the pools.json__
 
@@ -132,24 +137,24 @@ __After contribution funds have come through, we need to fund bundlr from the po
 
 ###### Fund bundlr from the pool wallet
 ###### (Note: This command will use half of the contribution amount to fund bundlr, this is the only time you need to run this command as the mining process will continually fund bundlr moving forward)
-```arcpool fund russia-ukraine-test```
+```arcpool fund <POOL_ID>```
 
 ###### Check the bundlr funds on the wallet
-```arcpool balance russia-ukraine-test```
+```arcpool balance <POOL_ID>```
 
 __Run the client mine command from within the directory containing pools.json. It can be run with different options:__
 
 ###### Mine tweets into the test pool from above
-```arcpool mine russia-ukraine-test --source twitter```
+```arcpool mine <POOL_ID> --source twitter```
 
 ###### Mine all tweets where users commented/quoted on twitter with "@thealexarchive #ukraine", this --mention-tag value can be whatever you want.
-```arcpool mine russia-ukraine-test --source twitter --method mention --mention-tag "@thealexarchive #ukraine"```
+```arcpool mine <POOL_ID> --source twitter --method mention --mention-tag "@thealexarchive #ukraine"```
 
 ###### Mine all tweets ever from a particular user for example user SBF_FTX, do not include the @ in the --username value
-```arcpool mine crypto-crunch --source twitter --method user --username SBF_FTX```
+```arcpool mine <POOL_ID> --source twitter --method user --username SBF_FTX```
 
 ###### Mine a single wikipedia article related to the given keywords in config
-```arcpool mine russia-ukraine-test --source wikipedia```
+```arcpool mine <POOL_ID> --source wikipedia```
 
 
 
@@ -182,7 +187,7 @@ pid: 0    pm_id: 0    name: russia-ukraine-test    status: running
 
 ## Indexing a pool for search
 
-__As a pool operator you must index your pool for the artifacts to be searchable using the search bar in Alex.__ This is done using 2 commands. If there are a lot of artifacts in the pool already the fetch command will take a while so it is recommended that you start indexing early and then keep indexing after you mine new artifacts so the program will run quickly.
+__As a pool operator you must index your pool for the artifacts to be searchable using the search bar in Alex.__ This is done using 2 commands. If there are a lot of artifacts in the pool already the fetch command will take a while so it is recommended that you start indexing early and then keep indexing after you mine new artifacts so the program will run quickly. There is no need to index until you have already mined artifacts.
 
 ###### Fetch a pools artifacts and build local files that will be uploaded as a search index:
 
@@ -196,4 +201,4 @@ __After running fetch upload the index to arweave.__
 ###### Upload the index to arweave:
 ```arcpool sindex russia-ukraine-test```
 
-No other action is required this will populate Arweave with the search index and update you pools.json with the id of the index contract.
+No other action is required this will populate Arweave with the search index and update your pools.json with the id of the index contract.
