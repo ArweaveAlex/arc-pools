@@ -1,12 +1,12 @@
 import fs from "fs";
 import Bundlr from "@bundlr-network/client";
 
-import { PoolConfigType } from "../config/types";
-import { validatePoolConfig } from "../config/validations";
-import { ArgumentsInterface, CommandInterface } from "../config/interfaces";
-import { CLI_ARGS } from "../config";
+import { PoolConfigType } from "../helpers/types";
+import { validatePoolConfig } from "../helpers/validations";
+import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
+import { CLI_ARGS } from "../helpers/config";
 import { ArweaveClient } from "../clients/arweave";
-import { exitProcess } from "../config/utils";
+import { exitProcess } from "../helpers/utils";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.fund,

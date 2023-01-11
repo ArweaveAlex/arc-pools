@@ -1,9 +1,9 @@
 const pm2 = require('pm2');
 
-import { ArgumentsInterface, CommandInterface } from "../config/interfaces";
-import { CLI_ARGS } from "../config";
+import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
+import { CLI_ARGS } from "../helpers/config";
 import dname from "../options/source";
-import { exitProcess } from "../config/utils";
+import { exitProcess } from "../helpers/utils";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.dstop,

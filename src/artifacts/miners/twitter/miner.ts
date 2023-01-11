@@ -7,11 +7,12 @@ import { PoolClient } from "../../../clients/pool";
 import {
   processIdsV2,
   processThreadV2,
+  modifyStreamTweet,
   deleteStreamRules
 } from ".";
-import { exitProcess } from "../../../config/utils";
-import { PoolConfigType, IPoolClient } from "../../../config/types";
-import { CLI_ARGS, STREAM_PARAMS } from "../../../config";
+import { exitProcess } from "../../../helpers/utils";
+import { PoolConfigType, IPoolClient } from "../../../helpers/types";
+import { CLI_ARGS, STREAM_PARAMS } from "../../../helpers/config";
 
 let contentModeration: boolean;
 
@@ -23,7 +24,7 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
   }
 
   if (!poolClient.poolConfig.topics) {
-    exitProcess("Please configure topics in pools.json", 1);
+    exitProcess(`Configure topics in pools.json`, 1);
   }
 
   const method = argv["method"];
@@ -65,7 +66,7 @@ async function mineTweetsByStream(poolClient: IPoolClient) {
     await deleteStreamRules(poolClient);
     stream = poolClient.twitterV2Bearer.v2.searchStream({ ...STREAM_PARAMS, autoConnect: false });
 
-    let rules = poolClient.poolConfig.keywords.map((keyword: string) => {
+    const rules = poolClient.poolConfig.keywords.map((keyword: string) => {
       return {
         value: keyword,
         tag: keyword.toLowerCase().replace(/\s/g, '')
@@ -77,17 +78,17 @@ async function mineTweetsByStream(poolClient: IPoolClient) {
     });
 
     await stream.connect({ autoReconnect: false });
-
+    
     for await (const tweet of stream) {
       await processThreadV2(poolClient, {
-        tweet: tweet,
+        tweet: modifyStreamTweet(tweet),
         contentModeration: contentModeration
       });
     }
 
   }
   catch (e: any) {
-    console.log(e)
+    console.log(clc.red(e));
     if (stream) {
       stream.close();
     }
@@ -115,13 +116,11 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
         "tweet.fields": ['referenced_tweets']
       };
       if (resultSet) params.next_token = resultSet.meta.next_token;
-      resultSet = await poolClient.twitterV2.v2.search(
-        query,
-        params
-      );
-      if (resultSet.data.data) allTweets = allTweets.concat(resultSet.data.data);
-    } while (resultSet.meta.next_token);
+      resultSet = await poolClient.twitterV2.v2.search(query, params);
 
+      if (resultSet.data.data) allTweets = allTweets.concat(resultSet.data.data);
+    }
+    while (resultSet.meta.next_token);
 
     // Get the parent tweets from the mentions above and remove duplicate ids
     let ids = allTweets.map((tweet: any) => {
@@ -130,16 +129,19 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
       }
     }).filter(function (item, pos, self) {
       return self.indexOf(item) == pos;
-    });
+    }).filter(id => id !== undefined);
 
     await processIdsV2(poolClient, {
       ids: ids,
       contentModeration: contentModeration
     });
-  } catch (e: any) {
+  } 
+  catch (e: any) {
     exitProcess(`Twitter mining failed \n${e}`, 1);
   }
 }
+
+// TODO - remove twitter.userIds from pools.json
 
 /*
  * Mine all of a specific users tweets

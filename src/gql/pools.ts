@@ -2,10 +2,10 @@ import { ArweaveClient } from "../clients/arweave";
 import {
     GQLResponseType,
     PoolType
-} from "../config/types";
+} from "../helpers/types";
 import { getGQLData } from "../gql";
-import { getTagValue } from "../config/utils";
-import { TAGS } from "../config";
+import { getTagValue } from "../helpers/utils";
+import { TAGS } from "../helpers/config";
 
 export async function getPoolIds() {
     const pools: GQLResponseType[] = await getGQLData({

@@ -13,15 +13,16 @@ import { ArweaveClient } from "../../../clients/arweave";
 import {
   walk,
   checkPath,
-  truncateString,
   processMediaURL,
-  exitProcess
-} from "../../../config/utils";
-import { createAsset } from "../../assets";
-import { TAGS, LOOKUP_PARAMS, CONTENT_TYPES } from "../../../config";
-import { ArtifactEnum, IPoolClient } from "../../../config/types";
+  exitProcess,
+  generateAssetName,
+  generateAssetDescription
+} from "../../../helpers/utils";
+import { createAsset } from "../..";
+import { TAGS, LOOKUP_PARAMS, CONTENT_TYPES } from "../../../helpers/config";
+import { ArtifactEnum, IPoolClient } from "../../../helpers/types";
 import { shouldUploadContent } from "../moderator";
-import { conversationEndpoint } from "../../../config/endpoints";
+import { conversationEndpoint } from "../../../helpers/endpoints";
 
 const arClient = new ArweaveClient();
 
@@ -148,13 +149,12 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     contentType: CONTENT_TYPES.json,
     artifactType: ArtifactEnum.Messaging,
     name: generateAssetName(args.tweet),
-    description: generateTweetDescription(args.tweet),
+    description: generateAssetDescription(args.tweet),
     type: TAGS.values.ansTypes.socialPost,
     additionalMediaPaths: additionalMediaPaths,
     profileImagePath: profileImagePath,
     associationId: args.associationId,
-    associationSequence: args.associationSequence,
-    title: null
+    associationSequence: args.associationSequence
   });
 }
 
@@ -353,39 +353,6 @@ async function isDuplicate(poolClient: IPoolClient, args: { tweet: any }) {
   return false;
 }
 
-export function generateAssetName(tweet: any) {
-  if (tweet) {
-    if (tweet.text) {
-      if (tweet.text.length > 30) {
-        return `Username: ${tweet.user.name}, Tweet: ${truncateString(tweet.text, 30)}`
-      } else {
-        return `Username: ${tweet.user.name}, Tweet: ${tweet.text}`
-      }
-    } else if (tweet.full_text) {
-      if (tweet.full_text.length > 30) {
-        return `Username: ${tweet.user.name}, Tweet: ${truncateString(tweet.full_text, 30)}`
-      } else {
-        return `Username: ${tweet.user.name}, Tweet: ${tweet.full_text}`
-      }
-    } else {
-      return `Username: ${tweet.user.name}, Tweet: ${tweet.id}`
-    }
-  }
-  else {
-    return 'Username: unknown'
-  }
-}
-
-export const generateTweetDescription = (tweet: any) => {
-  if (tweet.full_text) {
-   return tweet.full_text;
- } else if(tweet.text){
-   return tweet.text;
- } else {
-   return 'Username: ' + tweet.user.name + ', Tweet Id: ' + tweet.id;
- }
-}
-
 // Delete the stream rules before and after this run.
 // Before to clear out any previous leftovers from failed runs
 export async function deleteStreamRules(poolClient: IPoolClient) {
@@ -415,4 +382,15 @@ function getMedia(mediaKeys: string[], mediaObjects: any[]) {
     }
   }
   return mediaByTweet;
+}
+
+export function modifyStreamTweet(tweet: any) {
+  return {
+    ...tweet.data,
+    user: getUser(tweet.data.author_id, tweet.includes.users),
+    includes: {
+      media: tweet.data.attachments?.media_keys ?
+        getMedia(tweet.data.attachments.media_keys, tweet.includes.media) : []
+    }
+  }
 }

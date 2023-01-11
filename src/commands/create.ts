@@ -5,12 +5,12 @@ import path from "path";
 
 import { ArweaveClient } from "../clients/arweave";
 import { getPools } from "../gql/pools";
-import { exitProcess, displayJsonUpdate } from "../config/utils";
-import { PoolType, PoolStateType, PoolConfigType } from "../config/types";
-import { validatePoolConfig, validateControlWalletPath } from "../config/validations";
-import { ArgumentsInterface, CommandInterface } from "../config/interfaces";
-import { createWallet } from "../config/wallet";
-import { sonarLink } from "../config/endpoints";
+import { exitProcess, displayJsonUpdate } from "../helpers/utils";
+import { PoolType, PoolStateType, PoolConfigType } from "../helpers/types";
+import { validatePoolConfig, validateControlWalletPath } from "../helpers/validations";
+import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
+import { createWallet } from "../helpers/wallet";
+import { sonarLink } from "../helpers/endpoints";
 import {
     CLI_ARGS,
     NFT_CONTRACT_PATH,
@@ -19,7 +19,7 @@ import {
     TAGS,
     POOL_FILE,
     FALLBACK_IMAGE
-} from "../config";
+} from "../helpers/config";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.create,

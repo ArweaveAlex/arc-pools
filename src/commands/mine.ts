@@ -1,15 +1,17 @@
 import * as twitter from "../artifacts/miners/twitter/miner";
-import * as wikipedia from "../artifacts/miners/wikipedia";
+import * as wikipedia from "../artifacts/miners/wikipedia/miner";
 
 import source from "../options/source";
 import method from "../options/method";
 
-import { exitProcess } from "../config/utils";
-import { PoolConfigType } from "../config/types";
-import { validatePoolConfig } from "../config/validations";
-import { ArgumentsInterface, CommandInterface } from "../config/interfaces";
-import { CLI_ARGS } from "../config";
+import { exitProcess } from "../helpers/utils";
+import { PoolConfigType } from "../helpers/types";
+import { validatePoolConfig } from "../helpers/validations";
+import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
+import { CLI_ARGS } from "../helpers/config";
 
+// TODO - run all validations here
+// TODO - pass poolClient: IPoolClient instead of poolConfig
 const command: CommandInterface = {
     name: CLI_ARGS.commands.mine,
     description: `Mine artifacts for a given pool`,
@@ -17,7 +19,7 @@ const command: CommandInterface = {
     args: ["pool id"],
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
-
+        
         const { source } = args.argv;
         if (!source) {
             exitProcess(`No Source Provided`, 1);

@@ -3,7 +3,7 @@ import path from "path";
 
 const pm2 = require('pm2');
 
-import { BASE_DIR } from ".";
+import { BASE_DIR } from "./config";
 
 const buildScriptPath = () => {
   console.log(process.argv);

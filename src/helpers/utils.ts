@@ -3,7 +3,7 @@ import * as p from "path";
 import axios from "axios";
 import clc from "cli-color";
 
-import { STORAGE } from ".";
+import { STORAGE } from "./config";
 import { KeyValueType } from "./types";
 
 export function exitProcess(message: string, status: 0 | 1): void {
@@ -71,3 +71,36 @@ export async function processMediaURL(url: string, dir: string, i: number) {
         })
     })
 }
+
+export function generateAssetName(tweet: any) {
+    if (tweet) {
+      if (tweet.text) {
+        if (tweet.text.length > 30) {
+          return `Username: ${tweet.user.name}, Tweet: ${truncateString(tweet.text, 30)}`
+        } else {
+          return `Username: ${tweet.user.name}, Tweet: ${tweet.text}`
+        }
+      } else if (tweet.full_text) {
+        if (tweet.full_text.length > 30) {
+          return `Username: ${tweet.user.name}, Tweet: ${truncateString(tweet.full_text, 30)}`
+        } else {
+          return `Username: ${tweet.user.name}, Tweet: ${tweet.full_text}`
+        }
+      } else {
+        return `Username: ${tweet.user.name}, Tweet: ${tweet.id}`
+      }
+    }
+    else {
+      return 'Username: unknown'
+    }
+  }
+  
+  export const generateAssetDescription = (tweet: any) => {
+    if (tweet.full_text) {
+     return tweet.full_text;
+   } else if(tweet.text){
+     return tweet.text;
+   } else {
+    return generateAssetName(tweet);
+   }
+  }
