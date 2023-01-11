@@ -165,9 +165,9 @@ __Run the client mine command from within the directory containing pools.json. I
 
 __The mining commands run either a finite process or in the foreground.__ If we wish to run these forever use daemon mode by passing the `--d` flag to any of the above mining commands. Daemon mode is built on top of pm2.
 
-###### Mine tweets into the pool from above, daemon mode will continue restarting the program infinetly if it shuts down. Note the `--d` flag.
+###### Mine tweets into the pool, daemon mode will continue restarting the program infinetly if it shuts down. Note the `--d` flag.
 
-```arcpool mine russia-ukraine-test --source twitter --d```
+```arcpool mine <POOL_ID> --source twitter --d```
 
 ###### To view all the daemon mode mining processes:
 ```arcpool dlist```
@@ -175,11 +175,11 @@ __The mining commands run either a finite process or in the foreground.__ If we 
 ###### Output will look similar to:
 ```
 daemon processes -
-pid: 0    pm_id: 0    name: russia-ukraine-test    status: running
+pid: 0    pm_id: 0    name: <POOL_ID>    status: running
 ```
 
 ###### Stop a pools daemon process by name:
-```arcpool dstop --dname russia-ukraine-test```
+```arcpool dstop --dname <POOL_ID>```
 
 ###### To view logs for the mining processes install pm2:
 ```npm install --global pm2```
@@ -194,14 +194,14 @@ __As a pool operator you must index your pool for the artifacts to be searchable
 
 ###### Fetch a pools artifacts and build local files that will be uploaded as a search index:
 
-```arcpool fetch russia-ukraine-test```
+```arcpool fetch <POOL_ID>```
 
 ###### To fetch while also clearing the local index to do a fresh index you can run with the --clear option:
-```arcpool fetch russia-ukraine-test --clear```
+```arcpool fetch <POOL_ID> --clear```
 
 __After running fetch upload the index to arweave.__
 
 ###### Upload the index to arweave:
-```arcpool sindex russia-ukraine-test```
+```arcpool sindex <POOL_ID>```
 
 No other action is required this will populate Arweave with the search index and update your pools.json with the id of the index contract.
