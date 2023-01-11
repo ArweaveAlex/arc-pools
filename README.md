@@ -108,10 +108,10 @@ A pools.json file will be generated looking similar to the one below
 ```
 
 __Modify the pools.json file to generate your pool.__ Modify the following configs - 
-1. `state.title` is the title of your pool.
-2. `state.description` is a long description of your pool. It can contain Text and/or HTML.
-3. `state.briefDescription` is a brief description of your pool. It can contain Text.
-4. `keywords` is a list of the main keywords to track in the mining process. This is the core driving data that instructs the mining programs of what to pull from Twitter and Wikipedia.
+1. `state.title` is the title of your pool on the [Home Page](https://alex.arweave.dev) of Alex.
+2. `state.description` is a long description of your pool on the [Pool Detail](https://alex.arweave.dev/#/pool/zIZXNTl-GtTDbO8eP8LpkHks5S5WhB4j82YX-N2RuGw) page of Alex. It can contain Text and/or HTML.
+3. `state.briefDescription` is a brief description of your pool on the [Home Page](https://alex.arweave.dev) of Alex.
+4. `keywords` is a list of the main keywords to track in the mining process. This is the core driving data that instructs the mining programs of what to pull from mining sources such as Twitter and Wikipedia.
 5. `twitterApiKeys` is for mining from Twitter. Get twitter API credentials with elevated access and enter them into `twitterApiKeys`, consumer_key and consumer_secret are also referred to as API key and Secret in the twitter developer platform. token and token_secret are also referred to as Access Token and Access Token Secret in the twitter developer platform. bearer_token is referred to as Bearer Token in the twitter developer platform. You can skip putting these keys in pools.json if you don't plan to mine twitter, you can also add them later.
 6. `clarifaiApiKey` if you plan to use content moderation on tweets in the mining process, you can get an api key from clarifai and put it here. This will filter out explicit content from being mined into the pool.
 7. `topics` A list of more general topics the pool fits into these generate ANS110 Topic tags in the data. Examples: history, funny, humor, science.
