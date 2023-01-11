@@ -144,7 +144,10 @@ __After contribution funds have come through, we need to fund bundlr from the po
 
 __Run the client mine command from within the directory containing pools.json. It can be run with different options:__
 
-###### Mine tweets into the test pool from above
+###### Mine tweets into the pool
+```arcpool mine <POOL_ID> --source twitter```
+
+###### Mine tweets into the pool and use content moderation to filter explicit content, you must have clarifaiApiKey configured in pools.json to run this. 
 ```arcpool mine <POOL_ID> --source twitter```
 
 ###### Mine all tweets where users commented/quoted on twitter with "@thealexarchive #ukraine", this --mention-tag value can be whatever you want.
