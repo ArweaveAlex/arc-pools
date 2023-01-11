@@ -5,7 +5,6 @@ import tmp from "tmp-promise";
 import * as path from "path";
 import mime from "mime-types";
 import { mkdir } from "fs/promises";
-import * as gql from "gql-query-builder";
 
 import { PoolClient } from "../../../clients/pool";
 import { ArweaveClient } from "../../../clients/arweave";
@@ -19,15 +18,14 @@ import {
   generateAssetDescription
 } from "../../../helpers/utils";
 import { createAsset } from "../..";
+import { getGQLData } from "../../../gql";
 import { TAGS, LOOKUP_PARAMS, CONTENT_TYPES } from "../../../helpers/config";
-import { ArtifactEnum, IPoolClient } from "../../../helpers/types";
+import { ArtifactEnum, IPoolClient, GQLResponseType } from "../../../helpers/types";
 import { shouldUploadContent } from "../moderator";
 import { conversationEndpoint } from "../../../helpers/endpoints";
 
 const arClient = new ArweaveClient();
 
-// Fetch 10 at a time for rate limit and speed
-// Converts v2 tweets to v1
 export async function processIdsV2(poolClient: IPoolClient, args: {
   ids: string[],
   contentModeration: boolean
@@ -35,7 +33,7 @@ export async function processIdsV2(poolClient: IPoolClient, args: {
   let tweets = await getTweetsfromIds(poolClient, { ids: args.ids });
 
   for (const tweet of tweets) {
-    let dup = await isDuplicate(poolClient, { tweet: tweet });
+    let dup = await isDuplicate(tweet);
     if (!dup) {
       await processThreadV2(poolClient, {
         tweet: tweet,
@@ -300,57 +298,20 @@ async function processMediaPaths(poolClient: IPoolClient, args: {
   return additionalMediaPaths;
 }
 
-// TODO - Remove GQL Query Builder user getGQLData
-async function isDuplicate(poolClient: IPoolClient, args: { tweet: any }) {
-  let tName = generateAssetName(args.tweet);
-
-  const query = () => gql.query({
-    operation: "transactions",
-    variables: {
-      tags: {
-        value: [{
-          name: TAGS.keys.artifactName,
-          values: [tName]
-        }, {
-          name: TAGS.keys.poolId,
-          values: [poolClient.poolConfig.contracts.pool.id]
-        }],
-        type: "[TagFilter!]"
-      }
-    },
-    fields: [
+async function isDuplicate(tweet: any) {
+  const artifacts: GQLResponseType[] = await getGQLData({
+    ids: null,
+    tagFilters: [
       {
-        edges: [
-          "cursor",
-          {
-            node: [
-              "id",
-              {
-                "tags": [
-                  "name",
-                  "value"
-                ]
-              }
-            ]
-          }
-        ]
+        name: TAGS.keys.artifactName,
+        values: [generateAssetName(tweet)]
       }
-    ]
+    ],
+    uploader: null,
+    cursor: null
   });
 
-  const response = await arClient.arweavePost.api.post("/graphql", query());
-
-  if (response.data && response.data.data) {
-    if (response.data.data.transactions) {
-      if (response.data.data.transactions.edges) {
-        if (response.data.data.transactions.edges.length > 0) {
-          return true;
-        }
-      }
-    }
-  }
-
-  return false;
+  return artifacts.length > 0;
 }
 
 // Delete the stream rules before and after this run.

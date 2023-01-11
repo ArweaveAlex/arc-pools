@@ -26,7 +26,6 @@
         "figlet": "^1.5.2",
         "fs": "^0.0.1-security",
         "fs-extra": "^10.1.0",
-        "gql-query-builder": "^3.7.2",
         "human-crypto-keys": "^0.1.4",
         "jsdom": "^20.0.3",
         "mime": "^3.0.0",

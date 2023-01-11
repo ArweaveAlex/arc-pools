@@ -141,8 +141,6 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
   }
 }
 
-// TODO - remove twitter.userIds from pools.json
-
 /*
  * Mine all of a specific users tweets
  * ignoring duplicates
