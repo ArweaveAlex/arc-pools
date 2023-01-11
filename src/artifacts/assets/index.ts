@@ -122,6 +122,55 @@ async function createContractData(poolClient: IPoolClient, args: {
   const dateTime = new Date().getTime().toString();
   const tokenHolder = await getRandomContributor(poolClient);
 
+  const tagList: any[] = [
+    { name: TAGS.keys.appName, value: TAGS.values.appName },
+    { name: TAGS.keys.appVersion, value: TAGS.values.appVersion },
+    { name: TAGS.keys.contentType, value: CONTENT_TYPES.arweaveManifest },
+    { name: TAGS.keys.contractSrc, value: poolClient.poolConfig.contracts.nft.src },
+    { name: TAGS.keys.poolId, value: poolClient.poolConfig.contracts.pool.id },
+    { name: TAGS.keys.title, value: args.name },
+    { name: TAGS.keys.description, value: args.description },
+    { name: TAGS.keys.type, value: args.type },
+    { name: TAGS.keys.artifactSeries, value: TAGS.values.application },
+    { name: TAGS.keys.artifactName, value: args.name },
+    { name: TAGS.keys.initialOwner, value: tokenHolder },
+    { name: TAGS.keys.dateCreated, value: dateTime },
+    { name: TAGS.keys.artifactType, value: args.artifactType },
+    { name: TAGS.keys.keywords, value: JSON.stringify(poolClient.poolConfig.keywords) },
+    { name: TAGS.keys.mediaIds, value: JSON.stringify(args.additionalMediaPaths) },
+    { name: TAGS.keys.profileImage, value: JSON.stringify(args.profileImagePath) },
+    { name: TAGS.keys.associationId, value: args.associationId ? args.associationId : "" },
+    { name: TAGS.keys.associationSequence, value: args.associationSequence },
+    { name: TAGS.keys.implements, value: TAGS.values.ansVersion },
+    { name: TAGS.keys.topic, value: TAGS.values.topic(poolClient.poolConfig.keywords[0]) },
+    {
+      name: TAGS.keys.initState, value: JSON.stringify({
+        ticker: TAGS.values.initState.ticker(args.assetId),
+        balances: {
+          [tokenHolder]: 1
+        },
+        contentType: contentType,
+        description: args.description,
+        lastTransferTimestamp: null,
+        lockTime: 0,
+        maxSupply: 1,
+        title: TAGS.values.initState.title(args.name),
+        name: TAGS.values.initState.name(args.name),
+        transferable: false,
+        dateCreated: dateTime,
+        owner: tokenHolder
+      }).replace(/[\u007F-\uFFFF]/g, function (chr) {
+        return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4)
+      })
+    }
+  ];
+
+  for (let i = 0; i < poolClient.poolConfig.topics.length; i++) {
+    tagList.push(
+      { name: "Topic:" + poolClient.poolConfig.topics[i], value: poolClient.poolConfig.topics[i] }
+    );
+  }
+
   return {
     data: JSON.stringify({
       manifest: MANIFEST.type,
@@ -129,48 +178,7 @@ async function createContractData(poolClient: IPoolClient, args: {
       index: args.index,
       paths: args.paths(args.assetId)
     }),
-    tags: [
-      { name: TAGS.keys.appName, value: TAGS.values.appName },
-      { name: TAGS.keys.appVersion, value: TAGS.values.appVersion },
-      { name: TAGS.keys.contentType, value: CONTENT_TYPES.arweaveManifest },
-      { name: TAGS.keys.contractSrc, value: poolClient.poolConfig.contracts.nft.src },
-      { name: TAGS.keys.poolId, value: poolClient.poolConfig.contracts.pool.id },
-      { name: TAGS.keys.title, value: args.name },
-      { name: TAGS.keys.description, value: args.description },
-      { name: TAGS.keys.type, value: args.type },
-      { name: TAGS.keys.artifactSeries, value: TAGS.values.application },
-      { name: TAGS.keys.artifactName, value: args.name },
-      { name: TAGS.keys.initialOwner, value: tokenHolder },
-      { name: TAGS.keys.dateCreated, value: dateTime },
-      { name: TAGS.keys.artifactType, value: args.artifactType },
-      { name: TAGS.keys.keywords, value: JSON.stringify(poolClient.poolConfig.keywords) },
-      { name: TAGS.keys.mediaIds, value: JSON.stringify(args.additionalMediaPaths) },
-      { name: TAGS.keys.profileImage, value: JSON.stringify(args.profileImagePath) },
-      { name: TAGS.keys.associationId, value: args.associationId ? args.associationId : "" },
-      { name: TAGS.keys.associationSequence, value: args.associationSequence },
-      { name: TAGS.keys.implements, value: TAGS.values.ansVersion },
-      { name: TAGS.keys.topic, value: TAGS.values.topic(poolClient.poolConfig.keywords[0]) },
-      {
-        name: TAGS.keys.initState, value: JSON.stringify({
-          ticker: TAGS.values.initState.ticker(args.assetId),
-          balances: {
-            [tokenHolder]: 1
-          },
-          contentType: contentType,
-          description: args.description,
-          lastTransferTimestamp: null,
-          lockTime: 0,
-          maxSupply: 1,
-          title: TAGS.values.initState.title(args.name),
-          name: TAGS.values.initState.name(args.name),
-          transferable: false,
-          dateCreated: dateTime,
-          owner: tokenHolder
-        }).replace(/[\u007F-\uFFFF]/g, function (chr) {
-          return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4)
-        })
-      }
-    ]
+    tags: tagList
   }
 }
 

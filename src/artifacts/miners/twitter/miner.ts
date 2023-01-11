@@ -22,6 +22,10 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
     exitProcess(`Invalid Pool Wallet Configuration`, 1);
   }
 
+  if (!poolClient.poolConfig.topics) {
+    exitProcess("Please configure topics in pools.json", 1);
+  }
+
   const method = argv["method"];
   const mentionTag = argv["mention-tag"];
   const username = argv["username"];

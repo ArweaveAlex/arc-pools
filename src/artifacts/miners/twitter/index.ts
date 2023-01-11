@@ -148,7 +148,7 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     contentType: CONTENT_TYPES.json,
     artifactType: ArtifactEnum.Messaging,
     name: generateAssetName(args.tweet),
-    description: generateAssetName(args.tweet),
+    description: generateTweetDescription(args.tweet),
     type: TAGS.values.ansTypes.socialPost,
     additionalMediaPaths: additionalMediaPaths,
     profileImagePath: profileImagePath,
@@ -374,6 +374,16 @@ export function generateAssetName(tweet: any) {
   else {
     return 'Username: unknown'
   }
+}
+
+export const generateTweetDescription = (tweet: any) => {
+  if (tweet.full_text) {
+   return tweet.full_text;
+ } else if(tweet.text){
+   return tweet.text;
+ } else {
+   return 'Username: ' + tweet.user.name + ', Tweet Id: ' + tweet.id;
+ }
 }
 
 // Delete the stream rules before and after this run.
