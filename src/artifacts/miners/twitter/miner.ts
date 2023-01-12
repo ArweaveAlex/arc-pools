@@ -13,6 +13,7 @@ import {
 import { exitProcess } from "../../../helpers/utils";
 import { PoolConfigType, IPoolClient } from "../../../helpers/types";
 import { CLI_ARGS, STREAM_PARAMS } from "../../../helpers/config";
+import { parseError } from "../../../helpers/errors";
 
 let contentModeration: boolean;
 
@@ -88,11 +89,10 @@ async function mineTweetsByStream(poolClient: IPoolClient) {
 
   }
   catch (e: any) {
-    console.log(clc.red(e));
     if (stream) {
       stream.close();
     }
-    exitProcess(`Twitter mining failed \n${e}`, 1);
+    exitProcess(parseError(e, "twitter"), 1);
   }
 }
 

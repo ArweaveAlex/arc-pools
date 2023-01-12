@@ -82,6 +82,7 @@ A pools.json file will be generated looking similar to the one below
             },
             "title": "Pool Title eg. Russia Ukraine War",
             "description": "Paragraph/HTML for long pool description",
+            "briefDescription": "Paragraph/HTML for long pool description",
             "link": "",
             "rewards": "",
             "image": "",
