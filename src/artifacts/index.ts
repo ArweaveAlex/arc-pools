@@ -76,7 +76,7 @@ async function deployToBundlr(poolClient: IPoolClient, args: {
       await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
     }
     catch (e: any) {
-      exitProcess(`Error funding bundlr, check funds in arweave wallet ...\n ${e}`, 1);
+      exitProcess(`Error funding bundlr ...\n ${e}`, 1);
     }
 
     const assetBundlrResponse = await assetTx.upload();
@@ -100,8 +100,7 @@ async function deployToWarp(poolClient: IPoolClient, args: {
     return dataItem.id;
   }
   catch (e: any) {
-    console.log(clc.red(`Error deploying to warp ...\n ${e}`));
-    return null;
+    exitProcess(clc.red(`Error deploying to warp ...\n ${e}`), 1);
   }
 
   return null;
@@ -124,6 +123,25 @@ async function createContractData(poolClient: IPoolClient, args: {
   const dateTime = new Date().getTime().toString();
   const tokenHolder = await getRandomContributor(poolClient);
 
+  const initStateJson = JSON.stringify({
+    ticker: TAGS.values.initState.ticker(args.assetId),
+    balances: {
+      [tokenHolder]: 1
+    },
+    contentType: contentType,
+    description: args.description,
+    lastTransferTimestamp: null,
+    lockTime: 0,
+    maxSupply: 1,
+    title: TAGS.values.initState.title(args.name),
+    name: TAGS.values.initState.name(args.name),
+    transferable: false,
+    dateCreated: dateTime,
+    owner: tokenHolder
+  }).replace(/[\u007F-\uFFFF]/g, function (chr) {
+    return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4)
+  });
+
   const tagList: any[] = [
     { name: TAGS.keys.appName, value: TAGS.values.appName },
     { name: TAGS.keys.appVersion, value: TAGS.values.appVersion },
@@ -144,26 +162,7 @@ async function createContractData(poolClient: IPoolClient, args: {
     { name: TAGS.keys.associationId, value: args.associationId ? args.associationId : "" },
     { name: TAGS.keys.associationSequence, value: args.associationSequence ? args.associationSequence : "" },
     { name: TAGS.keys.implements, value: TAGS.values.ansVersion },
-    {
-      name: TAGS.keys.initState, value: JSON.stringify({
-        ticker: TAGS.values.initState.ticker(args.assetId),
-        balances: {
-          [tokenHolder]: 1
-        },
-        contentType: contentType,
-        description: args.description,
-        lastTransferTimestamp: null,
-        lockTime: 0,
-        maxSupply: 1,
-        title: TAGS.values.initState.title(args.name),
-        name: TAGS.values.initState.name(args.name),
-        transferable: false,
-        dateCreated: dateTime,
-        owner: tokenHolder
-      }).replace(/[\u007F-\uFFFF]/g, function (chr) {
-        return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4)
-      })
-    }
+    { name: TAGS.keys.initState, value: initStateJson }
   ];
 
   for (let i = 0; i < poolClient.poolConfig.topics.length; i++) {

@@ -7,8 +7,7 @@ export async function getGQLData(args: {
     ids: string[] | null;
     tagFilters: TagFilterType[] | null,
     uploader: string | null,
-    cursor: string | null,
-    reduxCursor: string | null
+    cursor: string | null
 }): Promise<GQLResponseType[]> {
 
     const arClient = new ArweaveClient();

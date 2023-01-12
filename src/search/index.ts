@@ -293,8 +293,7 @@ async function extractUsefulTxt(
                 ids: [contractId],
                 tagFilters: null,
                 uploader: null,
-                cursor: null,
-                reduxCursor: null
+                cursor: null
             });
             if(transactions.length < 1) {
                 continue

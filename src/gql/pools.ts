@@ -20,8 +20,7 @@ export async function getPoolIds() {
             }
         ],
         uploader: null,
-        cursor: null,
-        reduxCursor: null
+        cursor: null
     });
 
     return pools.map((pool: GQLResponseType) => {

@@ -78,7 +78,7 @@ async function mineTweetsByStream(poolClient: IPoolClient) {
     });
 
     await stream.connect({ autoReconnect: false });
-    
+
     for await (const tweet of stream) {
       await processThreadV2(poolClient, {
         tweet: modifyStreamTweet(tweet),
@@ -135,13 +135,11 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
       ids: ids,
       contentModeration: contentModeration
     });
-  } 
+  }
   catch (e: any) {
     exitProcess(`Twitter mining failed \n${e}`, 1);
   }
 }
-
-// TODO - remove twitter.userIds from pools.json
 
 /*
  * Mine all of a specific users tweets
@@ -149,43 +147,48 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
  * @param username: string 
  */
 async function mineTweetsByUser(poolClient: IPoolClient, args: { username: string }) {
-  console.log(`Mining Tweets by user ...`);
-  console.log(`User - [`, clc.green(`'${args.username}'`), `]`);
-  let user: any;
+  // console.log(`Mining Tweets by user ...`);
+  // console.log(`User - [`, clc.green(`'${args.username}'`), `]`);
+  // let user: any;
 
-  try {
-    user = await poolClient.twitterV2.v2.userByUsername(args.username);
-    console.log(`User ID - [`, clc.green(`'${user.data.id}'`), `]`);
-  }
-  catch {
-    exitProcess(`User not found`, 1);
-  }
+  // try {
+  //   user = await poolClient.twitterV2.v2.userByUsername(args.username);
+  //   console.log(`User ID - [`, clc.green(`'${user.data.id}'`), `]`);
+  // }
+  // catch {
+  //   exitProcess(`User not found`, 1);
+  // }
 
-  if (user) {
-    const uid = user.data.id;
-    let userTimeline: any;
-    let allTweets: any[] = [];
-    
-    do {
-      const params: tApiV2.TweetV2UserTimelineParams = {
-        max_results: 100
-      };
-      if (userTimeline) params.pagination_token = userTimeline.meta.next_token;
+  // if (user) {
+  //   const uid = user.data.id;
+  //   let userTimeline: any;
+  //   let allTweets: any[] = [];
 
-      userTimeline = await poolClient.twitterV2.v2.userTimeline(
-        uid,
-        params
-      );
-      if (userTimeline.data.data) allTweets = allTweets.concat(userTimeline.data.data);
-    } while (userTimeline.meta.next_token);
+  //   do {
+  //     const params: tApiV2.TweetV2UserTimelineParams = {
+  //       max_results: 100
+  //     };
+  //     if (userTimeline) params.pagination_token = userTimeline.meta.next_token;
 
-    const ids = allTweets.map((tweet: any) => {
-      return tweet.id
-    });
+  //     userTimeline = await poolClient.twitterV2.v2.userTimeline(
+  //       uid,
+  //       params
+  //     );
+  //     if (userTimeline.data.data) allTweets = allTweets.concat(userTimeline.data.data);
+  //   } while (userTimeline.meta.next_token);
 
-    await processIdsV2(poolClient, {
-      ids: ids,
-      contentModeration: contentModeration
-    });
-  }
+  //   const ids = allTweets.map((tweet: any) => {
+  //     return tweet.id
+  //   });
+
+  //   await processIdsV2(poolClient, {
+  //     ids: ids,
+  //     contentModeration: contentModeration
+  //   });
+  // }
+
+  await processIdsV2(poolClient, {
+    ids: ["1612437458544742402"],
+    contentModeration: contentModeration
+  });
 }

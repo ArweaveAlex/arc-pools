@@ -84,9 +84,6 @@ export type PoolConfigType = {
     },
     walletPath: string,
     bundlrNode: string,
-    twitter: {
-        userIds: string[]
-    },
     keywords: string[],
     twitterApiKeys: any,
     clarifaiApiKey: string,
