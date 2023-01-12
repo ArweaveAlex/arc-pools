@@ -1,14 +1,8 @@
-import fs from "fs";
-import clc from "cli-color";
-
-import { createData } from "arbundles"
-import { ArweaveSigner } from "arbundles/src/signing";
-
 import { ArtifactEnum, IPoolClient } from "../helpers/types";
-import { TAGS, CONTENT_TYPES, MANIFEST } from "../helpers/config";
+import { TAGS, CONTENT_TYPES } from "../helpers/config";
 import { PoolClient } from "../clients/pool";
 import { contentType } from "mime-types";
-import { exitProcess } from "../helpers/utils";
+import { log, logValue, exitProcess } from "../helpers/utils";
 
 export async function createAsset(poolClient: PoolClient, args: {
   index: any,
@@ -22,14 +16,10 @@ export async function createAsset(poolClient: PoolClient, args: {
   additionalMediaPaths: any,
   profileImagePath: any,
   associationId: string | null,
-  associationSequence: string | null
+  associationSequence: string | null,
+  assetId: string
 }) {
-  const assetId: string = await deployToBundlr(poolClient, {
-    content: args.content,
-    contentType: args.contentType
-  });
-
-  const contractData = await createContractData(poolClient, {
+  const contractTags = await createContractTags(poolClient, {
     index: args.index,
     paths: args.paths,
     contentType: args.contentType,
@@ -41,18 +31,25 @@ export async function createAsset(poolClient: PoolClient, args: {
     profileImagePath: args.profileImagePath,
     associationId: args.associationId,
     associationSequence: args.associationSequence,
-    assetId: assetId,
+    assetId: args.assetId,
   });
 
-  const contractId = await deployToWarp(poolClient, { contractData: contractData });
+  const assetId: string = await deployToBundlr(poolClient, {
+    content: args.content,
+    contentType: args.contentType,
+    contractTags: contractTags
+  });
+
+  const contractId = await deployToWarp(poolClient, { assetId: assetId });
   if (contractId) {
-    console.log(`Deployed Contract - [`, clc.green(`'${contractId}'`), `]`);
+    logValue(`Deployed Contract`, contractId, 0);
   }
 }
 
 async function deployToBundlr(poolClient: IPoolClient, args: {
   content: any,
-  contentType: string
+  contentType: string,
+  contractTags: any
 }) {
   let finalContent: any;
 
@@ -65,48 +62,49 @@ async function deployToBundlr(poolClient: IPoolClient, args: {
       break;
   }
 
-  const assetTags = [{ name: TAGS.keys.contentType, value: args.contentType }];
-  const assetTx = poolClient.bundlr.createTransaction(finalContent, { tags: assetTags });
-  await assetTx.sign();
-
   try {
-    const cost = await poolClient.bundlr.getPrice(assetTx.size);
+    const transaction = poolClient.bundlr.createTransaction(finalContent, args.contractTags);
+    await transaction.sign();
 
     try {
-      await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
+      const cost = await poolClient.bundlr.getPrice(transaction.size);
+  
+      try {
+        await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
+      }
+      catch (e: any) {
+        log(`Error funding bundlr ...\n ${e}`, 1);
+      }
     }
     catch (e: any) {
-      exitProcess(`Error funding bundlr ...\n ${e}`, 1);
+      log(`Error getting bundlr cost ...\n ${e}`, 1);
     }
 
-    const assetBundlrResponse = await assetTx.upload();
-    return assetBundlrResponse.id
+    return (await transaction.upload()).id;
   }
   catch (e: any) {
-    exitProcess(`Error getting bundlr cost ...\n ${e}`, 1);
+    exitProcess(`Error uploading to bundlr ...\n ${e}`, 1);
   }
 
   return null;
 }
 
+// TODO - Catch errors
 async function deployToWarp(poolClient: IPoolClient, args: {
-  contractData: any
+  assetId: string
 }) {
   try {
-    const signer = new ArweaveSigner(JSON.parse(fs.readFileSync(poolClient.poolConfig.walletPath).toString()));
-    const dataItem = createData(args.contractData.data, signer, { tags: args.contractData.tags });
-    await dataItem.sign(signer);
-    await poolClient.warp.createContract.deployBundled(dataItem.getRaw());
-    return dataItem.id;
+    const { contractTxId } = await poolClient.warp.register(args.assetId, "node2");
+    return contractTxId;
   }
   catch (e: any) {
-    exitProcess(clc.red(`Error deploying to warp ...\n ${e}`), 1);
+    log(`Error deploying to warp ...\n ${e}`, 1);
+    setTimeout(() => {}, 5000)
   }
-
   return null;
 }
 
-async function createContractData(poolClient: IPoolClient, args: {
+async function createContractTags(poolClient: IPoolClient, args: {
   index: any,
   paths: any,
   contentType: string,
@@ -171,15 +169,7 @@ async function createContractData(poolClient: IPoolClient, args: {
     );
   }
 
-  return {
-    data: JSON.stringify({
-      manifest: MANIFEST.type,
-      version: MANIFEST.version,
-      index: args.index,
-      paths: args.paths(args.assetId)
-    }),
-    tags: tagList
-  }
+  return { tags: tagList }
 }
 
 async function getRandomContributor(poolClient: IPoolClient) {
