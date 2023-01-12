@@ -132,7 +132,7 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
     });
   }
   catch (e: any) {
-    exitProcess(`Twitter mining failed \n${e}`, 1);
+    exitProcess(parseError(e, "twitter"), 1);
   }
 }
 
@@ -147,35 +147,35 @@ async function mineTweetsByUser(poolClient: IPoolClient, args: { username: strin
     user = await poolClient.twitterV2.v2.userByUsername(
       args.username.includes("@") ? args.username.replace("@", "") : args.username);
     logValue(`User ID`, user.data.id, 0);
-  }
-  catch {
-    exitProcess(`User not found`, 1);
-  }
+  
 
-  if (user) {
-    const uid = user.data.id;
-    let userTimeline: any;
-    let allTweets: any[] = [];
+    if (user) {
+      const uid = user.data.id;
+      let userTimeline: any;
+      let allTweets: any[] = [];
 
-    do {
-      const params: tApiV2.TweetV2UserTimelineParams = {
-        max_results: 100
-      };
-      if (userTimeline) params.pagination_token = userTimeline.meta.next_token;
+      do {
+        const params: tApiV2.TweetV2UserTimelineParams = {
+          max_results: 100
+        };
+        if (userTimeline) params.pagination_token = userTimeline.meta.next_token;
 
-      userTimeline = await poolClient.twitterV2.v2.userTimeline(uid, params);
-      if (userTimeline.data.data) allTweets = allTweets.concat(userTimeline.data.data);
-      logValue(`Fetching Ids`, allTweets.length.toString(), 0);
+        userTimeline = await poolClient.twitterV2.v2.userTimeline(uid, params);
+        if (userTimeline.data.data) allTweets = allTweets.concat(userTimeline.data.data);
+        logValue(`Fetching Ids`, allTweets.length.toString(), 0);
+      }
+      while (userTimeline.meta.next_token && allTweets.length < 100);
+
+      const ids = allTweets.map((tweet: any) => {
+        return tweet.id
+      });
+
+      await processIdsV2(poolClient, {
+        ids: ids,
+        contentModeration: contentModeration
+      });
     }
-    while (userTimeline.meta.next_token && allTweets.length < 100);
-
-    const ids = allTweets.map((tweet: any) => {
-      return tweet.id
-    });
-
-    await processIdsV2(poolClient, {
-      ids: ids,
-      contentModeration: contentModeration
-    });
+  } catch (e: any){
+    exitProcess(parseError(e, "twitter"), 1);
   }
 }

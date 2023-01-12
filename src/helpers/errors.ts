@@ -10,6 +10,6 @@ export function parseError(error: any, type: string): string {
 
 function parseTwitterError(error: any): string {
     let returnString = "Twitter Error: ";
-    returnString = returnString + error.code + " " + error.data.detail;
+    returnString = returnString + " " + error.code + error.data.detail;
     return returnString;
 }
