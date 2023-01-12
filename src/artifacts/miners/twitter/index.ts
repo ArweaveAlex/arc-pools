@@ -24,8 +24,6 @@ import { ArtifactEnum, IPoolClient, GQLResponseType } from "../../../helpers/typ
 import { shouldUploadContent } from "../moderator";
 import { conversationEndpoint } from "../../../helpers/endpoints";
 
-const arClient = new ArweaveClient();
-
 export async function processIdsV2(poolClient: IPoolClient, args: {
   ids: string[],
   contentModeration: boolean
@@ -64,6 +62,7 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
   });
 
   if (thread && thread.length > 0) {
+    console.log(`Thread - [`, clc.green(thread.length), `]`);
     let associationId: string | null = null;
     let associationSequence: string | null = "0";
 
@@ -92,7 +91,7 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
       else {
         clearInterval(intervalId);
       }
-    }, 1500);
+    }, 2000);
   }
   else {
     processTweetV2(poolClient, {
@@ -310,7 +309,7 @@ async function isDuplicate(tweet: any) {
     uploader: null,
     cursor: null
   });
-
+  
   return artifacts.length > 0;
 }
 
