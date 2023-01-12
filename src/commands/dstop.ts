@@ -20,16 +20,22 @@ const command: CommandInterface = {
         pm2.connect(function(err: any) {
             if (err) {
               console.error(err);
-              process.exit(2);
+              exitProcess("Failed to connect to pm2", 1);
             }
-            console.log(dname);
-            pm2.stop(dname, function(err: any) {
-                if (err) {
+            pm2.stop(dname, function(err2: any) {
+                if (err2) {
                     console.error("Process not found...");
                     pm2.disconnect();
                 } else {
-                    console.log(`pm2 daemon process stopped -- ${dname}`);
-                    pm2.disconnect();
+                    pm2.delete(dname, function(err3: any) {
+                        if (err3) {
+                            console.error(err3);
+                            pm2.disconnect();
+                        } else {
+                            console.log(`pm2 daemon process stopped and removed -- ${dname}`);
+                            pm2.disconnect();
+                        }
+                    });
                 }
             });
         });

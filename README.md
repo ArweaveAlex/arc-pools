@@ -150,11 +150,11 @@ __Run the client mine command from within the directory containing pools.json. I
 ###### Mine tweets into the pool and use content moderation to filter explicit content, you must have clarifaiApiKey configured in pools.json to run this. 
 ```arcpool mine <POOL_ID> --source twitter --content-moderation```
 
-###### Mine all tweets where users commented/quoted on twitter with "@thealexarchive #ukraine", this --mention-tag value can be whatever you want.
+###### Mine all tweets where users commented/quoted on twitter with "@thealexarchive #ukraine", this --mention-tag value can be whatever you want, mention tags must be in double quotes.
 ```arcpool mine <POOL_ID> --source twitter --method mention --mention-tag "@thealexarchive #ukraine"```
 
-###### Mine all tweets ever from a particular user for example user SBF_FTX, do not include the @ in the --username value
-```arcpool mine <POOL_ID> --source twitter --method user --username SBF_FTX```
+###### Mine all tweets ever from a particular user for example user @SBF_FTX
+```arcpool mine <POOL_ID> --source twitter --method user --username @SBF_FTX```
 
 ###### Mine a single wikipedia article related to the given keywords in config
 ```arcpool mine <POOL_ID> --source wikipedia```
