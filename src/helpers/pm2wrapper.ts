@@ -41,6 +41,6 @@ const buildScriptPath = () => {
             });
         });
     } else {
-        require('./index');
+        require('../index');
     }
 })();

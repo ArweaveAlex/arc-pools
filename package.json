@@ -9,7 +9,7 @@
         "build": "tsc"
     },
     "bin": {
-        "arcpool": "./bin/pm2Wrapper.js"
+        "arcpool": "./bin/helpers/pm2Wrapper.js"
     },
     "dependencies": {
         "@bundlr-network/client": "^0.9.0",
