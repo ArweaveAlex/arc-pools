@@ -1,4 +1,3 @@
-import clc from "cli-color";
 import minimist from "minimist";
 import * as tApiV2 from "twitter-api-v2";
 
@@ -10,7 +9,7 @@ import {
   modifyStreamTweet,
   deleteStreamRules
 } from ".";
-import { exitProcess } from "../../../helpers/utils";
+import { log, logValue, exitProcess } from "../../../helpers/utils";
 import { PoolConfigType, IPoolClient } from "../../../helpers/types";
 import { CLI_ARGS, STREAM_PARAMS } from "../../../helpers/config";
 
@@ -36,7 +35,7 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
   switch (method) {
     case undefined: case CLI_ARGS.sources.twitter.methods.stream:
       if (!method) {
-        console.log(`Defaulting to stream method ...`);
+        log(`Defaulting to stream method ...`, null);
       }
       mineTweetsByStream(poolClient);
       return;
@@ -57,9 +56,8 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
   }
 }
 
-// Start a twitter stream, process to Arweave one by one
 async function mineTweetsByStream(poolClient: IPoolClient) {
-  console.log(`Mining tweets by stream ...`);
+  log(`Mining tweets by stream ...`, null);
   let stream: tApiV2.TweetStream;
 
   try {
@@ -88,7 +86,7 @@ async function mineTweetsByStream(poolClient: IPoolClient) {
 
   }
   catch (e: any) {
-    console.log(clc.red(e));
+    log(e, 1);
     if (stream) {
       stream.close();
     }
@@ -97,16 +95,13 @@ async function mineTweetsByStream(poolClient: IPoolClient) {
 }
 
 /*
- * If someone says @thealexarchive #crypto etc...
- * this will grab those and mine them to the pool
  * @param mentionTag: string
  */
 async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: string }) {
-  console.log(`Mining Tweets by mention ...`);
-  console.log(`Mention Tag - [`, clc.green(`'${args.mentionTag}'`), `]`);
+  log(`Mining Tweets by mention ...`, null); logValue(`Mention Tag`, args.mentionTag, 0);
 
   try {
-    let query = args.mentionTag;
+    let query = args.mentionTag.includes("@") ? args.mentionTag.replace("@", "") : args.mentionTag;
     let resultSet: any;
     let allTweets: any[] = [];
     do {
@@ -119,10 +114,10 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
       resultSet = await poolClient.twitterV2.v2.search(query, params);
 
       if (resultSet.data.data) allTweets = allTweets.concat(resultSet.data.data);
+      logValue(`Fetching Ids`, allTweets.length.toString(), 0);
     }
     while (resultSet.meta.next_token);
 
-    // Get the parent tweets from the mentions above and remove duplicate ids
     let ids = allTweets.map((tweet: any) => {
       if (tweet.referenced_tweets && tweet.referenced_tweets.length > 0) {
         return tweet.referenced_tweets[0].id;
@@ -142,53 +137,45 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
 }
 
 /*
- * Mine all of a specific users tweets
- * ignoring duplicates
  * @param username: string 
  */
 async function mineTweetsByUser(poolClient: IPoolClient, args: { username: string }) {
-  // console.log(`Mining Tweets by user ...`);
-  // console.log(`User - [`, clc.green(`'${args.username}'`), `]`);
-  // let user: any;
+  log(`Mining Tweets by user ...`, null); logValue(`User`, args.username, 0);
+  let user: any;
 
-  // try {
-  //   user = await poolClient.twitterV2.v2.userByUsername(args.username);
-  //   console.log(`User ID - [`, clc.green(`'${user.data.id}'`), `]`);
-  // }
-  // catch {
-  //   exitProcess(`User not found`, 1);
-  // }
+  try {
+    user = await poolClient.twitterV2.v2.userByUsername(
+      args.username.includes("@") ? args.username.replace("@", "") : args.username);
+    logValue(`User ID`, user.data.id, 0);
+  }
+  catch {
+    exitProcess(`User not found`, 1);
+  }
 
-  // if (user) {
-  //   const uid = user.data.id;
-  //   let userTimeline: any;
-  //   let allTweets: any[] = [];
+  if (user) {
+    const uid = user.data.id;
+    let userTimeline: any;
+    let allTweets: any[] = [];
 
-  //   do {
-  //     const params: tApiV2.TweetV2UserTimelineParams = {
-  //       max_results: 100
-  //     };
-  //     if (userTimeline) params.pagination_token = userTimeline.meta.next_token;
+    do {
+      const params: tApiV2.TweetV2UserTimelineParams = {
+        max_results: 100
+      };
+      if (userTimeline) params.pagination_token = userTimeline.meta.next_token;
 
-  //     userTimeline = await poolClient.twitterV2.v2.userTimeline(
-  //       uid,
-  //       params
-  //     );
-  //     if (userTimeline.data.data) allTweets = allTweets.concat(userTimeline.data.data);
-  //   } while (userTimeline.meta.next_token);
+      userTimeline = await poolClient.twitterV2.v2.userTimeline(uid, params);
+      if (userTimeline.data.data) allTweets = allTweets.concat(userTimeline.data.data);
+      logValue(`Fetching Ids`, allTweets.length.toString(), 0);
+    }
+    while (userTimeline.meta.next_token && allTweets.length < 100);
 
-  //   const ids = allTweets.map((tweet: any) => {
-  //     return tweet.id
-  //   });
+    const ids = allTweets.map((tweet: any) => {
+      return tweet.id
+    });
 
-  //   await processIdsV2(poolClient, {
-  //     ids: ids,
-  //     contentModeration: contentModeration
-  //   });
-  // }
-
-  await processIdsV2(poolClient, {
-    ids: ["1612437458544742402"],
-    contentModeration: contentModeration
-  });
+    await processIdsV2(poolClient, {
+      ids: ids,
+      contentModeration: contentModeration
+    });
+  }
 }

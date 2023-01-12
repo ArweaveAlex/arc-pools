@@ -1,16 +1,16 @@
 import fs from "fs";
 import axios from "axios";
-import clc from "cli-color";
 import tmp from "tmp-promise";
 import * as path from "path";
 import mime from "mime-types";
 import { mkdir } from "fs/promises";
 
 import { PoolClient } from "../../../clients/pool";
-import { ArweaveClient } from "../../../clients/arweave";
 
 import {
+  log,
   walk,
+  logValue,
   checkPath,
   processMediaURL,
   exitProcess,
@@ -28,18 +28,22 @@ export async function processIdsV2(poolClient: IPoolClient, args: {
   ids: string[],
   contentModeration: boolean
 }) {
-  let tweets = await getTweetsfromIds(poolClient, { ids: args.ids });
-
-  for (const tweet of tweets) {
-    let dup = await isDuplicate(tweet);
-    if (!dup) {
-      await processThreadV2(poolClient, {
-        tweet: tweet,
-        contentModeration: args.contentModeration
-      });
-    }
-    else {
-      console.log(clc.red(`Tweet already mined: ${generateAssetName(tweet)}`));
+  logValue(`Parent Id Count`, args.ids.length.toString(), 0);
+  let tweets: any[];
+  for (let i = 0; i < args.ids.length; i += 10) {
+    const splitIds: string[] = args.ids.slice(i, i + 10);
+    tweets = await getTweetsfromIds(poolClient, { ids: splitIds });
+    for (const tweet of tweets) {
+      let dup = await isDuplicate(tweet);
+      if (!dup) {
+        await processThreadV2(poolClient, {
+          tweet: tweet,
+          contentModeration: args.contentModeration
+        });
+      }
+      else {
+        log(`Tweet already mined: ${generateAssetName(tweet)}`, 1);
+      }
     }
   }
 }
@@ -62,7 +66,7 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
   });
 
   if (thread && thread.length > 0) {
-    console.log(`Thread - [`, clc.green(thread.length), `]`);
+    logValue(`Thread`, thread.length, 0);
     let associationId: string | null = null;
     let associationSequence: string | null = "0";
 
@@ -139,6 +143,7 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     await tmpdir.cleanup()
   }
 
+  // TODO - Check validity of assetId in initStateJson Ticker
   await createAsset(poolClient, {
     index: { path: "tweet.json" },
     paths: (assetId: string) => ({ "tweet.json": { id: assetId } }),
@@ -151,7 +156,8 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     additionalMediaPaths: additionalMediaPaths,
     profileImagePath: profileImagePath,
     associationId: args.associationId,
-    associationSequence: args.associationSequence
+    associationSequence: args.associationSequence,
+    assetId: args.tweet.id
   });
 }
 
@@ -165,8 +171,9 @@ async function getThread(poolClient: IPoolClient, args: {
     }
   });
 
+  /* Conversation Id Tweets are returned in reverse chronological order */
   if (response.data && response.data.data && response.data.data.length > 0) {
-    return response.data.data.reverse(); // Conversation Id Tweets are returned in reverse chronological order
+    return response.data.data.reverse();
   }
 
   return null
@@ -175,18 +182,19 @@ async function getThread(poolClient: IPoolClient, args: {
 async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }) {
   let allTweets: any[] = [];
 
-  for (let j = 0; j < args.ids.length; j += 10) {
-    const splitIds: string[] = args.ids.slice(j, j + 10);
+  for (let i = 0; i < args.ids.length; i += 10) {
+    const splitIds: string[] = args.ids.slice(i, i + 10);
 
+    log(splitIds, null);
     let tweets = await poolClient.twitterV2.v2.tweets(splitIds, LOOKUP_PARAMS);
     if (tweets.data.length > 0) {
-      for (let i = 0; i < tweets.data.length; i++) {
+      for (let j = 0; j < tweets.data.length; j++) {
         allTweets.push({
-          ...tweets.data[i],
-          user: getUser(tweets.data[i].author_id, tweets.includes.users),
+          ...tweets.data[j],
+          user: getUser(tweets.data[j].author_id, tweets.includes.users),
           includes: {
-            media: tweets.data[i].attachments?.media_keys ?
-              getMedia(tweets.data[i].attachments.media_keys, tweets.includes.media) : []
+            media: tweets.data[j].attachments?.media_keys ?
+              getMedia(tweets.data[j].attachments.media_keys, tweets.includes.media) : []
           }
         })
       }
@@ -309,12 +317,14 @@ async function isDuplicate(tweet: any) {
     uploader: null,
     cursor: null
   });
-  
+
   return artifacts.length > 0;
 }
 
-// Delete the stream rules before and after this run.
-// Before to clear out any previous leftovers from failed runs
+/**
+ * Delete the stream rules before and after this run
+ * Before to clear out any previous leftovers from failed runs 
+**/
 export async function deleteStreamRules(poolClient: IPoolClient) {
   const rules = await poolClient.twitterV2Bearer.v2.streamRules();
 
