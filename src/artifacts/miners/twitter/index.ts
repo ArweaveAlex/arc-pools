@@ -30,21 +30,13 @@ export async function processIdsV2(poolClient: IPoolClient, args: {
 }) {
   logValue(`Parent Id Count`, args.ids.length.toString(), 0);
   let tweets: any[];
-  for (let i = 0; i < args.ids.length; i += 10) {
-    const splitIds: string[] = args.ids.slice(i, i + 10);
-    tweets = await getTweetsfromIds(poolClient, { ids: splitIds });
-    for (const tweet of tweets) {
-      let dup = await isDuplicate(tweet);
-      if (!dup) {
-        await processThreadV2(poolClient, {
-          tweet: tweet,
-          contentModeration: args.contentModeration
-        });
-      }
-      else {
-        log(`Tweet already mined: ${generateAssetName(tweet)}`, 1);
-      }
-    }
+  tweets = await getTweetsfromIds(poolClient, { ids: args.ids });
+
+  for (let i = 0; i < tweets.length; i++) {
+    await processThreadV2(poolClient, {
+      tweet: tweets[i],
+      contentModeration: args.contentModeration
+    })
   }
 }
 
@@ -55,7 +47,7 @@ export async function processIdsV2(poolClient: IPoolClient, args: {
 **/
 export async function processThreadV2(poolClient: IPoolClient, args: {
   tweet: any,
-  contentModeration: boolean
+  contentModeration: boolean,
 }) {
   if (!args.tweet.conversation_id) {
     return;
@@ -74,31 +66,24 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
 
     associationId = args.tweet.conversation_id;
 
-    processTweetV2(poolClient, {
+    await processTweetV2(poolClient, {
       tweet: args.tweet,
       contentModeration: args.contentModeration,
       associationId: associationId,
       associationSequence: associationSequence
     });
 
-    let i = 1;
-    const intervalId = setInterval(() => {
-      if (i <= childTweets.length) {
-        processTweetV2(poolClient, {
-          tweet: childTweets[i - 1],
-          contentModeration: args.contentModeration,
-          associationId: associationId,
-          associationSequence: i.toString()
-        });
-        i++;
-      }
-      else {
-        clearInterval(intervalId);
-      }
-    }, 2000);
+    for (let i = 0; i < childTweets.length; i++) {
+      await processTweetV2(poolClient, {
+        tweet: childTweets[i],
+        contentModeration: args.contentModeration,
+        associationId: associationId,
+        associationSequence: (i + 1).toString()
+      });
+    }
   }
   else {
-    processTweetV2(poolClient, {
+    await processTweetV2(poolClient, {
       tweet: args.tweet,
       contentModeration: args.contentModeration,
       associationId: null,
@@ -111,7 +96,7 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
   tweet: any,
   contentModeration: boolean,
   associationId: string | null,
-  associationSequence: string | null
+  associationSequence: string | null,
 }) {
 
   const tmpdir = await tmp.dir({ unsafeCleanup: true });
@@ -161,31 +146,13 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
   });
 }
 
-async function getThread(poolClient: IPoolClient, args: {
-  conversationId: string
-}) {
-
-  const response = await axios.get(conversationEndpoint(args.conversationId), {
-    headers: {
-      Authorization: `Bearer ${poolClient.poolConfig.twitterApiKeys.bearer_token}`
-    }
-  });
-
-  /* Conversation Id Tweets are returned in reverse chronological order */
-  if (response.data && response.data.data && response.data.data.length > 0) {
-    return response.data.data.reverse();
-  }
-
-  return null
-}
-
 async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }) {
   let allTweets: any[] = [];
 
-  for (let i = 0; i < args.ids.length; i += 10) {
-    const splitIds: string[] = args.ids.slice(i, i + 10);
+  for (let i = 0; i < args.ids.length; i += 100) {
+    const splitIds: string[] = args.ids.slice(i, i + 100);
 
-    log(splitIds, null);
+    logValue(`Fetching from API`, splitIds.length, 0);
     let tweets = await poolClient.twitterV2.v2.tweets(splitIds, LOOKUP_PARAMS);
     if (tweets.data.length > 0) {
       for (let j = 0; j < tweets.data.length; j++) {
@@ -201,6 +168,23 @@ async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }
     }
   }
   return allTweets;
+}
+
+async function getThread(poolClient: IPoolClient, args: {
+  conversationId: string
+}) {
+  const response = await axios.get(conversationEndpoint(args.conversationId), {
+    headers: {
+      Authorization: `Bearer ${poolClient.poolConfig.twitterApiKeys.bearer_token}`
+    }
+  });
+
+  /* Conversation Id Tweets are returned in reverse chronological order */
+  if (response.data && response.data.data && response.data.data.length > 0) {
+    return response.data.data.reverse();
+  }
+
+  return null
 }
 
 async function processProfileImage(args: {
@@ -290,14 +274,15 @@ async function processMediaPaths(poolClient: IPoolClient, args: {
           await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
         }
         catch (e: any) {
-          exitProcess(`Error funding bundlr - stopping process\n ${e}`, 1)
+          log(`Error funding bundlr ...\n ${e}`, 1);
         }
         await tx.upload();
         if (!id) exitProcess(`Upload Error`, 1);
         additionalMediaPaths[relPath] = { id: id };
-      } catch (e: any) {
+      }
+      catch (e: any) {
         fs.rmSync(path.resolve(f));
-        exitProcess(`Error uploading ${f} for ${args.tweet.id} - ${e}`, 1);
+        log(`Error uploading ${f} for ${args.tweet.id} - ${e}`, 1);
       }
     }
   }

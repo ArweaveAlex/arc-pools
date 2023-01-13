@@ -167,7 +167,7 @@ async function mineTweetsByUser(poolClient: IPoolClient, args: { username: strin
       if (userTimeline.data.data) allTweets = allTweets.concat(userTimeline.data.data);
       logValue(`Fetching Ids`, allTweets.length.toString(), 0);
     }
-    while (userTimeline.meta.next_token && allTweets.length < 100);
+    while (userTimeline.meta.next_token);
 
     const ids = allTweets.map((tweet: any) => {
       return tweet.id

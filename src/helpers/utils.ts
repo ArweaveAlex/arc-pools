@@ -15,7 +15,7 @@ export function log(message: any, status: 0 | 1 | null): void {
   }
 }
 
-export function logValue(message: any, value: string, status: 0 | 1 | null): void {
+export function logValue(message: any, value: any, status: 0 | 1 | null): void {
   if (status !== null) {
     console.log(`${message} - [`, status === 0 ? clc.green(`'${value}'`) : clc.red(`'${value}'`), `]`);
   }
@@ -53,19 +53,6 @@ export function checkProcessEnv(processArg: string): string {
   return processArg.indexOf("ts-node") > -1 ? '.ts' : '.js'
 }
 
-export function truncateString(str: string, num: number) {
-  if (str.length > num) {
-    let finalStr: string = "";
-    for (let i = 0; i < num; i++) {
-      finalStr += Array.from(str)[i];
-    }
-    return `${finalStr} ...`.replace(/(\r\n|\r|\n)/g, " ");
-  }
-  else {
-    return str;
-  }
-}
-
 export const checkPath = async (path: fs.PathLike): Promise<boolean> => { return fs.promises.stat(path).then(_ => true).catch(_ => false) };
 
 export async function* walk(dir: string): any {
@@ -96,20 +83,44 @@ export async function processMediaURL(url: string, dir: string, i: number) {
   })
 }
 
+export function truncateString(str: string, num: number) {
+  let finalStr: string = "";
+  if (str.length > num) {
+    for (let i = 0; i < num; i++) {
+      finalStr += Array.from(str)[i];
+    }
+    return `${finalStr} ...`.replace(/(\r\n|\r|\n)/g, " ").replace(/[\u007F-\uFFFF]/g, function (chr) {
+      return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
+    });
+  }
+  else {
+    for (let i = 0; i < str.length; i++) {
+      finalStr += Array.from(str)[i];
+    }
+    return finalStr.replace(/(\r\n|\r|\n)/g, " ").replace(/[\u007F-\uFFFF]/g, function (chr) {
+      return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
+    });
+  }
+}
+
 export function generateAssetName(tweet: any) {
   if (tweet) {
     if (tweet.text) {
       if (tweet.text.length > 30) {
         return `Username: ${tweet.user.name}, Tweet: ${truncateString(tweet.text, 30)}`
       } else {
-        return `Username: ${tweet.user.name}, Tweet: ${tweet.text}`;
+        return `Username: ${tweet.user.name}, Tweet: ${tweet.text}`.replace(/[\u007F-\uFFFF]/g, function (chr) {
+          return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
+        });
       }
     } else if (tweet.full_text) {
       if (tweet.full_text.length > 30) {
         return `Username: ${tweet.user.name}, Tweet: ${truncateString(tweet.full_text, 30)}`
       }
       else {
-        return `Username: ${tweet.user.name}, Tweet: ${tweet.full_text}`;
+        return `Username: ${tweet.user.name}, Tweet: ${tweet.full_text}`.replace(/[\u007F-\uFFFF]/g, function (chr) {
+          return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
+        });
       }
     }
     else {
@@ -122,11 +133,22 @@ export function generateAssetName(tweet: any) {
 }
 
 export const generateAssetDescription = (tweet: any) => {
-  if (tweet.full_text) {
-    return tweet.full_text;
+  let finalStr: string = "";
+  if (tweet.text) {
+    for (let i = 0; i < Array.from(tweet.text).length; i++) {
+      finalStr += Array.from(tweet.text)[i];
+    }
+    return finalStr.replace(/(\r\n|\r|\n)/g, " ").replace(/[\u007F-\uFFFF]/g, function (chr) {
+      return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
+    });
   }
-  else if (tweet.text) {
-    return tweet.text;
+  else if (tweet.full_text) {
+    for (let i = 0; i < Array.from(tweet.full_text).length; i++) {
+      finalStr += Array.from(tweet.full_text)[i];
+    }
+    return finalStr.replace(/(\r\n|\r|\n)/g, " ").replace(/[\u007F-\uFFFF]/g, function (chr) {
+      return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
+    });
   }
   else {
     return generateAssetName(tweet);

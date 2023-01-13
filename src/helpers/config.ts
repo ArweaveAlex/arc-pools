@@ -111,11 +111,10 @@ export const TAGS = {
 }
 
 export const CONTENT_TYPES = {
-    arweaveManifest: "application/x.arweave-manifest+json",
+    arweaveManifest: "application/x.arweave-manifest+json", // TODO - Check Content Type
     json: "application/json",
     octetStream: "application/octet-stream",
-    textHtml: "text/html",
-    webpage: "web-page"
+    textHtml: "text/html"
 }
 
 export const STORAGE = {

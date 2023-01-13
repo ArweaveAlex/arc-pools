@@ -51,6 +51,7 @@ async function deployToBundlr(poolClient: IPoolClient, args: {
   contentType: string,
   contractTags: any
 }) {
+
   let finalContent: any;
 
   switch (args.contentType) {
@@ -63,12 +64,12 @@ async function deployToBundlr(poolClient: IPoolClient, args: {
   }
 
   try {
-    const transaction = poolClient.bundlr.createTransaction(finalContent, args.contractTags);
+    const transaction = poolClient.bundlr.createTransaction(finalContent, { tags: args.contractTags });
     await transaction.sign();
 
     try {
       const cost = await poolClient.bundlr.getPrice(transaction.size);
-  
+
       try {
         await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
       }
@@ -86,10 +87,9 @@ async function deployToBundlr(poolClient: IPoolClient, args: {
     exitProcess(`Error uploading to bundlr ...\n ${e}`, 1);
   }
 
-  return null;
+  return null
 }
 
-// TODO - Catch errors
 async function deployToWarp(poolClient: IPoolClient, args: {
   assetId: string
 }) {
@@ -98,8 +98,30 @@ async function deployToWarp(poolClient: IPoolClient, args: {
     return contractTxId;
   }
   catch (e: any) {
-    log(`Error deploying to warp ...\n ${e}`, 1);
-    setTimeout(() => {}, 5000)
+    log(`Error deploying to warp - Asset ID [ '${args.assetId}' ] ...\n ${e}`, 1);
+
+    let errorString = e.toString();
+
+    if(errorString.indexOf("500") > -1) {
+      log(`500 from warp, skipping tweet...`, 1);
+      return null;
+    } else if ((errorString.indexOf("502") > -1) || (errorString.indexOf("504") > -1)) {
+      let retries = 5;
+      for(let i = 0; i < retries; i++) {
+        await new Promise(r => setTimeout(r, 2000));
+        try {
+          log(`Retrying warp...`, 0);
+          const { contractTxId } = await poolClient.warp.register(args.assetId, "node2");
+          log(`Retry succeeded...`, 0);
+          return contractTxId;
+        } 
+        catch (e2: any) {
+          log(`Error deploying to warp - Asset ID [ '${args.assetId}' ] ...\n ${e2}`, 1);
+          continue;
+        }
+      }
+    }
+
   }
   return null;
 }
@@ -126,6 +148,8 @@ async function createContractTags(poolClient: IPoolClient, args: {
     balances: {
       [tokenHolder]: 1
     },
+    transferable: false,
+    canEvolve: true,
     contentType: contentType,
     description: args.description,
     lastTransferTimestamp: null,
@@ -133,17 +157,16 @@ async function createContractTags(poolClient: IPoolClient, args: {
     maxSupply: 1,
     title: TAGS.values.initState.title(args.name),
     name: TAGS.values.initState.name(args.name),
-    transferable: false,
     dateCreated: dateTime,
     owner: tokenHolder
   }).replace(/[\u007F-\uFFFF]/g, function (chr) {
-    return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4)
+    return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
   });
 
   const tagList: any[] = [
     { name: TAGS.keys.appName, value: TAGS.values.appName },
     { name: TAGS.keys.appVersion, value: TAGS.values.appVersion },
-    { name: TAGS.keys.contentType, value: CONTENT_TYPES.arweaveManifest },
+    { name: TAGS.keys.contentType, value: args.contentType },
     { name: TAGS.keys.contractSrc, value: poolClient.poolConfig.contracts.nft.src },
     { name: TAGS.keys.poolId, value: poolClient.poolConfig.contracts.pool.id },
     { name: TAGS.keys.title, value: args.name },
@@ -169,7 +192,7 @@ async function createContractTags(poolClient: IPoolClient, args: {
     );
   }
 
-  return { tags: tagList }
+  return tagList;
 }
 
 async function getRandomContributor(poolClient: IPoolClient) {
