@@ -94,6 +94,7 @@ async function deployToWarp(poolClient: IPoolClient, args: {
   assetId: string
 }) {
   try {
+    await new Promise(r => setTimeout(r, 1000));
     const { contractTxId } = await poolClient.warp.register(args.assetId, "node2");
     return contractTxId;
   }

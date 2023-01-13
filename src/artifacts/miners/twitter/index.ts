@@ -32,6 +32,7 @@ export async function processIdsV2(poolClient: IPoolClient, args: {
   let tweets: any[];
   tweets = await getTweetsfromIds(poolClient, { ids: args.ids });
 
+  // TODO - Duplicates
   for (let i = 0; i < tweets.length; i++) {
     await processThreadV2(poolClient, {
       tweet: tweets[i],
@@ -153,6 +154,7 @@ async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }
     const splitIds: string[] = args.ids.slice(i, i + 100);
 
     logValue(`Fetching from API`, splitIds.length, 0);
+    await new Promise(r => setTimeout(r, 1000));
     let tweets = await poolClient.twitterV2.v2.tweets(splitIds, LOOKUP_PARAMS);
     if (tweets.data.length > 0) {
       for (let j = 0; j < tweets.data.length; j++) {
@@ -173,6 +175,7 @@ async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }
 async function getThread(poolClient: IPoolClient, args: {
   conversationId: string
 }) {
+  await new Promise(r => setTimeout(r, 1000));
   const response = await axios.get(conversationEndpoint(args.conversationId), {
     headers: {
       Authorization: `Bearer ${poolClient.poolConfig.twitterApiKeys.bearer_token}`
