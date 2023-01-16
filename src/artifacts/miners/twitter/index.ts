@@ -18,27 +18,32 @@ import {
   generateAssetDescription
 } from "../../../helpers/utils";
 import { createAsset } from "../..";
-import { getGQLData } from "../../../gql";
 import { TAGS, LOOKUP_PARAMS, CONTENT_TYPES } from "../../../helpers/config";
 import { ArtifactEnum, IPoolClient, GQLResponseType } from "../../../helpers/types";
 import { shouldUploadContent } from "../moderator";
 import { conversationEndpoint } from "../../../helpers/endpoints";
+
+let totalCount: number = 0;
 
 export async function processIdsV2(poolClient: IPoolClient, args: {
   ids: string[],
   contentModeration: boolean
 }) {
   logValue(`Parent Id Count`, args.ids.length.toString(), 0);
-  let tweets: any[];
-  tweets = await getTweetsfromIds(poolClient, { ids: args.ids });
-
-  // TODO - Duplicates
+  let tweets: any[] = await getTweetsfromIds(poolClient, { ids: args.ids });
   for (let i = 0; i < tweets.length; i++) {
-    await processThreadV2(poolClient, {
-      tweet: tweets[i],
-      contentModeration: args.contentModeration
-    })
+    if (!(await poolClient.arClient.isDuplicate(tweets[i]))) {
+      totalCount++;
+      await processThreadV2(poolClient, {
+        tweet: tweets[i],
+        contentModeration: args.contentModeration
+      })
+    }
+    else {
+      log(`Asset already mined: ${generateAssetName(tweets[i])}`, 1);
+    }
   }
+  logValue(`Total Count Mined`, totalCount, 0);
 }
 
 /** 
@@ -73,6 +78,7 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
       associationId: associationId,
       associationSequence: associationSequence
     });
+    totalCount++;
 
     for (let i = 0; i < childTweets.length; i++) {
       await processTweetV2(poolClient, {
@@ -81,6 +87,7 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
         associationId: associationId,
         associationSequence: (i + 1).toString()
       });
+      totalCount++;
     }
   }
   else {
@@ -90,6 +97,7 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
       associationId: null,
       associationSequence: null
     });
+    totalCount++;
   }
 }
 
@@ -129,7 +137,6 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     await tmpdir.cleanup()
   }
 
-  // TODO - Check validity of assetId in initStateJson Ticker
   await createAsset(poolClient, {
     index: { path: "tweet.json" },
     paths: (assetId: string) => ({ "tweet.json": { id: assetId } }),
@@ -153,20 +160,25 @@ async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }
   for (let i = 0; i < args.ids.length; i += 100) {
     const splitIds: string[] = args.ids.slice(i, i + 100);
 
-    logValue(`Fetching from API`, splitIds.length, 0);
-    await new Promise(r => setTimeout(r, 1000));
-    let tweets = await poolClient.twitterV2.v2.tweets(splitIds, LOOKUP_PARAMS);
-    if (tweets.data.length > 0) {
-      for (let j = 0; j < tweets.data.length; j++) {
-        allTweets.push({
-          ...tweets.data[j],
-          user: getUser(tweets.data[j].author_id, tweets.includes.users),
-          includes: {
-            media: tweets.data[j].attachments?.media_keys ?
-              getMedia(tweets.data[j].attachments.media_keys, tweets.includes.media) : []
-          }
-        })
+    try {
+      logValue(`Fetching from API`, splitIds.length, 0);
+      await new Promise(r => setTimeout(r, 1000));
+      let tweets = await poolClient.twitterV2.v2.tweets(splitIds, LOOKUP_PARAMS);
+      if (tweets.data.length > 0) {
+        for (let j = 0; j < tweets.data.length; j++) {
+          allTweets.push({
+            ...tweets.data[j],
+            user: getUser(tweets.data[j].author_id, tweets.includes.users),
+            includes: {
+              media: tweets.data[j].attachments?.media_keys ?
+                getMedia(tweets.data[j].attachments.media_keys, tweets.includes.media) : []
+            }
+          })
+        }
       }
+    }
+    catch (e: any) {
+      log(`${e}`, 1);
     }
   }
   return allTweets;
@@ -291,22 +303,6 @@ async function processMediaPaths(poolClient: IPoolClient, args: {
   }
 
   return additionalMediaPaths;
-}
-
-async function isDuplicate(tweet: any) {
-  const artifacts: GQLResponseType[] = await getGQLData({
-    ids: null,
-    tagFilters: [
-      {
-        name: TAGS.keys.artifactName,
-        values: [generateAssetName(tweet)]
-      }
-    ],
-    uploader: null,
-    cursor: null
-  });
-
-  return artifacts.length > 0;
 }
 
 /**

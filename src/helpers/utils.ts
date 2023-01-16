@@ -83,74 +83,43 @@ export async function processMediaURL(url: string, dir: string, i: number) {
   })
 }
 
-export function truncateString(str: string, num: number) {
+export function generateAssetName(tweet: any) {
+  if (tweet && (tweet.text || tweet.full_text)) {
+    const tweetText = tweet.text ? tweet.text : tweet.full_text;
+    return `Username: ${removeEmojis(tweet.user.name)}, Tweet: ${modifyString(tweetText, (tweetText.length > 30 ? 30 : tweetText.length))}`;
+  }
+  else {
+    return `Username: unknown`;
+  }
+}
+
+export const generateAssetDescription = (tweet: any) => {
+  if (tweet && (tweet.text || tweet.full_text)) {
+    const tweetText = tweet.text ? tweet.text : tweet.full_text;
+    return modifyString(tweetText, tweetText.length);
+  }
+  else {
+    return generateAssetName(tweet);
+  }
+}
+
+export function modifyString(str: string, num: number) {
   let finalStr: string = "";
   if (str.length > num) {
     for (let i = 0; i < num; i++) {
       finalStr += Array.from(str)[i];
     }
-    return `${finalStr} ...`.replace(/(\r\n|\r|\n)/g, " ").replace(/[\u007F-\uFFFF]/g, function (chr) {
-      return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
-    });
+    return removeEmojis(`${finalStr} ...`).replace(/(\r\n|\r|\n)/g, " ");
   }
   else {
     for (let i = 0; i < str.length; i++) {
       finalStr += Array.from(str)[i];
     }
-    return finalStr.replace(/(\r\n|\r|\n)/g, " ").replace(/[\u007F-\uFFFF]/g, function (chr) {
-      return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
-    });
+    return removeEmojis(finalStr).replace(/(\r\n|\r|\n)/g, " ");
   }
 }
 
-export function generateAssetName(tweet: any) {
-  if (tweet) {
-    if (tweet.text) {
-      if (tweet.text.length > 30) {
-        return `Username: ${tweet.user.name}, Tweet: ${truncateString(tweet.text, 30)}`
-      } else {
-        return `Username: ${tweet.user.name}, Tweet: ${tweet.text}`.replace(/[\u007F-\uFFFF]/g, function (chr) {
-          return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
-        });
-      }
-    } else if (tweet.full_text) {
-      if (tweet.full_text.length > 30) {
-        return `Username: ${tweet.user.name}, Tweet: ${truncateString(tweet.full_text, 30)}`
-      }
-      else {
-        return `Username: ${tweet.user.name}, Tweet: ${tweet.full_text}`.replace(/[\u007F-\uFFFF]/g, function (chr) {
-          return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
-        });
-      }
-    }
-    else {
-      return `Username: ${tweet.user.name}, Tweet: ${tweet.id}`;
-    }
-  }
-  else {
-    return `Username: unknown`
-  }
-}
-
-export const generateAssetDescription = (tweet: any) => {
-  let finalStr: string = "";
-  if (tweet.text) {
-    for (let i = 0; i < Array.from(tweet.text).length; i++) {
-      finalStr += Array.from(tweet.text)[i];
-    }
-    return finalStr.replace(/(\r\n|\r|\n)/g, " ").replace(/[\u007F-\uFFFF]/g, function (chr) {
-      return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
-    });
-  }
-  else if (tweet.full_text) {
-    for (let i = 0; i < Array.from(tweet.full_text).length; i++) {
-      finalStr += Array.from(tweet.full_text)[i];
-    }
-    return finalStr.replace(/(\r\n|\r|\n)/g, " ").replace(/[\u007F-\uFFFF]/g, function (chr) {
-      return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
-    });
-  }
-  else {
-    return generateAssetName(tweet);
-  }
+function removeEmojis(string: string) {
+  const regex = /(?:[\u2700-\u27bf]|(?:\ud83c[\udde6-\uddff]){2}|[\ud800-\udbff][\udc00-\udfff]|[\u0023-\u0039]\ufe0f?\u20e3|\u3299|\u3297|\u303d|\u3030|\u24c2|\ud83c[\udd70-\udd71]|\ud83c[\udd7e-\udd7f]|\ud83c\udd8e|\ud83c[\udd91-\udd9a]|\ud83c[\udde6-\uddff]|\ud83c[\ude01-\ude02]|\ud83c\ude1a|\ud83c\ude2f|\ud83c[\ude32-\ude3a]|\ud83c[\ude50-\ude51]|\u203c|\u2049|[\u25aa-\u25ab]|\u25b6|\u25c0|[\u25fb-\u25fe]|\u00a9|\u00ae|\u2122|\u2139|\ud83c\udc04|[\u2600-\u26FF]|\u2b05|\u2b06|\u2b07|\u2b1b|\u2b1c|\u2b50|\u2b55|\u231a|\u231b|\u2328|\u23cf|[\u23e9-\u23f3]|[\u23f8-\u23fa]|\ud83c\udccf|\u2934|\u2935|[\u2190-\u21ff])/g;
+  return string.replace(regex, "");
 }

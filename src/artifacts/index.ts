@@ -46,87 +46,6 @@ export async function createAsset(poolClient: PoolClient, args: {
   }
 }
 
-async function deployToBundlr(poolClient: IPoolClient, args: {
-  content: any,
-  contentType: string,
-  contractTags: any
-}) {
-
-  let finalContent: any;
-
-  switch (args.contentType) {
-    case (CONTENT_TYPES.json as any):
-      finalContent = JSON.stringify(args.content);
-      break;
-    default:
-      finalContent = args.content;
-      break;
-  }
-
-  try {
-    const transaction = poolClient.bundlr.createTransaction(finalContent, { tags: args.contractTags });
-    await transaction.sign();
-
-    try {
-      const cost = await poolClient.bundlr.getPrice(transaction.size);
-
-      try {
-        await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
-      }
-      catch (e: any) {
-        log(`Error funding bundlr ...\n ${e}`, 1);
-      }
-    }
-    catch (e: any) {
-      log(`Error getting bundlr cost ...\n ${e}`, 1);
-    }
-
-    return (await transaction.upload()).id;
-  }
-  catch (e: any) {
-    exitProcess(`Error uploading to bundlr ...\n ${e}`, 1);
-  }
-
-  return null
-}
-
-async function deployToWarp(poolClient: IPoolClient, args: {
-  assetId: string
-}) {
-  try {
-    await new Promise(r => setTimeout(r, 1000));
-    const { contractTxId } = await poolClient.warp.register(args.assetId, "node2");
-    return contractTxId;
-  }
-  catch (e: any) {
-    log(`Error deploying to warp - Asset ID [ '${args.assetId}' ] ...\n ${e}`, 1);
-
-    let errorString = e.toString();
-
-    if(errorString.indexOf("500") > -1) {
-      log(`500 from warp, skipping tweet...`, 1);
-      return null;
-    } else if ((errorString.indexOf("502") > -1) || (errorString.indexOf("504") > -1)) {
-      let retries = 5;
-      for(let i = 0; i < retries; i++) {
-        await new Promise(r => setTimeout(r, 2000));
-        try {
-          log(`Retrying warp...`, 0);
-          const { contractTxId } = await poolClient.warp.register(args.assetId, "node2");
-          log(`Retry succeeded...`, 0);
-          return contractTxId;
-        } 
-        catch (e2: any) {
-          log(`Error deploying to warp - Asset ID [ '${args.assetId}' ] ...\n ${e2}`, 1);
-          continue;
-        }
-      }
-    }
-
-  }
-  return null;
-}
-
 async function createContractTags(poolClient: IPoolClient, args: {
   index: any,
   paths: any,
@@ -160,8 +79,6 @@ async function createContractTags(poolClient: IPoolClient, args: {
     name: TAGS.values.initState.name(args.name),
     dateCreated: dateTime,
     owner: tokenHolder
-  }).replace(/[\u007F-\uFFFF]/g, function (chr) {
-    return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
   });
 
   const tagList: any[] = [
@@ -194,6 +111,81 @@ async function createContractTags(poolClient: IPoolClient, args: {
   }
 
   return tagList;
+}
+
+async function deployToBundlr(poolClient: IPoolClient, args: {
+  content: any,
+  contentType: string,
+  contractTags: any
+}) {
+
+  let finalContent: any;
+
+  switch (args.contentType) {
+    case (CONTENT_TYPES.json as any):
+      finalContent = JSON.stringify(args.content);
+      break;
+    default:
+      finalContent = args.content;
+      break;
+  }
+
+  try {
+    const transaction = poolClient.bundlr.createTransaction(finalContent, { tags: args.contractTags });
+    await transaction.sign();
+    try {
+      const cost = await poolClient.bundlr.getPrice(transaction.size);
+
+      try {
+        await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
+      }
+      catch (e: any) {
+        log(`Error funding bundlr ...\n ${e}`, 1);
+      }
+    }
+    catch (e: any) {
+      log(`Error getting bundlr cost ...\n ${e}`, 1);
+    }
+    return (await transaction.upload()).id;
+  }
+  catch (e: any) {
+    exitProcess(`Error uploading to bundlr ...\n ${e}`, 1);
+  }
+
+  return null
+}
+
+async function deployToWarp(poolClient: IPoolClient, args: { assetId: string }) {
+  try {
+    await new Promise(r => setTimeout(r, 1000));
+    const { contractTxId } = await poolClient.warp.register(args.assetId, "node2");
+    return contractTxId;
+  }
+  catch (e: any) {
+    logValue(`Error deploying to Warp - Asset ID`, args.assetId, 1);
+    let errorString = e.toString();
+    if (errorString.indexOf("500") > -1) {
+      return null;
+    } 
+    if ((errorString.indexOf("502") > -1) || (errorString.indexOf("504") > -1)) {
+      let retries = 5;
+      for (let i = 0; i < retries; i++) {
+        await new Promise(r => setTimeout(r, 2000));
+        try {
+          log(`Retrying Warp ...`, null);
+          const { contractTxId } = await poolClient.warp.register(args.assetId, "node2");
+          log(`Retry succeeded`, 0);
+          return contractTxId;
+        }
+        catch (e2: any) {
+          logValue(`Error deploying to Warp - Asset ID`, args.assetId, 1);
+          continue;
+        }
+      }
+    }
+  }
+
+  exitProcess(`Warp retries failed ...`, 1);
 }
 
 async function getRandomContributor(poolClient: IPoolClient) {
