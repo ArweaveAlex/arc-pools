@@ -6,7 +6,7 @@ import { getGQLData } from "../../gql";
 
 import { TAGS } from "../../helpers/config";
 
-const GET_ENDPOINT = "arweave-search.goldsky.com";
+const GET_ENDPOINT = "arweave.net";
 const POST_ENDPOINT = "arweave.net";
 
 const PORT = 443;
@@ -33,9 +33,9 @@ export default class ArweaveClient {
 
     warp: any = WarpFactory.forMainnet({ ...defaultCacheOptions, inMemory: true });
 
-    // TODO - Check by pool
     async isDuplicate(args: {
-        artifactName: string
+        artifactName: string,
+        poolId: string,
     }) {
         await new Promise(r => setTimeout(r, 1000));
         const artifacts: GQLResponseType[] = await getGQLData({
@@ -44,6 +44,10 @@ export default class ArweaveClient {
                 {
                     name: TAGS.keys.artifactName,
                     values: [args.artifactName]
+                },
+                {
+                    name: TAGS.keys.poolId,
+                    values: [args.poolId]
                 }
             ],
             uploader: null,

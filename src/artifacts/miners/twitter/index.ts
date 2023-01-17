@@ -32,7 +32,11 @@ export async function processIdsV2(poolClient: IPoolClient, args: {
   logValue(`Parent Id Count`, args.ids.length.toString(), 0);
   let tweets: any[] = await getTweetsfromIds(poolClient, { ids: args.ids });
   for (let i = 0; i < tweets.length; i++) {
-    if (!(await poolClient.arClient.isDuplicate(tweets[i]))) {
+    let isDup = await poolClient.arClient.isDuplicate({
+        artifactName: generateAssetName(tweets[i]),
+        poolId: poolClient.poolConfig.contracts.pool.id
+    });
+    if (!isDup) {
       totalCount++;
       await processThreadV2(poolClient, {
         tweet: tweets[i],

@@ -364,8 +364,10 @@ function strip(s: any) {
 function extractWikipediaSearch(article: string){
     let articleString = "";
     var titles = article.match(/<title[^>]*>([^<]+)<\/title>/);
-    if(titles.length > 0) {
+    if(titles && titles.length > 0) {
         articleString = articleString + titles[1] + " Wikipedia Page";
+    } else {
+        articleString = "Wikipedia Page";
     }
     return articleString;
 }
