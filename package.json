@@ -9,10 +9,10 @@
         "build": "tsc"
     },
     "bin": {
-        "arcpool": "./bin/pm2Wrapper.js"
+        "arcpool": "./bin/helpers/pm2Wrapper.js"
     },
     "dependencies": {
-        "@bundlr-network/client": "^0.9.0",
+        "@bundlr-network/client": "0.9.6",
         "@types/fs-extra": "^8.1.0",
         "arweave": "1.11.6",
         "axios": "^0.26.1",
@@ -26,7 +26,6 @@
         "figlet": "^1.5.2",
         "fs": "^0.0.1-security",
         "fs-extra": "^10.1.0",
-        "gql-query-builder": "^3.7.2",
         "human-crypto-keys": "^0.1.4",
         "jsdom": "^20.0.3",
         "mime": "^3.0.0",
@@ -35,7 +34,7 @@
         "pm2": "^5.2.2",
         "ts-node": "^10.9.1",
         "twitter-api-v2": "^1.12.0",
-        "warp-contracts": "1.2.24",
+        "warp-contracts": "1.2.39",
         "wikijs": "^6.3.3"
     },
     "devDependencies": {

@@ -1,9 +1,9 @@
 const pm2 = require('pm2');
 
-import { ArgumentsInterface, CommandInterface } from "../interfaces";
-import { CLI_ARGS } from "../config";
+import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
+import { CLI_ARGS } from "../helpers/config";
 import dname from "../options/source";
-import { exitProcess } from "../utils";
+import { exitProcess } from "../helpers/utils";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.dstop,
@@ -20,16 +20,22 @@ const command: CommandInterface = {
         pm2.connect(function(err: any) {
             if (err) {
               console.error(err);
-              process.exit(2);
+              exitProcess("Failed to connect to pm2", 1);
             }
-            console.log(dname);
-            pm2.stop(dname, function(err: any) {
-                if (err) {
+            pm2.stop(dname, function(err2: any) {
+                if (err2) {
                     console.error("Process not found...");
                     pm2.disconnect();
                 } else {
-                    console.log(`pm2 daemon process stopped -- ${dname}`);
-                    pm2.disconnect();
+                    pm2.delete(dname, function(err3: any) {
+                        if (err3) {
+                            console.error(err3);
+                            pm2.disconnect();
+                        } else {
+                            console.log(`pm2 daemon process stopped and removed -- ${dname}`);
+                            pm2.disconnect();
+                        }
+                    });
                 }
             });
         });

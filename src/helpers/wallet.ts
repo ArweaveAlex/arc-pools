@@ -1,4 +1,4 @@
-import { ArweaveClient } from './arweave-client';
+import { ArweaveClient } from '../clients/arweave';
 
 import { getKeyPairFromMnemonic } from "human-crypto-keys";
 import { webcrypto } from 'crypto'
@@ -66,7 +66,6 @@ export async function createWallet(poolArg: string) {
     console.log("New pool wallet file created: " + walletFile);
     console.log("Wallet Address: " + address);
     console.log("\n");
-    const encryptedKeyfile = btoa(JSON.stringify(keyfile));
     let r: WalletReturn = {
         file: walletFile,
         address: address

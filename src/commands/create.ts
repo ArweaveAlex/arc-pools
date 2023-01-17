@@ -3,14 +3,14 @@ import clc from "cli-color";
 import mime from 'mime';
 import path from "path";
 
-import { ArweaveClient } from "../arweave-client";
+import { ArweaveClient } from "../clients/arweave";
 import { getPools } from "../gql/pools";
-import { exitProcess, displayJsonUpdate } from "../utils";
-import { PoolType, PoolStateType, PoolConfigType } from "../types";
-import { validatePoolConfig, validateControlWalletPath } from "../validations";
-import { ArgumentsInterface, CommandInterface } from "../interfaces";
-import { createWallet } from "../wallet";
-import { sonarLink } from "../endpoints";
+import { exitProcess, logJsonUpdate } from "../helpers/utils";
+import { PoolType, PoolStateType, PoolConfigType } from "../helpers/types";
+import { validatePoolConfig, validateControlWalletPath } from "../helpers/validations";
+import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
+import { createWallet } from "../helpers/wallet";
+import { sonarLink } from "../helpers/endpoints";
 import {
     CLI_ARGS,
     NFT_CONTRACT_PATH,
@@ -19,7 +19,7 @@ import {
     TAGS,
     POOL_FILE,
     FALLBACK_IMAGE
-} from "../config";
+} from "../helpers/config";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.create,
@@ -40,8 +40,8 @@ const command: CommandInterface = {
         let walletInfo = await createWallet(poolArg);
         POOLS_JSON[poolArg].state.owner.pubkey = walletInfo.address;
         POOLS_JSON[poolArg].walletPath = walletInfo.file;
-        displayJsonUpdate(poolConfig.state.title, `state.owner.pubkey`, walletInfo.address);
-        displayJsonUpdate(poolConfig.state.title, `walletPath`, walletInfo.file);
+        logJsonUpdate(poolConfig.state.title, `state.owner.pubkey`, walletInfo.address);
+        logJsonUpdate(poolConfig.state.title, `walletPath`, walletInfo.file);
 
         const arClient = new ArweaveClient();
         
@@ -81,16 +81,16 @@ const command: CommandInterface = {
                 const tx = await arClient.arweavePost.createTransaction({
                     data: image
                 });
-                tx.addTag("Content-Type", type);
+                tx.addTag(TAGS.keys.contentType, type);
                 await arClient.arweavePost.transactions.sign(tx, controlWallet);
                 await arClient.arweavePost.transactions.post(tx);
                 console.log(`Pool image posted, Arweave Tx Id - [`, clc.green(`'${tx.id}'`), `]`);
                 POOLS_JSON[poolArg].state.image = tx.id;
-                displayJsonUpdate(poolConfig.state.title, `state.image`, tx.id);
+                logJsonUpdate(poolConfig.state.title, `state.image`, tx.id);
             } 
             else {
                 POOLS_JSON[poolArg].state.image = FALLBACK_IMAGE;
-                displayJsonUpdate(poolConfig.state.title, `state.image`, FALLBACK_IMAGE);
+                logJsonUpdate(poolConfig.state.title, `state.image`, FALLBACK_IMAGE);
             }
         }
         catch {
@@ -111,8 +111,8 @@ const command: CommandInterface = {
 
         POOLS_JSON[poolArg].contracts.nft.id = nftDeployment.contractTxId;
         POOLS_JSON[poolArg].contracts.nft.src = nftDeployment.srcTxId;
-        displayJsonUpdate(poolConfig.state.title, `contracts.nft.id`, nftDeployment.contractTxId);
-        displayJsonUpdate(poolConfig.state.title, `contracts.nft.src`, nftDeployment.srcTxId);
+        logJsonUpdate(poolConfig.state.title, `contracts.nft.id`, nftDeployment.contractTxId);
+        logJsonUpdate(poolConfig.state.title, `contracts.nft.src`, nftDeployment.srcTxId);
 
         console.log(`Deploying Pool Contract Source ...`);
         const poolSrcDeployment = await arClient.warp.createContract.deploy({
@@ -122,11 +122,11 @@ const command: CommandInterface = {
         });
 
         POOLS_JSON[poolArg].contracts.pool.src = poolSrcDeployment.srcTxId;
-        displayJsonUpdate(poolConfig.state.title, `contracts.pool.src`, poolSrcDeployment.contractTxId);
+        logJsonUpdate(poolConfig.state.title, `contracts.pool.src`, poolSrcDeployment.contractTxId);
         
         const timestamp = Date.now().toString();
         POOLS_JSON[poolArg].state.timestamp = timestamp;
-        displayJsonUpdate(poolConfig.state.title, `state.timestamp`, timestamp);
+        logJsonUpdate(poolConfig.state.title, `state.timestamp`, timestamp);
         
         const poolInitJson: PoolStateType = {
             title: poolConfig.state.title,
@@ -160,7 +160,7 @@ const command: CommandInterface = {
         });
 
         POOLS_JSON[poolArg].contracts.pool.id = poolDeployment.contractTxId;
-        displayJsonUpdate(poolConfig.state.title, `contracts.pool.id`, poolDeployment.contractTxId);
+        logJsonUpdate(poolConfig.state.title, `contracts.pool.id`, poolDeployment.contractTxId);
         
         fs.writeFileSync(poolPath, JSON.stringify(POOLS_JSON, null, 4));
         console.log(`Pool File Updated`);

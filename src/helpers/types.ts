@@ -1,14 +1,35 @@
+import * as tApiV2 from "twitter-api-v2";
+
+import Bundlr from "@bundlr-network/client";
+import { Contract } from "warp-contracts";
+
+export enum ArtifactEnum {
+    Messaging = "Alex-Messaging",
+    Webpage = "Alex-Webpage"
+}
+
 export type GQLResponseType = {
     cursor: string | null
     node: {
-      id: string
-      tags: KeyValueType[]
-      data: {
-        size: string
-        type: string
-      }
+        id: string
+        tags: KeyValueType[]
+        data: {
+            size: string
+            type: string
+        }
     }
-  }
+}
+
+export interface IPoolClient {
+    arClient: any;
+    poolConfig: PoolConfigType;
+    walletKey: string | null;
+    twitterV2: tApiV2.TwitterApi;
+    twitterV2Bearer: tApiV2.TwitterApi;
+    bundlr: Bundlr;
+    contract: Contract;
+    warp: any;
+}
 
 export interface PoolType {
     id: string
@@ -63,9 +84,6 @@ export type PoolConfigType = {
     },
     walletPath: string,
     bundlrNode: string,
-    twitter: {
-        userIds: string[]
-    },
     keywords: string[],
     twitterApiKeys: any,
     clarifaiApiKey: string,

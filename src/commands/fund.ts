@@ -1,14 +1,12 @@
 import fs from "fs";
 import Bundlr from "@bundlr-network/client";
 
-import { PoolConfigType } from "../types";
-import { validatePoolConfig, validateControlWalletPath } from "../validations";
-import { ArgumentsInterface, CommandInterface } from "../interfaces";
-import {
-    CLI_ARGS,
-    POOL_FILE
-} from "../config";
-import { ArweaveClient } from "../arweave-client";
+import { PoolConfigType } from "../helpers/types";
+import { validatePoolConfig } from "../helpers/validations";
+import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
+import { CLI_ARGS } from "../helpers/config";
+import { ArweaveClient } from "../clients/arweave";
+import { exitProcess } from "../helpers/utils";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.fund,
@@ -24,10 +22,9 @@ const command: CommandInterface = {
 
         try{
             await bundlr.fund(Math.floor(balance/2));
-            console.log("Bundlr funded...")
+            console.log("Bundlr funded ...")
         } catch (e: any){
-            console.log(`Error funding bundlr, probably not enough funds in arweave wallet...\n ${e}`);
-            throw new Error(e);
+            exitProcess(`Error funding bundlr, check funds in arweave wallet ...\n ${e}`, 1);
         }
     }
 }

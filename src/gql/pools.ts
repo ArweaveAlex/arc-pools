@@ -1,11 +1,11 @@
-import { ArweaveClient } from "../arweave-client";
+import { ArweaveClient } from "../clients/arweave";
 import {
     GQLResponseType,
     PoolType
-} from "../types";
+} from "../helpers/types";
 import { getGQLData } from "../gql";
-import { getTagValue } from "../utils";
-import { TAGS } from "../config";
+import { getTagValue } from "../helpers/utils";
+import { TAGS } from "../helpers/config";
 
 export async function getPoolIds() {
     const pools: GQLResponseType[] = await getGQLData({
@@ -20,8 +20,7 @@ export async function getPoolIds() {
             }
         ],
         uploader: null,
-        cursor: null,
-        reduxCursor: null
+        cursor: null
     });
 
     return pools.map((pool: GQLResponseType) => {

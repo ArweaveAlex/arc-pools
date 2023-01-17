@@ -1,14 +1,13 @@
-import fs, { mkdirSync, RmDirOptions } from 'fs';
-
-const cliProgress = require('cli-progress');
-
-import { GQLResponseType, PoolConfigType } from "../types";
-import { exitProcess, getTagValue } from "../utils";
-import { checkPath, walk } from '../artifacts/miners';
+import fs, { mkdirSync } from "fs";
 import Bundlr from "@bundlr-network/client";
-import { ArgumentsInterface } from '../interfaces';
-import { ArweaveClient } from '../arweave-client';
-import { generateTweetName } from '../artifacts/assets';
+
+const cliProgress = require("cli-progress");
+
+import { GQLResponseType, PoolConfigType } from "../helpers/types";
+import { exitProcess, getTagValue, checkPath, walk } from "../helpers/utils";
+import { ArgumentsInterface } from '../helpers/interfaces';
+import { ArweaveClient } from '../clients/arweave';
+import { generateAssetName } from '../helpers/utils';
 import { 
     POOL_FILE, 
     POOL_SEARCH_CONTRACT_PATH, 
@@ -20,11 +19,11 @@ import {
     INDECES_DIR,
     FINAL_INDEX_FILE_NAME,
     REDSTONE_PAGE_LIMIT
-} from "../config";
+} from "../helpers/config";
 import { 
     getTxEndpoint,
-    getRedstoneEndpoint
-} from '../utils';
+    getRedstoneSrcTxEndpoint
+} from '../helpers/endpoints';
 import { getGQLData } from '../gql';
 
 const progressBar = new cliProgress.SingleBar(
@@ -223,7 +222,7 @@ export async function fetchPool(poolConfig: PoolConfigType) {
 
     // // fetch every artifact for a pool
     do {
-        let redstoneData = await fetch(getRedstoneEndpoint(
+        let redstoneData = await fetch(getRedstoneSrcTxEndpoint(
             poolConfig.contracts.nft.src, 
             page
         ));
@@ -294,8 +293,7 @@ async function extractUsefulTxt(
                 ids: [contractId],
                 tagFilters: null,
                 uploader: null,
-                cursor: null,
-                reduxCursor: null
+                cursor: null
             });
             if(transactions.length < 1) {
                 continue
@@ -309,7 +307,7 @@ async function extractUsefulTxt(
                 let stext = parsed.text? strip(parsed.text) : "";
                 let uname = parsed.user.username ? strip(parsed.user.name) : ""
                 let name = parsed.user.name ? strip(parsed.user.name) : "";
-                let title = generateTweetName(parsed);
+                let title = generateAssetName(parsed);
                 artifactString = artifactString 
                     + name
                     + uname 
@@ -366,8 +364,10 @@ function strip(s: any) {
 function extractWikipediaSearch(article: string){
     let articleString = "";
     var titles = article.match(/<title[^>]*>([^<]+)<\/title>/);
-    if(titles.length > 0) {
+    if(titles && titles.length > 0) {
         articleString = articleString + titles[1] + " Wikipedia Page";
+    } else {
+        articleString = "Wikipedia Page";
     }
     return articleString;
 }
