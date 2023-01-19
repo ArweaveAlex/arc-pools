@@ -10,5 +10,5 @@ export function getTxEndpoint(txId: string) {
 }
 
 export function getRedstoneSrcTxEndpoint(src: string, page: any) {
-    return `https://gateway.redstone.finance/gateway/contracts-by-source?id=${src}=${page}`;
+    return `https://gateway.redstone.finance/gateway/contracts-by-source?id=${src}&page=${page}&sort=asc`;
 }
