@@ -6,7 +6,6 @@ const pm2 = require('pm2');
 import { BASE_DIR } from "./config";
 
 const buildScriptPath = () => {
-  console.log(process.argv);
   if(process.argv[0].indexOf("ts-node") > -1) {
     return path.join(BASE_DIR, "src/index.ts");
   } else {

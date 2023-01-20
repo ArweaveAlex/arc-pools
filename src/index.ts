@@ -4,8 +4,8 @@ import path from "path";
 import minimist from "minimist";
 
 import { ArgumentsInterface, CommandInterface, OptionInterface } from "./helpers/interfaces";
-import { checkProcessEnv } from "./helpers/utils";
-import { APP_TITLE, CLI_ARGS } from "./helpers/config";
+import { checkProcessEnv, log } from "./helpers/utils";
+import { CLI_ARGS } from "./helpers/config";
 
 (async function () {
     const argv = minimist(process.argv.slice(2));
@@ -45,8 +45,8 @@ import { APP_TITLE, CLI_ARGS } from "./helpers/config";
         await commands.get(command).execute(args);
     }
     else {
-        console.log(clc.red(command ? 
-            `Command not found: ${command}` : `No command provided`), 
-            `\nRun '${APP_TITLE} ${CLI_ARGS.commands.help}' for app usage`);
+        if (command) log(`Command not found: ${command}`, 1);
+        else log(`No command provided`, 1);
+        commands.get(CLI_ARGS.commands.help).execute(args);
     }
 })();

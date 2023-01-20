@@ -96,7 +96,7 @@ async function mineTweetsByStream(poolClient: IPoolClient) {
 
 /*
  * @param mentionTag: string
- */
+*/
 async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: string }) {
   log(`Mining Tweets by mention ...`, null); logValue(`Mention Tag`, args.mentionTag, 0);
 
@@ -138,7 +138,7 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
 
 /*
  * @param username: string 
- */
+*/
 async function mineTweetsByUser(poolClient: IPoolClient, args: { username: string }) {
   log(`Mining Tweets by user ...`, null); logValue(`User`, args.username, 0);
   let user: any;
@@ -146,7 +146,7 @@ async function mineTweetsByUser(poolClient: IPoolClient, args: { username: strin
   try {
     user = await poolClient.twitterV2.v2.userByUsername(
       args.username.includes("@") ? args.username.replace("@", "") : args.username);
-    logValue(`User ID`, user.data.id, 0);
+    logValue(`User Id`, user.data.id, 0);
   
 
     if (user) {

@@ -2,6 +2,7 @@ const {ClarifaiStub, grpc} = require("clarifai-nodejs-grpc");
 
 import { MODERATION_THRESHOLDS } from "../../helpers/config";
 import { PoolConfigType } from "../../helpers/types";
+import { log } from "../../helpers/utils";
 
 const stub = ClarifaiStub.grpc();
 let poolConfig: PoolConfigType;
@@ -13,7 +14,6 @@ export async function shouldUploadContent(
 ) {
     poolConfig = config;
     try {
-        // console.log(`\n Moderating ${type}...`);
         await new Promise(resolve => setTimeout(resolve, 1000));
         let res: any = await asyncWrapper(
             url, 
@@ -34,9 +34,7 @@ export async function shouldUploadContent(
             }
         } else if (type === "video") {
             for (const frame of res.outputs[0].data.frames) {
-                // console.log(`\nframe:\n`)
                 for (const c of  frame.data.concepts) {
-                    // console.log(c.name + " : " + c.value);
                     if (c.name === "explicit") {
                         if(c.value > MODERATION_THRESHOLDS["explicit"]) {
                             return false;
@@ -52,9 +50,7 @@ export async function shouldUploadContent(
             }
         }
     } catch (e: any){
-        console.log("Moderation failed...")
-        console.log(e);
-        console.log(e.outputs[0]);
+        log(`Moderation failed...\n${e}`, 1)
         return false;
     }
 
@@ -77,8 +73,6 @@ function asyncWrapper(url: string, type: string) {
 
     return new Promise((resolve, reject) => {
         stub.PostModelOutputs({
-            // model_id: "aaa03c23b3724a16a56b629203edc62c",
-            // model_id: "nsfw-recognition",
             model_id: "moderation-recognition",
             inputs: [data]
         }, 

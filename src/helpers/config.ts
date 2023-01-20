@@ -70,6 +70,7 @@ export const TAGS = {
         artifactType: "Artifact-Type",
         associationId: "Association-Id",
         associationSequence: "Association-Sequence",
+        childAssets: "Child-Assets",
         contentType: "Content-Type",
         contractSrc: "Contract-Src",
         dateCreated: "Date-Created",
@@ -111,7 +112,7 @@ export const TAGS = {
 }
 
 export const CONTENT_TYPES = {
-    arweaveManifest: "application/x.arweave-manifest+json", // TODO - Check Content Type
+    arweaveManifest: "application/x.arweave-manifest+json",
     json: "application/json",
     octetStream: "application/octet-stream",
     textHtml: "text/html"

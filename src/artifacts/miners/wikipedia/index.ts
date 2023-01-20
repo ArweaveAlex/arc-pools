@@ -115,6 +115,7 @@ const scrapePage = async (poolClient: IPoolClient, query: string) => {
             profileImagePath: null,
             associationId: null,
             associationSequence: null,
+            childAssets: null,
             assetId: content.title
         });
     }

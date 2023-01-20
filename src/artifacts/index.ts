@@ -17,6 +17,7 @@ export async function createAsset(poolClient: PoolClient, args: {
   profileImagePath: any,
   associationId: string | null,
   associationSequence: string | null,
+  childAssets: string[] | null,
   assetId: string
 }) {
   const contractTags = await createContractTags(poolClient, {
@@ -31,6 +32,7 @@ export async function createAsset(poolClient: PoolClient, args: {
     profileImagePath: args.profileImagePath,
     associationId: args.associationId,
     associationSequence: args.associationSequence,
+    childAssets: args.childAssets,
     assetId: args.assetId,
   });
 
@@ -43,6 +45,10 @@ export async function createAsset(poolClient: PoolClient, args: {
   const contractId = await deployToWarp(poolClient, { assetId: assetId });
   if (contractId) {
     logValue(`Deployed Contract`, contractId, 0);
+    return contractId;
+  }
+  else {
+    return null;
   }
 }
 
@@ -58,6 +64,7 @@ async function createContractTags(poolClient: IPoolClient, args: {
   profileImagePath: any,
   associationId: string | null,
   associationSequence: string | null,
+  childAssets: string[],
   assetId: string
 }) {
   const dateTime = new Date().getTime().toString();
@@ -100,6 +107,7 @@ async function createContractTags(poolClient: IPoolClient, args: {
     { name: TAGS.keys.profileImage, value: args.profileImagePath ? JSON.stringify(args.profileImagePath) : "" },
     { name: TAGS.keys.associationId, value: args.associationId ? args.associationId : "" },
     { name: TAGS.keys.associationSequence, value: args.associationSequence ? args.associationSequence : "" },
+    { name: TAGS.keys.childAssets, value: args.childAssets ? JSON.stringify(args.childAssets) : "" },
     { name: TAGS.keys.implements, value: TAGS.values.ansVersion },
     { name: TAGS.keys.initState, value: initStateJson }
   ];

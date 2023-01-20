@@ -19,7 +19,7 @@ import {
 } from "../../../helpers/utils";
 import { createAsset } from "../..";
 import { TAGS, LOOKUP_PARAMS, CONTENT_TYPES } from "../../../helpers/config";
-import { ArtifactEnum, IPoolClient, GQLResponseType } from "../../../helpers/types";
+import { ArtifactEnum, IPoolClient } from "../../../helpers/types";
 import { shouldUploadContent } from "../moderator";
 import { conversationEndpoint } from "../../../helpers/endpoints";
 
@@ -30,14 +30,15 @@ export async function processIdsV2(poolClient: IPoolClient, args: {
   contentModeration: boolean
 }) {
   logValue(`Parent Id Count`, args.ids.length.toString(), 0);
-  let tweets: any[] = await getTweetsfromIds(poolClient, { ids: args.ids });
+  const tweets: any[] = await getTweetsfromIds(poolClient, { ids: args.ids });
+
   for (let i = 0; i < tweets.length; i++) {
-    let isDup = await poolClient.arClient.isDuplicate({
+    const isDup = await poolClient.arClient.isDuplicate({
         artifactName: generateAssetName(tweets[i]),
         poolId: poolClient.poolConfig.contracts.pool.id
     });
-    if (!isDup) {
-      totalCount++;
+
+    if (true) { // TODO - if (!isDup)
       await processThreadV2(poolClient, {
         tweet: tweets[i],
         contentModeration: args.contentModeration
@@ -66,42 +67,40 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
   const thread = await getThread(poolClient, {
     conversationId: args.tweet.conversation_id
   });
+  
 
   if (thread && thread.length > 0) {
     logValue(`Thread`, thread.length, 0);
     let associationId: string | null = null;
     let associationSequence: string | null = "0";
 
-    const childTweets = await getTweetsfromIds(poolClient, { ids: thread.map((tweet: any) => tweet.id) });
+    const threadTweets = await getTweetsfromIds(poolClient, { ids: thread.map((tweet: any) => tweet.id) });
 
     associationId = args.tweet.conversation_id;
 
-    await processTweetV2(poolClient, {
+    const processedParentTweet = await processTweetV2(poolClient, {
       tweet: args.tweet,
       contentModeration: args.contentModeration,
       associationId: associationId,
       associationSequence: associationSequence
     });
-    totalCount++;
 
-    for (let i = 0; i < childTweets.length; i++) {
-      await processTweetV2(poolClient, {
-        tweet: childTweets[i],
+    for (let i = 0; i < threadTweets.length; i++) {
+      const processedChildTweet = await processTweetV2(poolClient, {
+        tweet: threadTweets[i],
         contentModeration: args.contentModeration,
         associationId: associationId,
         associationSequence: (i + 1).toString()
       });
-      totalCount++;
     }
   }
   else {
-    await processTweetV2(poolClient, {
+    const processedParentTweet = await processTweetV2(poolClient, {
       tweet: args.tweet,
       contentModeration: args.contentModeration,
       associationId: null,
       associationSequence: null
     });
-    totalCount++;
   }
 }
 
@@ -114,11 +113,17 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
 
   const tmpdir = await tmp.dir({ unsafeCleanup: true });
 
+  const referencedTweets = await processReferences(poolClient, {
+    tweet: args.tweet,
+    contentModeration: args.contentModeration,
+    tmpdir: tmpdir
+  });
+
   await processProfileImage({
     tweet: args.tweet,
     tmpdir: tmpdir
   });
-
+  
   const profileImagePath = await processMediaPaths(poolClient, {
     tweet: args.tweet,
     tmpdir: tmpdir,
@@ -141,7 +146,7 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     await tmpdir.cleanup()
   }
 
-  await createAsset(poolClient, {
+  const contractId = await createAsset(poolClient, {
     index: { path: "tweet.json" },
     paths: (assetId: string) => ({ "tweet.json": { id: assetId } }),
     content: args.tweet,
@@ -154,12 +159,18 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     profileImagePath: profileImagePath,
     associationId: args.associationId,
     associationSequence: args.associationSequence,
+    childAssets: referencedTweets,
     assetId: args.tweet.id
   });
+
+  if (contractId) {
+    totalCount++;
+    return contractId;
+  }
 }
 
 async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }) {
-  let allTweets: any[] = [];
+  const allTweets: any[] = [];
 
   for (let i = 0; i < args.ids.length; i += 100) {
     const splitIds: string[] = args.ids.slice(i, i + 100);
@@ -167,8 +178,8 @@ async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }
     try {
       logValue(`Fetching from API`, splitIds.length, 0);
       await new Promise(r => setTimeout(r, 1000));
-      let tweets = await poolClient.twitterV2.v2.tweets(splitIds, LOOKUP_PARAMS);
-      if (tweets.data.length > 0) {
+      const tweets = await poolClient.twitterV2.v2.tweets(splitIds, LOOKUP_PARAMS);
+      if (tweets.data && tweets.data.length > 0) {
         for (let j = 0; j < tweets.data.length; j++) {
           allTweets.push({
             ...tweets.data[j],
@@ -180,6 +191,16 @@ async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }
           })
         }
       }
+      else {
+        if (tweets.errors) {
+          for (let k = 0; k < tweets.errors.length; k++ ) {
+            log(tweets.errors[k].detail, 1);
+          }
+        }
+        else {
+          log(`Error fetching tweets`, 1);
+        }
+      }
     }
     catch (e: any) {
       log(`${e}`, 1);
@@ -188,6 +209,7 @@ async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }
   return allTweets;
 }
 
+// TODO - Get full thread
 async function getThread(poolClient: IPoolClient, args: {
   conversationId: string
 }) {
@@ -204,6 +226,35 @@ async function getThread(poolClient: IPoolClient, args: {
   }
 
   return null
+}
+
+async function processReferences(poolClient: IPoolClient, args: {
+  tweet: any,
+  contentModeration: boolean,
+  tmpdir: any
+})  {
+  const referencedTweets: any[] = []
+  if (args.tweet && args.tweet.referenced_tweets) {
+    for (let i = 0; i < args.tweet.referenced_tweets.length; i++) {
+      if (args.tweet.referenced_tweets[i].type && args.tweet.referenced_tweets[i].type === "quoted") {
+        logValue(`Reference`, args.tweet.referenced_tweets[i].id, 0);
+        const fetchedTweets: any[] = await getTweetsfromIds(poolClient, { ids: [args.tweet.referenced_tweets[i].id] });
+        
+        for (let j = 0; j < fetchedTweets.length; j++) {
+          const contractId = await processTweetV2(poolClient, {
+            tweet: fetchedTweets[j],
+            contentModeration: args.contentModeration,
+            associationId: null,
+            associationSequence: null,
+          })
+
+          referencedTweets.push(contractId);
+        }
+      }
+    }
+  }
+  
+  return referencedTweets;
 }
 
 async function processProfileImage(args: {
