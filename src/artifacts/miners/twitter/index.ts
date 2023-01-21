@@ -38,7 +38,7 @@ export async function processIdsV2(poolClient: IPoolClient, args: {
         poolId: poolClient.poolConfig.contracts.pool.id
     });
 
-    if (true) { // TODO - if (!isDup)
+    if (!isDup) {
       await processThreadV2(poolClient, {
         tweet: tweets[i],
         contentModeration: args.contentModeration
@@ -67,10 +67,8 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
   const thread = await getThread(poolClient, {
     conversationId: args.tweet.conversation_id
   });
-  
 
   if (thread && thread.length > 0) {
-    logValue(`Thread`, thread.length, 0);
     let associationId: string | null = null;
     let associationSequence: string | null = "0";
 
@@ -209,23 +207,37 @@ async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }
   return allTweets;
 }
 
-// TODO - Get full thread
 async function getThread(poolClient: IPoolClient, args: {
   conversationId: string
 }) {
-  await new Promise(r => setTimeout(r, 1000));
-  const response = await axios.get(conversationEndpoint(args.conversationId), {
-    headers: {
-      Authorization: `Bearer ${poolClient.poolConfig.twitterApiKeys.bearer_token}`
+  let paginationToken: string | null = null;
+  let allTweets: any[] = [];
+
+  do {
+    await new Promise(r => setTimeout(r, 1000));
+    const response = await axios.get(conversationEndpoint(
+      args.conversationId, 
+      paginationToken
+    ), {
+      headers: {
+        Authorization: `Bearer ${poolClient.poolConfig.twitterApiKeys.bearer_token}`
+      }
+    });
+
+    /* Conversation Id Tweets are returned in reverse chronological order */
+    if (response.data.data) allTweets = allTweets.concat(response.data.data).reverse();
+    logValue(`Thread`, `${args.conversationId} - Count (${allTweets.length})`, 0);
+
+    if (response.data.meta && response.data.meta.next_token) {
+      paginationToken = response.data.meta.next_token;
     }
-  });
-
-  /* Conversation Id Tweets are returned in reverse chronological order */
-  if (response.data && response.data.data && response.data.data.length > 0) {
-    return response.data.data.reverse();
+    else {
+      paginationToken = null;
+    }
   }
-
-  return null
+  while (paginationToken);
+  
+  return allTweets;
 }
 
 async function processReferences(poolClient: IPoolClient, args: {

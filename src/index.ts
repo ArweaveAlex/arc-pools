@@ -1,5 +1,4 @@
 import fs from "fs";
-import clc from "cli-color";
 import path from "path";
 import minimist from "minimist";
 
