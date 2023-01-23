@@ -10,8 +10,6 @@ import { validatePoolConfig } from "../helpers/validations";
 import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
 import { CLI_ARGS } from "../helpers/config";
 
-// TODO - Run all validations here
-// TODO - Pass poolClient: IPoolClient instead of poolConfig
 const command: CommandInterface = {
     name: CLI_ARGS.commands.mine,
     description: `Mine artifacts for a given pool`,
