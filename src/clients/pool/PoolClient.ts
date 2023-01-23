@@ -1,5 +1,6 @@
 import fs from "fs";
 import * as tApiV2 from "twitter-api-v2";
+const Reddit = require('reddit');
 
 import Bundlr from "@bundlr-network/client";
 import { Contract, LoggerFactory } from "warp-contracts";
@@ -19,6 +20,8 @@ export default class PoolClient implements IPoolClient {
     bundlr: Bundlr;
     contract: Contract;
     warp: any;
+
+    reddit: any;
 
     constructor(poolConfig: PoolConfigType) {
         LoggerFactory.INST.logLevel("fatal");
@@ -47,5 +50,13 @@ export default class PoolClient implements IPoolClient {
             allowBigInt: true
         });
         this.warp = this.arClient.warp;
+
+        this.reddit = new Reddit({
+            username: poolConfig.redditApiKeys ? poolConfig.redditApiKeys.username : "",
+            password: poolConfig.redditApiKeys ? poolConfig.redditApiKeys.password : "",
+            appId: poolConfig.redditApiKeys ? poolConfig.redditApiKeys.appId : "",
+            appSecret: poolConfig.redditApiKeys ? poolConfig.redditApiKeys.appSecret : "",
+            userAgent: 'Alex/1.0.0 (http://alex.arweave.dev)'
+        });
     }
 }
