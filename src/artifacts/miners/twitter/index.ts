@@ -76,7 +76,7 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
 
     associationId = args.tweet.conversation_id;
 
-    const processedParentTweet = await processTweetV2(poolClient, {
+    await processTweetV2(poolClient, {
       tweet: args.tweet,
       contentModeration: args.contentModeration,
       associationId: associationId,
@@ -84,7 +84,7 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
     });
 
     for (let i = 0; i < threadTweets.length; i++) {
-      const processedChildTweet = await processTweetV2(poolClient, {
+      await processTweetV2(poolClient, {
         tweet: threadTweets[i],
         contentModeration: args.contentModeration,
         associationId: associationId,
@@ -93,7 +93,7 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
     }
   }
   else {
-    const processedParentTweet = await processTweetV2(poolClient, {
+    await processTweetV2(poolClient, {
       tweet: args.tweet,
       contentModeration: args.contentModeration,
       associationId: null,
@@ -226,7 +226,7 @@ async function getThread(poolClient: IPoolClient, args: {
 
     /* Conversation Id Tweets are returned in reverse chronological order */
     if (response.data.data) allTweets = allTweets.concat(response.data.data).reverse();
-    logValue(`Thread`, `${args.conversationId} - Count (${allTweets.length})`, 0);
+    logValue(`Thread`, `${args.conversationId} - ${allTweets.length}`, 0);
 
     if (response.data.meta && response.data.meta.next_token) {
       paginationToken = response.data.meta.next_token;
