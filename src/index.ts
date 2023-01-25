@@ -2,7 +2,11 @@ import fs from "fs";
 import path from "path";
 import minimist from "minimist";
 
-import { ArgumentsInterface, CommandInterface, OptionInterface } from "./helpers/interfaces";
+import { 
+    ArgumentsInterface, 
+    CommandInterface, 
+    OptionInterface 
+} from "./helpers/interfaces";
 import { checkProcessEnv, log } from "./helpers/utils";
 import { CLI_ARGS } from "./helpers/config";
 
