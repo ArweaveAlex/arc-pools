@@ -29,6 +29,7 @@ export interface IPoolClient {
     bundlr: Bundlr;
     contract: Contract;
     warp: any;
+    reddit: any;
 }
 
 export interface PoolType {
@@ -87,7 +88,8 @@ export type PoolConfigType = {
     keywords: string[],
     twitterApiKeys: any,
     clarifaiApiKey: string,
-    topics: string[]
+    topics: string[],
+    redditApiKeys: any
 }
 
 export type TagFilterType = { name: string, values: string[] }

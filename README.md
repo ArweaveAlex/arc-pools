@@ -103,7 +103,13 @@ A pools.json file will be generated looking similar to the one below
         "clarifaiApiKey": "",
         "topics": [
             "history"
-        ]
+        ],
+        "redditApiKeys":{
+            "username": "",
+            "password": "",
+            "appId": "",
+            "appSecret": ""
+        }
     }
 }
 ```
@@ -116,6 +122,7 @@ __Modify the pools.json file to generate your pool.__ Modify the following confi
 5. `twitterApiKeys` is for mining from Twitter. [Get twitter API credentials](https://developer.twitter.com/en/docs/authentication/oauth-1-0a/api-key-and-secret#:~:text=Navigate%20to%20the%20developer%20portal,the%20Keys%20and%20tokens%20tab) and enter them into `twitterApiKeys`, get elevated access from twitter for better mining this is not mandatory though. consumer_key and consumer_secret are also referred to as API key and Secret in the twitter developer platform. token and token_secret are also referred to as Access Token and Access Token Secret in the twitter developer platform. bearer_token is referred to as Bearer Token in the twitter developer platform. You can skip putting these keys in pools.json if you don't plan to mine twitter, you can also add them later.
 6. `clarifaiApiKey` if you plan to use content moderation on tweets in the mining process, you can get an api key from [Clarifai](https://www.clarifai.com/) and put it here. This will filter out explicit content from being mined into the pool. This is a bit expensive and unecessary in most situations but if you are finding a lot of explicit content in the pool it may be of value to you.
 7. `topics` A list of more general topics the pool fits into these generate ANS110 Topic tags in the data. Examples: history, funny, humor, science.
+8. `redditApiKeys` login to reddit or create a reddit account then log in and visit https://www.reddit.com/prefs/apps to create these keys and use your username and password for reddit.
 
 __Lastly run the client from within the directory containing pools.json.__
 

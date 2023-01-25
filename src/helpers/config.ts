@@ -55,6 +55,17 @@ export const CLI_ARGS = {
         wikipedia: {
             name: "wikipedia"
         },
+        reddit: {
+            name: "reddit",
+            methods: {
+                subreddit: "subreddit",
+                user: "user",
+                posts: "posts"
+            }
+        },
+        webpage: {
+            name: "webpage"
+        }
     }
 }
 

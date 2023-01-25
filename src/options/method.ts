@@ -3,8 +3,8 @@ import { CLI_ARGS } from "../helpers/config";
 
 const option: OptionInterface = {
   name: CLI_ARGS.options.method,
-  description: `Used to pull user or mentions for twitter`,
-  arg: '<user or mention>'
+  description: `Subcategory within source such as user`,
+  arg: '<user, mention, subreddit, posts>'
 };
 
 export default option;
