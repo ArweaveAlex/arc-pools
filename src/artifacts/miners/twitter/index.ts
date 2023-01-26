@@ -18,7 +18,7 @@ import {
   generateAssetDescription
 } from "../../../helpers/utils";
 import { createAsset } from "../..";
-import { TAGS, LOOKUP_PARAMS, CONTENT_TYPES } from "../../../helpers/config";
+import { TAGS, LOOKUP_PARAMS, CONTENT_TYPES, RENDER_WITH_VALUE } from "../../../helpers/config";
 import { ArtifactEnum, IPoolClient } from "../../../helpers/types";
 import { shouldUploadContent } from "../moderator";
 import { conversationEndpoint } from "../../../helpers/endpoints";
@@ -158,6 +158,7 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     associationId: args.associationId,
     associationSequence: args.associationSequence,
     childAssets: referencedTweets,
+    renderWith: RENDER_WITH_VALUE,
     assetId: args.tweet.id
   });
 
@@ -175,7 +176,6 @@ async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }
 
     try {
       logValue(`Fetching from API`, splitIds.length, 0);
-      await new Promise(r => setTimeout(r, 1000));
       const tweets = await poolClient.twitterV2.v2.tweets(splitIds, LOOKUP_PARAMS);
       if (tweets.data && tweets.data.length > 0) {
         for (let j = 0; j < tweets.data.length; j++) {
@@ -214,7 +214,6 @@ async function getThread(poolClient: IPoolClient, args: {
   let allTweets: any[] = [];
 
   do {
-    await new Promise(r => setTimeout(r, 1000));
     const response = await axios.get(conversationEndpoint(
       args.conversationId, 
       paginationToken

@@ -14,7 +14,7 @@
     "dependencies": {
         "@bundlr-network/client": "0.9.6",
         "@types/fs-extra": "^8.1.0",
-        "arweave": "1.11.6",
+        "arweave": "1.12.4",
         "axios": "^0.26.1",
         "bip39-web-crypto": "^4.0.1",
         "clarifai-nodejs-grpc": "^8.0.0",

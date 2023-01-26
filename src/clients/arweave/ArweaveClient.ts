@@ -37,7 +37,7 @@ export default class ArweaveClient {
         artifactName: string,
         poolId: string,
     }) {
-        await new Promise(r => setTimeout(r, 1000));
+        // await new Promise(r => setTimeout(r, 1000));
         const artifacts: GQLResponseType[] = await getGQLData({
             ids: null,
             tagFilters: [
