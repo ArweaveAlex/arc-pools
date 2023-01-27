@@ -8,7 +8,7 @@ This repository is the client tool for creating the pools and mining artifacts.
 
 
 ## Requirements
-`arcpool` requires NodeJS/NPM and Git installed. 
+`arcpool` requires NodeJS (v18+)/NPM and Git installed.
 [NodeJS](https://nodejs.org/en/download/)
 [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
