@@ -1,10 +1,12 @@
-import { ArweaveClient } from '../clients/arweave';
+import fs from "fs";
 
 import { getKeyPairFromMnemonic } from "human-crypto-keys";
-import { webcrypto } from 'crypto'
-import fs from 'fs';
+import { webcrypto } from "crypto"
 
-const bip39 = require('bip39-web-crypto');
+const bip39 = require("bip39-web-crypto");
+
+import { ArweaveClient } from "../clients/arweave";
+import { log, logValue } from "./utils";
 
 const arClient = new ArweaveClient();
 
@@ -50,25 +52,30 @@ export type WalletReturn = {
     address: string;
 }
 
+
 export async function createWallet(poolArg: string) {
-    if (!fs.existsSync('wallets')) {
-        fs.mkdirSync('wallets');
+    log('Generating wallet ...', null);
+
+    if (!fs.existsSync("wallets")) {
+        fs.mkdirSync("wallets");
     }
 
     const mnemonic = await bip39.generateMnemonic();
-    console.log("\x1b[31m", "\n*** Write the following seed phrase down ***\n");
-    console.log("\x1b[32m", mnemonic);
-    console.log("\x1b[31m", "\n*** THERE IS NO WAY TO RECOVER YOUR SEED PHRASE SO WRITE IT DOWN AND KEEP IT OUT OF OTHERS HANDS ***\n");
+    log(`Write down the following seed phrase, this phrase is not recoverable !`, null);
+    logValue("Seedphrase", `${mnemonic}`, 0);
+
+    log('Generating keyfile ...', null);
     const keyfile: any = await jwkFromMnemonic(mnemonic);
+    log('Fetching address ...', null);
     const address = await arClient.arweavePost.wallets.jwkToAddress(keyfile);
-    let walletFile = "wallets/" + poolArg + "-" + address + ".json";
+    const walletFile = `wallets/${poolArg}-${address}.json`;
+
     fs.writeFileSync(walletFile, JSON.stringify(keyfile));
-    console.log("New pool wallet file created: " + walletFile);
-    console.log("Wallet Address: " + address);
-    console.log("\n");
-    let r: WalletReturn = {
+    console.log(`Wallet file created: ${walletFile}`);
+    console.log(`Wallet address: ${address}`);
+
+    return {
         file: walletFile,
         address: address
     };
-    return r;
 }

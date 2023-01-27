@@ -121,7 +121,7 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     tweet: args.tweet,
     tmpdir: tmpdir
   });
-  
+
   const profileImagePath = await processMediaPaths(poolClient, {
     tweet: args.tweet,
     tmpdir: tmpdir,
@@ -191,7 +191,7 @@ async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }
       }
       else {
         if (tweets.errors) {
-          for (let k = 0; k < tweets.errors.length; k++ ) {
+          for (let k = 0; k < tweets.errors.length; k++) {
             log(tweets.errors[k].detail, 1);
           }
         }
@@ -235,7 +235,7 @@ async function getThread(poolClient: IPoolClient, args: {
     }
   }
   while (paginationToken);
-  
+
   return allTweets;
 }
 
@@ -243,14 +243,14 @@ async function processReferences(poolClient: IPoolClient, args: {
   tweet: any,
   contentModeration: boolean,
   tmpdir: any
-})  {
+}) {
   const referencedTweets: any[] = []
   if (args.tweet && args.tweet.referenced_tweets) {
     for (let i = 0; i < args.tweet.referenced_tweets.length; i++) {
       if (args.tweet.referenced_tweets[i].type && args.tweet.referenced_tweets[i].type === "quoted") {
         logValue(`Reference`, args.tweet.referenced_tweets[i].id, 0);
         const fetchedTweets: any[] = await getTweetsfromIds(poolClient, { ids: [args.tweet.referenced_tweets[i].id] });
-        
+
         for (let j = 0; j < fetchedTweets.length; j++) {
           const contractId = await processTweetV2(poolClient, {
             tweet: fetchedTweets[j],
@@ -264,7 +264,7 @@ async function processReferences(poolClient: IPoolClient, args: {
       }
     }
   }
-  
+
   return referencedTweets;
 }
 

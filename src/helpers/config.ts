@@ -58,7 +58,7 @@ export const CLI_ARGS = {
     }
 }
 
-export const RENDER_WITH_VALUE = "https://alex-renderers.arweave.dev?tx={txId}";
+export const RENDER_WITH_VALUE = "https://alex-renderers.arweave.dev/?tx={txId}";
 
 export const TAGS = {
     keys: {

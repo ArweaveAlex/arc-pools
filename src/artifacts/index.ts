@@ -43,7 +43,7 @@ export async function createAsset(poolClient: PoolClient, args: {
     contentType: args.contentType,
     contractTags: contractTags
   });
-
+  
   const contractId = await deployToWarp(poolClient, { assetId: assetId });
   if (contractId) {
     logValue(`Deployed Contract`, contractId, 0);
