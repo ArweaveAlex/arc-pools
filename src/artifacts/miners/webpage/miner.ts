@@ -3,15 +3,13 @@ import minimist from "minimist";
 import { PoolClient } from "../../../clients/pool";
 
 
-import { log, logValue, exitProcess } from "../../../helpers/utils";
-import { PoolConfigType, IPoolClient } from "../../../helpers/types";
-import { CLI_ARGS, STREAM_PARAMS } from "../../../helpers/config";
-import { parseError } from "../../../helpers/errors";
+import { exitProcess } from "../../../helpers/utils";
+import { PoolConfigType } from "../../../helpers/types";
 
 
 
 
-export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
+export async function run(poolConfig: PoolConfigType, _argv: minimist.ParsedArgs) {
     const poolClient = new PoolClient(poolConfig);
   
     if (!poolClient.walletKey) {

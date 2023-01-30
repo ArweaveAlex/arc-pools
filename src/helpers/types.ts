@@ -5,7 +5,8 @@ import { Contract } from "warp-contracts";
 
 export enum ArtifactEnum {
     Messaging = "Alex-Messaging",
-    Webpage = "Alex-Webpage"
+    Webpage = "Alex-Webpage",
+    Reddit = "Alex-Reddit-Thread"
 }
 
 export type GQLResponseType = {

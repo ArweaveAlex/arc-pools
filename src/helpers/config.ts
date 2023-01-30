@@ -41,7 +41,9 @@ export const CLI_ARGS = {
         controlWallet: "control-wallet",
         contentModeration: "content-moderation",
         image: "image",
-        clear: "clear"
+        clear: "clear",
+        subreddit: "subreddit",
+        searchTerm: "search-term"
     },
     sources: {
         twitter: {
@@ -60,7 +62,8 @@ export const CLI_ARGS = {
             methods: {
                 subreddit: "subreddit",
                 user: "user",
-                posts: "posts"
+                posts: "posts",
+                search: "search"
             }
         },
         webpage: {
@@ -97,6 +100,7 @@ export const TAGS = {
         title: "Title",
         topic: (topic: string) => `Topic:${topic}`,
         tweetId: "Tweet-ID",
+        redditPostId: "Reddit-Post-ID",
         type: "Type",
         uploaderTxId: "Uploader-Tx-Id",
     },

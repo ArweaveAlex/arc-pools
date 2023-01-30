@@ -1,10 +1,11 @@
 import * as fs from "fs";
-import * as p from "path";
+import path, * as p from "path";
 import axios from "axios";
 import clc from "cli-color";
+import mime from "mime-types";
 
-import { STORAGE } from "./config";
-import { KeyValueType } from "./types";
+import { STORAGE, CONTENT_TYPES, TAGS } from "./config";
+import { IPoolClient, KeyValueType } from "./types";
 
 export function getTagValue(list: KeyValueType[], name: string): string {
   for (let i = 0; i < list.length; i++) {
@@ -55,6 +56,48 @@ export async function processMediaURL(url: string, dir: string, i: number) {
   })
 }
 
+export async function processMediaPaths(poolClient: IPoolClient, args: {
+  subTags: any,
+  tmpdir: any,
+  path: string
+}) {
+
+  const additionalMediaPaths: { [key: string]: any } = {};
+  const dir = `${args.tmpdir.path}/${args.path}`;
+
+  if (await checkPath(dir)) {
+    for await (const f of walk(dir)) {
+      const relPath = path.relative(args.tmpdir.path, f)
+      try {
+        const mimeType = mime.contentType(mime.lookup(relPath) || CONTENT_TYPES.octetStream) as string;
+        const tx = poolClient.bundlr.createTransaction(
+          await fs.promises.readFile(path.resolve(f)),
+          { tags: [...args.subTags, { name: TAGS.keys.contentType, value: mimeType }] }
+        )
+        await tx.sign();
+        const id = tx.id;
+        const cost = await poolClient.bundlr.getPrice(tx.size);
+        fs.rmSync(path.resolve(f));
+        try {
+          await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
+        }
+        catch (e: any) {
+          log(`Error funding bundlr ...\n ${e}`, 1);
+        }
+        await tx.upload();
+        if (!id) exitProcess(`Upload Error`, 1);
+        additionalMediaPaths[relPath] = { id: id };
+      }
+      catch (e: any) {
+        fs.rmSync(path.resolve(f));
+        log(`Error uploading ${f} for ${JSON.stringify(args)} - ${e}`, 1);
+      }
+    }
+  }
+
+  return additionalMediaPaths;
+}
+
 export function generateAssetName(tweet: any) {
   if (tweet && (tweet.text || tweet.full_text)) {
     const tweetText = tweet.text ? tweet.text : tweet.full_text;
@@ -73,6 +116,14 @@ export const generateAssetDescription = (tweet: any) => {
   else {
     return generateAssetName(tweet);
   }
+}
+
+export function generateRedditAssetName(_post: any) {
+  return "Reddit Name";
+}
+
+export const generateRedditAssetDescription = (_post: any) => {
+  return "Reddit Description";
 }
 
 export function modifyString(str: string, num: number) {
