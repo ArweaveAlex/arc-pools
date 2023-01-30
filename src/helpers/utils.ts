@@ -38,16 +38,25 @@ export async function* walk(dir: string): any {
 
 export async function processMediaURL(url: string, dir: string, i: number) {
   return new Promise(async (resolve, reject) => {
-    const ext = url?.split("/")?.at(-1)?.split(".")?.at(1)?.split("?").at(0) ?? "unknown"
+    console.log("url: " + url);
+    const fileName = url.split("/").pop();
+    console.log("Before extension extraction: ", fileName);
+    const ext = fileName.split(".").slice(-1)[0].split("?")[0] || "unknown";
+    const contentType = mime.lookup(ext) || "application/octet-stream";
+    console.log("After extension extraction: ", ext);
     const wstream = fs.createWriteStream(p.join(dir, `${i}.${ext}`))
     const res = await axios.get(url, {
-      responseType: "stream"
+      responseType: "stream",
+      headers: {
+        "Content-Type": contentType
+      }
     }).catch((e) => {
       log(`Getting ${url} - ${e.message}`, null);
     })
     if (!res) { return }
     await res.data.pipe(wstream)
     wstream.on("finish", () => {
+      console.log("done")
       resolve("Done")
     })
     wstream.on("error", (e) => {

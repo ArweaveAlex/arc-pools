@@ -78,30 +78,30 @@ async function processPost(poolClient: IPoolClient, args: {
         contentModeration: args.contentModeration
     });
 
-    if (tmpdir) {
-        await tmpdir.cleanup()
-    }
+    // if (tmpdir) {
+    //     await tmpdir.cleanup()
+    // }
 
-    const contractId = await createAsset(poolClient, {
-        index: { path: "post.json" },
-        paths: (assetId: string) => ({ "post.json": { id: assetId } }),
-        content: modifiedPost,
-        contentType: CONTENT_TYPES.json,
-        artifactType: ArtifactEnum.Reddit,
-        name: generateRedditAssetName(args.post),
-        description: generateRedditAssetDescription(args.post),
-        type: TAGS.values.ansTypes.socialPost,
-        additionalMediaPaths: [],
-        profileImagePath: null,
-        associationId: null,
-        associationSequence: null,
-        childAssets: null,
-        assetId: args.post[0].data.id
-    });
+    // const contractId = await createAsset(poolClient, {
+    //     index: { path: "post.json" },
+    //     paths: (assetId: string) => ({ "post.json": { id: assetId } }),
+    //     content: modifiedPost,
+    //     contentType: CONTENT_TYPES.json,
+    //     artifactType: ArtifactEnum.Reddit,
+    //     name: generateRedditAssetName(args.post),
+    //     description: generateRedditAssetDescription(args.post),
+    //     type: TAGS.values.ansTypes.socialPost,
+    //     additionalMediaPaths: [],
+    //     profileImagePath: null,
+    //     associationId: null,
+    //     associationSequence: null,
+    //     childAssets: null,
+    //     assetId: args.post[0].data.id
+    // });
 
-    if (contractId) {
-        return contractId;
-    }
+    // if (contractId) {
+    //     return contractId;
+    // }
 }
 
 interface RedditMediaMetadata<T> {
@@ -123,24 +123,48 @@ async function processMedia(poolClient: IPoolClient, args: {
     }
 
     try {
-        let topLevelPost = args.post[0].data;
-        if(topLevelPost.children[0].data.media_metadata){
-            await processMediaMetadata(
-                poolClient, 
-                args, 
-                topLevelPost.children[0].data.media_metadata,
-                mediaDir
+        // let topLevelPost = args.post[0].data;
+        // if(topLevelPost.children[0].data.media_metadata){
+        //     await processMediaMetadata(
+        //         poolClient, 
+        //         args, 
+        //         topLevelPost.children[0].data.media_metadata,
+        //         mediaDir
+        //     );
+        // }
+        if(args.post[1]) {
+            let commentPosts = args.post[1].data.children;
+            traverse(
+                ["media_metadata"], 
+                commentPosts, 
+                async (media_metadata: any) => {
+                    await processMediaMetadata(
+                        poolClient, 
+                        args, 
+                        media_metadata,
+                        mediaDir
+                    );
+                }
             );
         }
-
-        if(topLevelPost.children[1].data){
-            console.log(topLevelPost.children[1].data);
-        }
+        
     }
     catch (e: any) {
         exitProcess(`Error while archiving media: ${e}`, 1);
     }
     return modifyPost;
+}
+
+function traverse(callBackFields: string[], obj: any, callBack: any) {
+    for (let key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        if(callBackFields.includes(key)){
+            callBack(obj[key]);
+        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+            traverse(callBackFields, obj[key], callBack);
+        } 
+      }
+    }
 }
 
 
@@ -158,35 +182,42 @@ async function processMediaMetadata(
     for (const [key, _value] of Object.entries(mediaMetaData)) {
         let singleFile: any = mediaMetaData[key];
         let postTopLevelFile = singleFile.s;
-        let url = postTopLevelFile.u.replace(/&amp;/g, "&");
         let fileType = singleFile.e;
-        if (args.contentModeration) {
-            let contentCheckFileType = fileType === "Image" ? "image" : "video";
-            let contentCheck = await shouldUploadContent(
-                url, 
-                contentCheckFileType, 
-                poolClient.poolConfig
+        let url = null;
+
+        if(fileType === "AnimatedImage") {
+            url = postTopLevelFile.mp4.replace(/&amp;/g, "&");
+        } else if (fileType === "Image"){
+            url = postTopLevelFile.u.replace(/&amp;/g, "&");
+        } else if (fileType === "Video"){
+            url = postTopLevelFile.mp4.replace(/&amp;/g, "&");
+        }
+        
+        if(url) {
+            await processMediaURL(url, mediaDir, i);
+
+            const subTags = [
+                { name: TAGS.keys.application, value: TAGS.values.application },
+                { name: TAGS.keys.redditPostId, value: `${args.post[0].data.id ?? "unknown"}` }
+            ]
+    
+            let mediaPathsForThisImage = await processMediaPaths(
+                poolClient, 
+                {subTags: subTags, tmpdir: args.tmpdir, path: "media"}
             );
-            if (!contentCheck) {
-                return;
+    
+            let k: string = Object.entries(mediaPathsForThisImage)[0][0];
+            let txId = mediaPathsForThisImage[k].id;
+
+            if(fileType === "AnimatedImage") {
+                singleFile.s.mp4 = "https://arweave.net/" + txId;
+            } else if (fileType === "Image"){
+                singleFile.s.u = "https://arweave.net/" + txId;
+            } else if (fileType === "Video"){
+                singleFile.s.mp4 = "https://arweave.net/" + txId;
             }
         }
 
-        await processMediaURL(url, mediaDir, i);
-
-        const subTags = [
-            { name: TAGS.keys.application, value: TAGS.values.application },
-            { name: TAGS.keys.redditPostId, value: `${args.post[0].data.id ?? "unknown"}` }
-        ]
-
-        let mediaPathsForThisImage = await processMediaPaths(
-            poolClient, 
-            {subTags: subTags, tmpdir: args.tmpdir, path: "media"}
-        );
-
-        let k: string = Object.entries(mediaPathsForThisImage)[0][0];
-        let txId = mediaPathsForThisImage[k].id;
-        singleFile.s.u = "https://arweave.net/" + txId;
         i++;
     }
 }
