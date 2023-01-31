@@ -36,27 +36,23 @@ export async function* walk(dir: string): any {
   }
 }
 
+export function getExtFromURL(url: string) {
+  const ext = url?.split("/")?.at(-1)?.split(".")?.at(1)?.split("?").at(0) ?? "unknown";
+  return ext;
+}
+
 export async function processMediaURL(url: string, dir: string, i: number) {
   return new Promise(async (resolve, reject) => {
-    console.log("url: " + url);
-    const fileName = url.split("/").pop();
-    console.log("Before extension extraction: ", fileName);
-    const ext = fileName.split(".").slice(-1)[0].split("?")[0] || "unknown";
-    const contentType = mime.lookup(ext) || "application/octet-stream";
-    console.log("After extension extraction: ", ext);
-    const wstream = fs.createWriteStream(p.join(dir, `${i}.${ext}`))
+    const ext = getExtFromURL(url);
+    const wstream = fs.createWriteStream(p.join(dir, `${i}.${ext}`));
     const res = await axios.get(url, {
-      responseType: "stream",
-      headers: {
-        "Content-Type": contentType
-      }
+      responseType: "stream"
     }).catch((e) => {
       log(`Getting ${url} - ${e.message}`, null);
     })
     if (!res) { return }
     await res.data.pipe(wstream)
     wstream.on("finish", () => {
-      console.log("done")
       resolve("Done")
     })
     wstream.on("error", (e) => {
@@ -73,28 +69,16 @@ export async function processMediaPaths(poolClient: IPoolClient, args: {
 
   const additionalMediaPaths: { [key: string]: any } = {};
   const dir = `${args.tmpdir.path}/${args.path}`;
-
+  
   if (await checkPath(dir)) {
     for await (const f of walk(dir)) {
       const relPath = path.relative(args.tmpdir.path, f)
       try {
-        const mimeType = mime.contentType(mime.lookup(relPath) || CONTENT_TYPES.octetStream) as string;
-        const tx = poolClient.bundlr.createTransaction(
-          await fs.promises.readFile(path.resolve(f)),
-          { tags: [...args.subTags, { name: TAGS.keys.contentType, value: mimeType }] }
-        )
-        await tx.sign();
-        const id = tx.id;
-        const cost = await poolClient.bundlr.getPrice(tx.size);
-        fs.rmSync(path.resolve(f));
-        try {
-          await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
-        }
-        catch (e: any) {
-          log(`Error funding bundlr ...\n ${e}`, 1);
-        }
-        await tx.upload();
-        if (!id) exitProcess(`Upload Error`, 1);
+        let id = await processMediaPath(
+          poolClient,
+          f,
+          args
+        );
         additionalMediaPaths[relPath] = { id: id };
       }
       catch (e: any) {
@@ -105,6 +89,31 @@ export async function processMediaPaths(poolClient: IPoolClient, args: {
   }
 
   return additionalMediaPaths;
+}
+
+export async function processMediaPath(poolClient: IPoolClient, f: string, args: {
+  subTags: any,
+  tmpdir: any,
+  path: string
+}) {
+  const mimeType = mime.contentType(mime.lookup(f) || CONTENT_TYPES.octetStream) as string;
+  const tx = poolClient.bundlr.createTransaction(
+    await fs.promises.readFile(path.resolve(f)),
+    { tags: [...args.subTags, { name: TAGS.keys.contentType, value: mimeType }] }
+  )
+  await tx.sign();
+  const id = tx.id;
+  const cost = await poolClient.bundlr.getPrice(tx.size);
+  fs.rmSync(path.resolve(f));
+  try {
+    await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
+  }
+  catch (e: any) {
+    log(`Error funding bundlr ...\n ${e}`, 1);
+  }
+  await tx.upload();
+  if (!id) exitProcess(`Upload Error`, 1);
+  return id;
 }
 
 export function generateAssetName(tweet: any) {
