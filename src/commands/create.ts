@@ -21,7 +21,6 @@ import {
     FALLBACK_IMAGE
 } from "../helpers/config";
 
-// TODO - Auto contribute / Fund bundlr
 const command: CommandInterface = {
     name: CLI_ARGS.commands.create,
     description: `Create a pool using ${POOL_FILE}`,
