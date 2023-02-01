@@ -42,7 +42,7 @@ export async function processMediaURL(url: string, dir: string, i: number) {
     const res = await axios.get(url, {
       responseType: "stream"
     }).catch((e) => {
-      log(`Getting ${url} - ${e.message}`, null);
+      log(`Getting ${url} - ${e.message}`, 1);
     })
     if (!res) { return }
     await res.data.pipe(wstream)

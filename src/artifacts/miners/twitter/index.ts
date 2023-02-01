@@ -279,7 +279,12 @@ async function processProfileImage(args: {
   }
 
   if (args.tweet?.user?.profile_image_url) {
-    await processMediaURL(args.tweet.user.profile_image_url, profileDir, 0);
+    try {
+      await processMediaURL(args.tweet.user.profile_image_url, profileDir, 0);
+    }
+    catch (e) {
+      log(e, 1);
+    }
   }
 }
 
