@@ -1,15 +1,13 @@
-import fs from "fs";
+
 import axios from "axios";
 import tmp from "tmp-promise";
 import * as path from "path";
-import mime from "mime-types";
 import { mkdir } from "fs/promises";
 
 import { PoolClient } from "../../../clients/pool";
 
 import {
   log,
-  walk,
   logValue,
   checkPath,
   processMediaURL,

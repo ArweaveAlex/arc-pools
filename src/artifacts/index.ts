@@ -93,7 +93,7 @@ async function createContractTags(poolClient: IPoolClient, args: {
     { name: TAGS.keys.appVersion, value: TAGS.values.appVersion },
     { name: TAGS.keys.contentType, value: args.contentType },
     { name: TAGS.keys.contractSrc, value: poolClient.poolConfig.contracts.nft.src },
-    { name: TAGS.keys.poolId, value: "RedditTestPool" },
+    { name: TAGS.keys.poolId, value: poolClient.poolConfig.contracts.pool.id },
     { name: TAGS.keys.title, value: args.name },
     { name: TAGS.keys.description, value: args.description },
     { name: TAGS.keys.type, value: args.type },

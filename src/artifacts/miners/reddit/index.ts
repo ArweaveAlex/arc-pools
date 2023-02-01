@@ -1,8 +1,7 @@
-import { fstat } from "fs";
+
 import { mkdir } from "fs/promises";
 import path from "path";
 import tmp from "tmp-promise";
-import fs from "fs";
 
 import { ArtifactEnum, IPoolClient } from "../../../helpers/types";
 import { 
@@ -14,7 +13,8 @@ import {
     logValue, 
     processMediaPath, 
     processMediaURL,
-    getExtFromURL
+    getExtFromURL,
+    traverse
 } from "../../../helpers/utils";
 import { CONTENT_TYPES, TAGS } from "../../../helpers/config";
 import { createAsset } from "../..";
@@ -29,41 +29,41 @@ export async function processPosts(poolClient: IPoolClient, args: {
 
     logValue(`Parent Count`, parentPosts.length.toString(), 0);
 
-    let testPosts = [
-        // single image in post
-        // {data: {id: "10owm4v"}},
-        // multi image in post and image comments
-        {data: {id: "10nwr7k"}},
-        // link in post
-        //{data: {id: "10oeksi"}},
-        // video in top level post 
-        //{Data: {id: "10ohfvf"}}
-    ]
+    // let testPosts = [
+    //     // single image in post
+    //     {data: {id: "10owm4v"}},
+    //     // multi image in post and image comments
+    //     {data: {id: "10nwr7k"}},
+    //     // link in post
+    //     {data: {id: "10oeksi"}},
+    //     // video in top level post 
+    //     {Data: {id: "10ohfvf"}}
+    // ]
 
     // iterPosts variable just for testing
-    // let iterPosts = parentPosts;
-    let iterPosts = testPosts;
+    let iterPosts = parentPosts;
+    // let iterPosts = testPosts;
 
-    for(let i = 0; i< iterPosts.length; i++){
+    for(let i = 0; i < iterPosts.length; i++){
         let url = `/comments/${iterPosts[i].data.id}?depth=50`;
         
         let postWithComments = await poolClient.reddit.get(url);
 
-        // fs.writeFileSync("reddit2.json", JSON.stringify(postWithComments));
+        // fs.writeFileSync("reddit6.json", JSON.stringify(postWithComments));
         
         const isDup = await poolClient.arClient.isDuplicate({
             artifactName: generateRedditAssetName(postWithComments),
             poolId: poolClient.poolConfig.contracts.pool.id
         });
 
-        // if(!isDup){
+        if(!isDup){
             await processPost(
                 poolClient, 
                 {post: postWithComments, contentModeration: args.contentModeration}
             );
-        // } else {
-        //     log("Duplicate artifact skipping...", 0);
-        // }
+        } else {
+             log("Duplicate artifact skipping...", 0);
+        }
     }
 }
 
@@ -79,10 +79,6 @@ async function processPost(poolClient: IPoolClient, args: {
         tmpdir: tmpdir,
         contentModeration: args.contentModeration
     });
-
-    // if (tmpdir) {
-    //     await tmpdir.cleanup()
-    // }
 
     const contractId = await createAsset(poolClient, {
         index: { path: "post.json" },
@@ -106,10 +102,6 @@ async function processPost(poolClient: IPoolClient, args: {
     }
 }
 
-interface RedditMediaMetadata<T> {
-    [index: string]: T
-}
-
 // beware the following 2 functions modify
 // the post object that you pass in
 async function processMedia(poolClient: IPoolClient, args: {
@@ -126,11 +118,20 @@ async function processMedia(poolClient: IPoolClient, args: {
     try {
         let topLevelPost = args.post[0].data;
         if(topLevelPost.children[0].data.media_metadata){
-            await processMediaMetadata(
+            let a = {
+                ...args, 
+                ...{mediaMetaData: topLevelPost.children[0].data.media_metadata, mediaDir: mediaDir}
+            };
+            await processMediaMetadata(poolClient, a);
+        }
+        if(topLevelPost.children[0].data.preview){
+            let a = {
+                ...args, 
+                ...{preview: topLevelPost.children[0].data.preview, mediaDir: mediaDir}
+            };
+            await processPreview(
                 poolClient, 
-                args, 
-                topLevelPost.children[0].data.media_metadata,
-                mediaDir
+                a
             );
         }
         if(args.post[1]) {
@@ -138,13 +139,11 @@ async function processMedia(poolClient: IPoolClient, args: {
             await traverse(
                 ["media_metadata"], 
                 commentPosts, 
-                async (media_metadata: any) => {
-                    await processMediaMetadata(
-                        poolClient, 
-                        args, 
-                        media_metadata,
-                        mediaDir
-                    );
+                async (obj: any, key: string) => {
+                    if(key === "media_metadata") {
+                        let a = {...args, ...{mediaMetaData: obj, mediaDir: mediaDir}};
+                        await processMediaMetadata(poolClient, a);
+                    }
                 }
             );
         }
@@ -156,18 +155,6 @@ async function processMedia(poolClient: IPoolClient, args: {
     return modifyPost;
 }
 
-async function traverse(callBackFields: string[], obj: any, callBack: any) {
-    for (let key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        if(callBackFields.includes(key)){
-            await callBack(obj[key]);
-        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-            await traverse(callBackFields, obj[key], callBack);
-        } 
-      }
-    }
-}
-
 /**
  * Process the media_metadata object from a Reddit reploy
  */
@@ -176,47 +163,50 @@ async function processMediaMetadata(
     args: {
         post: any,
         tmpdir: any,
-        contentModeration: boolean
+        contentModeration: boolean,
+        mediaMetaData: any,
+        mediaDir: string
     }, 
-    mediaMetaData: RedditMediaMetadata<object>,
-    mediaDir: string
 ) {
     
-    for (const [key, _value] of Object.entries(mediaMetaData)) {
-        let singleFile: any = mediaMetaData[key];
+    for (const [key, _value] of Object.entries(args.mediaMetaData)) {
+        let singleFile: any = args.mediaMetaData[key];
         let postTopLevelFile = singleFile.s;
         let fileType = singleFile.e;
         let url = null;
+        let contentModeratorType = null;
 
         if(fileType === "AnimatedImage") {
             url = postTopLevelFile.mp4.replace(/&amp;/g, "&");
+            contentModeratorType = "video";
         } else if (fileType === "Image"){
             url = postTopLevelFile.u.replace(/&amp;/g, "&");
+            contentModeratorType = "image";
         } else if (fileType === "Video"){
             url = postTopLevelFile.mp4.replace(/&amp;/g, "&");
+            contentModeratorType = "video";
         }
         
         if(url) {
-            if (!await checkPath(mediaDir)) {
-                await mkdir(mediaDir);
+            if (!await checkPath(args.mediaDir)) {
+                await mkdir(args.mediaDir);
             }
 
-            let randomFileIndex = Math.floor(Math.random() * 10000000000);
-            const ext = getExtFromURL(url);
-            let fullFilePath = path.join(mediaDir, `${randomFileIndex}.${ext}`);
+            if (args.contentModeration) {
+                let contentCheck = await shouldUploadContent(
+                    url, 
+                    contentModeratorType, 
+                    poolClient.poolConfig
+                );
+                if (!contentCheck) {
+                    log("Explicit content not uploading", 0);
+                    return;
+                }
+            }
 
-            await processMediaURL(url, mediaDir, randomFileIndex);
+            let txId = await uploadFile(poolClient, args.mediaDir, url, args);
 
-            const subTags = [
-                { name: TAGS.keys.application, value: TAGS.values.application },
-                { name: TAGS.keys.redditPostId, value: `${args.post[0].data.id ?? "unknown"}` }
-            ]
-    
-            let txId = await processMediaPath(
-                poolClient, 
-                fullFilePath,
-                {subTags: subTags, tmpdir: args.tmpdir, path: "media"}
-            );
+            if(!txId) continue;
 
             if(fileType === "AnimatedImage") {
                 singleFile.s.gif = "https://arweave.net/" + txId;
@@ -227,4 +217,76 @@ async function processMediaMetadata(
             }
         }
     }
+}
+
+
+/**
+ * Process the media_metadata object from a Reddit reploy
+ */
+async function processPreview(poolClient: IPoolClient, args: {
+        post: any,
+        tmpdir: any,
+        contentModeration: boolean,
+        preview: any,
+        mediaDir: string
+}) {
+    if(args.preview.images) {
+        let imageList = args.preview.images;
+        console.log(imageList)
+        for(let i=0; i<imageList.length; i++) {
+            let source = imageList[i].source;
+            let url = source.url.replace(/&amp;/g, "&");
+
+            if (args.contentModeration) {
+                let contentCheck = await shouldUploadContent(
+                    url, 
+                    "image", 
+                    poolClient.poolConfig
+                );
+                if (!contentCheck) {
+                  log("Explicit content not uploading", 0);
+                  return;
+                }
+            }
+
+            let txId = await uploadFile(poolClient, args.mediaDir, url, args);
+
+            imageList[i].source.url = "https://arweave.net/" + txId;
+        }
+    }
+}
+
+async function uploadFile(poolClient: IPoolClient, mediaDir: string, url: string, args: {
+    post: any,
+    tmpdir: any,
+    contentModeration: boolean
+}) {
+    try {
+        if (!await checkPath(mediaDir)) {
+            await mkdir(mediaDir);
+        }
+    
+        let randomFileIndex = Math.floor(Math.random() * 10000000000);
+        const ext = getExtFromURL(url);
+        let fullFilePath = path.join(mediaDir, `${randomFileIndex}.${ext}`);
+    
+        await processMediaURL(url, mediaDir, randomFileIndex);
+    
+        const subTags = [
+            { name: TAGS.keys.application, value: TAGS.values.application },
+            { name: TAGS.keys.redditPostId, value: `${args.post[0].data.id ?? "unknown"}` }
+        ]
+    
+        let txId = await processMediaPath(
+            poolClient, 
+            fullFilePath,
+            {subTags: subTags, tmpdir: args.tmpdir, path: "media"}
+        );
+    
+        return txId;
+    } catch(e: any) {
+        console.log(e);
+    }
+
+    return null;
 }

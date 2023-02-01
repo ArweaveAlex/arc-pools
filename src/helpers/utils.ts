@@ -192,3 +192,15 @@ export function exitProcess(message: string, status: 0 | 1): void {
   console.log(status === 0 ? clc.green(message) : clc.red(message));
   process.exit(status);
 }
+
+export async function traverse(callBackFields: string[], obj: any, callBack: any) {
+  for (let key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      if(callBackFields.includes(key)){
+          await callBack(obj[key], key);
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+          await traverse(callBackFields, obj[key], callBack);
+      } 
+    }
+  }
+}
