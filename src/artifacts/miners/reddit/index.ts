@@ -48,7 +48,6 @@ export async function processPosts(poolClient: IPoolClient, args: {
         let url = `/comments/${iterPosts[i].data.id}?depth=50`;
         
         let postWithComments = await poolClient.reddit.get(url);
-
         // fs.writeFileSync("reddit6.json", JSON.stringify(postWithComments));
         
         const isDup = await poolClient.arClient.isDuplicate({
@@ -232,7 +231,6 @@ async function processPreview(poolClient: IPoolClient, args: {
 }) {
     if(args.preview.images) {
         let imageList = args.preview.images;
-        console.log(imageList)
         for(let i=0; i<imageList.length; i++) {
             let source = imageList[i].source;
             let url = source.url.replace(/&amp;/g, "&");

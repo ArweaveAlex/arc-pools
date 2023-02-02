@@ -92,6 +92,7 @@ async function minePosts(poolClient: IPoolClient, additionalParams: any, url: st
         );
     } while(cursor != null);
   } catch (e: any) {
+    console.log(e)
     exitProcess(parseError(e, "reddit"), 1);
   }
 }

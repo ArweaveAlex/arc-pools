@@ -136,12 +136,27 @@ export const generateAssetDescription = (tweet: any) => {
   }
 }
 
-export function generateRedditAssetName(_post: any) {
-  return "Reddit Name";
+export function generateRedditAssetName(post: any) {
+  let title = post[0].data.children[0].data.title;
+  if(title) {
+    return `Reddit Post: ${modifyString(title, (title.length > 30 ? 30 : title.length))}`;
+  } else {
+    return `Reddit Post`;
+  }
 }
 
-export const generateRedditAssetDescription = (_post: any) => {
-  return "Reddit Description";
+export const generateRedditAssetDescription = (post: any) => {
+  let selftext = post[0].data.children[0].data.selftext;
+  let title = post[0].data.children[0].data.title;
+  if(selftext){
+    return `${selftext}`;
+  } else {
+    if(title) {
+      return `${title}`;
+    } else {
+      return "Reddit post"
+    }
+  }
 }
 
 export function modifyString(str: string, num: number) {
