@@ -18,8 +18,8 @@ const command: CommandInterface = {
 
         const Line = CLI.Line;
         new Line()
-          .column("Options", 40, [clc.cyan])
-          .column("Description", 20, [clc.blackBright] )
+          .column("Options", 60, [clc.cyan])
+          .column("Description", 40, [clc.blackBright] )
           .fill()
           .output();
 
@@ -30,7 +30,7 @@ const command: CommandInterface = {
         });
     
         for (let i = 0, j = opts.length; i < j; i++) {
-          new Line().column(opts[i][0], 40).column(opts[i][1], 50).fill().output();
+          new Line().column(opts[i][0], 60).column(opts[i][1], 50).fill().output();
         }
 
         console.log("\n");
@@ -48,13 +48,13 @@ const command: CommandInterface = {
             });
 
         new Line()
-            .column("Commands", 40, [clc.green])
-            .column("Description", 20, [clc.blackBright])
+            .column("Commands", 60, [clc.green])
+            .column("Description", 40, [clc.blackBright])
             .fill()
             .output();
 
         for (let i = 0, j = cmds.length; i < j; i++) {
-            new Line().column(cmds[i][0], 40).column(cmds[i][1], 60).fill().output();
+            new Line().column(cmds[i][0], 60).column(cmds[i][1], 60).fill().output();
         }
     }
 }
