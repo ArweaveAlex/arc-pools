@@ -61,7 +61,7 @@ export async function processPosts(poolClient: IPoolClient, args: {
                 {post: postWithComments, contentModeration: args.contentModeration}
             );
         } else {
-             log("Duplicate artifact skipping...", 0);
+             log(`Duplicate artifact skipping...`, null);
         }
     }
 }
@@ -93,6 +93,7 @@ async function processPost(poolClient: IPoolClient, args: {
         associationId: null,
         associationSequence: null,
         childAssets: null,
+        renderWith: null,
         assetId: args.post[0].data.id
     });
 

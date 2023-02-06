@@ -149,7 +149,7 @@ export const generateRedditAssetDescription = (post: any) => {
   let selftext = post[0].data.children[0].data.selftext;
   let title = post[0].data.children[0].data.title;
   if(selftext){
-    return `${selftext}`;
+    return `${modifyString(selftext, (selftext.length > 200 ? 200 : selftext.length))}`;
   } else {
     if(title) {
       return `${title}`;

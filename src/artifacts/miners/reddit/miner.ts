@@ -17,7 +17,7 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
       exitProcess(`Invalid Pool Wallet Configuration`, 1);
     }
 
-    log("Mining reddit", 0);
+    log(`Mining reddit ...`, 0);
 
     const method = argv["method"];
     const subreddit = argv["subreddit"];
