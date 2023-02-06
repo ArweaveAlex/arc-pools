@@ -22,28 +22,30 @@ An arweave wallet is needed for creating a pool, create one and download the .js
 ```
 Usage: arcpool [commands] [options]
 
-Options                                 Description
---clear                                 Clear local search index for pool
---content-moderation                    Use content moderation on twitter mining
---control-wallet <wallet file>          Specifies a wallet to use in the pool creation
---dname <string>                        Specifies the daemon name to stop
---image <path to image file>            Specifies an image to use for pool
---mention-tag <twitter username>        Username for twitter with --method user (do not include @ or #)
---method <user or mention>              Used to pull user or mentions for twitter
---source <twitter or wikipedia>         Specifies the data source
+Options                                                     Description
+--clear                                                     Clear local search index for pool
+--content-moderation                                        Use content moderation on twitter mining
+--control-wallet <wallet file>                              Specifies a wallet to use in the pool creation
+--dname <string>                                            Specifies the daemon name to stop
+--image <path to image file>                                Specifies an image to use for pool
+--mention-tag <username>                                    Username for twitter or reddit with --method user
+--method <user / mention / subreddit / search>              Subcategory within source such as user
+--search-term <search term>                                 Search term to mine
+--source <twitter / wikipedia / reddit>                     Specifies the data source
+--subreddit <subreddit>                                     Subreddit to mine
 
 
-Commands                                Description
-balance <pool id>                       Check the Bundlr and Arweave balance for the pool wallet
-create <pool id>                        Create a pool using pools.json
-dlist                                   list all daemon mining processes
-dstop <daemon name>                     Stop a daemon mining process by name
-fetch <pool id>                         Fetch pool artifacts for search
-fund <pool id>                          Fun the bundlr wallet for a pool
-help                                    Display help text
-init <pool id>                          Initialize pools.json
-mine <pool id>                          Mine artifacts for a given pool
-sindex <pool id>                        Index artifacts for search
+Commands                                                    Description
+balance <pool id>                                           Check the Bundlr and Arweave balance for the pool wallet
+create <pool id>                                            Create a pool using pools.json
+dlist                                                       list all daemon mining processes
+dstop <daemon name>                                         Stop a daemon mining process by name
+fetch <pool id>                                             Fetch pool artifacts for search
+fund <pool id>                                              Fun the bundlr wallet for a pool
+help                                                        Display help text
+init <pool id>                                              Initialize pools.json
+mine <pool id>                                              Mine artifacts for a given pool
+sindex <pool id>                                            Index artifacts for search
 ```
 
 
@@ -103,7 +105,13 @@ A pools.json file will be generated looking similar to the one below
         "clarifaiApiKey": "",
         "topics": [
             "history"
-        ]
+        ],
+        "redditApiKeys":{
+            "username": "",
+            "password": "",
+            "appId": "",
+            "appSecret": ""
+        }
     }
 }
 ```
@@ -116,6 +124,7 @@ __Modify the pools.json file to generate your pool.__ Modify the following confi
 5. `twitterApiKeys` is for mining from Twitter. [Get twitter API credentials](https://developer.twitter.com/en/docs/authentication/oauth-1-0a/api-key-and-secret#:~:text=Navigate%20to%20the%20developer%20portal,the%20Keys%20and%20tokens%20tab) and enter them into `twitterApiKeys`, get elevated access from twitter for better mining this is not mandatory though. consumer_key and consumer_secret are also referred to as API key and Secret in the twitter developer platform. token and token_secret are also referred to as Access Token and Access Token Secret in the twitter developer platform. bearer_token is referred to as Bearer Token in the twitter developer platform. You can skip putting these keys in pools.json if you don't plan to mine twitter, you can also add them later.
 6. `clarifaiApiKey` if you plan to use content moderation on tweets in the mining process, you can get an api key from [Clarifai](https://www.clarifai.com/) and put it here. This will filter out explicit content from being mined into the pool. This is a bit expensive and unecessary in most situations but if you are finding a lot of explicit content in the pool it may be of value to you.
 7. `topics` A list of more general topics the pool fits into these generate ANS110 Topic tags in the data. Examples: history, funny, humor, science.
+8. `redditApiKeys` login to reddit or create a reddit account then log in and visit https://www.reddit.com/prefs/apps to create these keys and use your username and password for reddit.
 
 __Lastly run the client from within the directory containing pools.json.__
 
@@ -159,6 +168,15 @@ __Run the client mine command from within the directory containing pools.json. I
 
 ###### Mine a single wikipedia article related to the given keywords in config
 ```arcpool mine <POOL_ID> --source wikipedia```
+
+###### Mine Reddit posts by search term
+```arcpool mine wildlife --source reddit --method search --search-term america```
+
+###### Mine Reddit posts by subreddit
+```arcpool mine wildlife --source reddit --method subreddit --subreddit webdev```
+
+###### Mine Reddit posts by username
+```arcpool mine wildlife --source reddit --method user --username exampleusername```
 
 
 

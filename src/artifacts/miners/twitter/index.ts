@@ -1,27 +1,27 @@
-import fs from "fs";
+
 import axios from "axios";
 import tmp from "tmp-promise";
 import * as path from "path";
-import mime from "mime-types";
 import { mkdir } from "fs/promises";
 
 import { PoolClient } from "../../../clients/pool";
 
 import {
   log,
-  walk,
   logValue,
   checkPath,
   processMediaURL,
   exitProcess,
   generateAssetName,
-  generateAssetDescription
+  generateAssetDescription,
+  processMediaPaths
 } from "../../../helpers/utils";
 import { createAsset } from "../..";
 import { TAGS, LOOKUP_PARAMS, CONTENT_TYPES, RENDER_WITH_VALUE } from "../../../helpers/config";
 import { ArtifactEnum, IPoolClient } from "../../../helpers/types";
 import { shouldUploadContent } from "../moderator";
 import { conversationEndpoint } from "../../../helpers/endpoints";
+import { tmpdir } from "os";
 
 let totalCount: number = 0;
 
@@ -121,8 +121,8 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     tweet: args.tweet,
     tmpdir: tmpdir
   });
-
-  const profileImagePath = await processMediaPaths(poolClient, {
+  
+  const profileImagePath = await processMediaPathsLocal(poolClient, {
     tweet: args.tweet,
     tmpdir: tmpdir,
     path: "profile"
@@ -134,7 +134,7 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     contentModeration: args.contentModeration
   });
 
-  const additionalMediaPaths = await processMediaPaths(poolClient, {
+  const additionalMediaPaths = await processMediaPathsLocal(poolClient, {
     tweet: args.tweet,
     tmpdir: tmpdir,
     path: "media"
@@ -331,7 +331,7 @@ async function processMedia(poolClient: PoolClient, args: {
   }
 }
 
-async function processMediaPaths(poolClient: IPoolClient, args: {
+async function processMediaPathsLocal(poolClient: IPoolClient, args: {
   tweet: any,
   tmpdir: any,
   path: string
@@ -340,38 +340,12 @@ async function processMediaPaths(poolClient: IPoolClient, args: {
     { name: TAGS.keys.application, value: TAGS.values.application },
     { name: TAGS.keys.tweetId, value: `${args.tweet.id ?? "unknown"}` }
   ]
-  const additionalMediaPaths: { [key: string]: any } = {};
-  const dir = `${args.tmpdir.path}/${args.path}`;
-
-  if (await checkPath(dir)) {
-    for await (const f of walk(dir)) {
-      const relPath = path.relative(args.tmpdir.path, f)
-      try {
-        const mimeType = mime.contentType(mime.lookup(relPath) || CONTENT_TYPES.octetStream) as string;
-        const tx = poolClient.bundlr.createTransaction(
-          await fs.promises.readFile(path.resolve(f)),
-          { tags: [...subTags, { name: TAGS.keys.contentType, value: mimeType }] }
-        )
-        await tx.sign();
-        const id = tx.id;
-        const cost = await poolClient.bundlr.getPrice(tx.size);
-        fs.rmSync(path.resolve(f));
-        try {
-          await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
-        }
-        catch (e: any) {
-          log(`Error funding bundlr ...\n ${e}`, 1);
-        }
-        await tx.upload();
-        if (!id) exitProcess(`Upload Error`, 1);
-        additionalMediaPaths[relPath] = { id: id };
-      }
-      catch (e: any) {
-        fs.rmSync(path.resolve(f));
-        log(`Error uploading ${f} for ${args.tweet.id} - ${e}`, 1);
-      }
-    }
-  }
+  
+  let additionalMediaPaths = processMediaPaths(poolClient, {
+    subTags: subTags, 
+    tmpdir: tmpdir, 
+    path: args.path
+  });
 
   return additionalMediaPaths;
 }

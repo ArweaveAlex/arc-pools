@@ -5,7 +5,8 @@ import { Contract } from "warp-contracts";
 
 export enum ArtifactEnum {
     Messaging = "Alex-Messaging",
-    Webpage = "Alex-Webpage"
+    Webpage = "Alex-Webpage",
+    Reddit = "Alex-Reddit-Thread"
 }
 
 export type GQLResponseType = {
@@ -29,6 +30,7 @@ export interface IPoolClient {
     bundlr: Bundlr;
     contract: Contract;
     warp: any;
+    reddit: any;
 }
 
 export interface PoolType {
@@ -87,7 +89,8 @@ export type PoolConfigType = {
     keywords: string[],
     twitterApiKeys: any,
     clarifaiApiKey: string,
-    topics: string[]
+    topics: string[],
+    redditApiKeys: any
 }
 
 export type TagFilterType = { name: string, values: string[] }

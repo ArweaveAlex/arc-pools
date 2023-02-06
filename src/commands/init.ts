@@ -86,7 +86,13 @@ let poolJson =
         "clarifaiApiKey": "",
         "topics": [
             "history"
-        ]
+        ],
+        "redditApiKeys": {
+            "username": "",
+            "password": "",
+            "appId": "",
+            "appSecret": ""
+        }
     };
 
 

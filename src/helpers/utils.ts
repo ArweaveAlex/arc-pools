@@ -1,10 +1,11 @@
 import * as fs from "fs";
-import * as p from "path";
+import path, * as p from "path";
 import axios from "axios";
 import clc from "cli-color";
+import mime from "mime-types";
 
-import { STORAGE } from "./config";
-import { KeyValueType } from "./types";
+import { STORAGE, CONTENT_TYPES, TAGS } from "./config";
+import { IPoolClient, KeyValueType } from "./types";
 
 export function getTagValue(list: KeyValueType[], name: string): string {
   for (let i = 0; i < list.length; i++) {
@@ -35,10 +36,15 @@ export async function* walk(dir: string): any {
   }
 }
 
+export function getExtFromURL(url: string) {
+  const ext = url?.split("/")?.at(-1)?.split(".")?.at(1)?.split("?").at(0) ?? "unknown";
+  return ext;
+}
+
 export async function processMediaURL(url: string, dir: string, i: number) {
   return new Promise(async (resolve, reject) => {
-    const ext = url?.split("/")?.at(-1)?.split(".")?.at(1)?.split("?").at(0) ?? "unknown"
-    const wstream = fs.createWriteStream(p.join(dir, `${i}.${ext}`))
+    const ext = getExtFromURL(url);
+    const wstream = fs.createWriteStream(p.join(dir, `${i}.${ext}`));
     const res = await axios.get(url, {
       responseType: "stream"
     }).catch((e) => {
@@ -53,6 +59,61 @@ export async function processMediaURL(url: string, dir: string, i: number) {
       reject(e)
     })
   })
+}
+
+export async function processMediaPaths(poolClient: IPoolClient, args: {
+  subTags: any,
+  tmpdir: any,
+  path: string
+}) {
+
+  const additionalMediaPaths: { [key: string]: any } = {};
+  const dir = `${args.tmpdir.path}/${args.path}`;
+  
+  if (await checkPath(dir)) {
+    for await (const f of walk(dir)) {
+      const relPath = path.relative(args.tmpdir.path, f)
+      try {
+        let id = await processMediaPath(
+          poolClient,
+          f,
+          args
+        );
+        additionalMediaPaths[relPath] = { id: id };
+      }
+      catch (e: any) {
+        fs.rmSync(path.resolve(f));
+        log(`Error uploading ${f} for ${JSON.stringify(args)} - ${e}`, 1);
+      }
+    }
+  }
+
+  return additionalMediaPaths;
+}
+
+export async function processMediaPath(poolClient: IPoolClient, f: string, args: {
+  subTags: any,
+  tmpdir: any,
+  path: string
+}) {
+  const mimeType = mime.contentType(mime.lookup(f) || CONTENT_TYPES.octetStream) as string;
+  const tx = poolClient.bundlr.createTransaction(
+    await fs.promises.readFile(path.resolve(f)),
+    { tags: [...args.subTags, { name: TAGS.keys.contentType, value: mimeType }] }
+  )
+  await tx.sign();
+  const id = tx.id;
+  const cost = await poolClient.bundlr.getPrice(tx.size);
+  fs.rmSync(path.resolve(f));
+  try {
+    await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
+  }
+  catch (e: any) {
+    log(`Error funding bundlr ...\n ${e}`, 1);
+  }
+  await tx.upload();
+  if (!id) exitProcess(`Upload Error`, 1);
+  return id;
 }
 
 export function generateAssetName(tweet: any) {
@@ -72,6 +133,29 @@ export const generateAssetDescription = (tweet: any) => {
   }
   else {
     return generateAssetName(tweet);
+  }
+}
+
+export function generateRedditAssetName(post: any) {
+  let title = post[0].data.children[0].data.title;
+  if(title) {
+    return `Reddit Post: ${modifyString(title, (title.length > 30 ? 30 : title.length))}`;
+  } else {
+    return `Reddit Post`;
+  }
+}
+
+export const generateRedditAssetDescription = (post: any) => {
+  let selftext = post[0].data.children[0].data.selftext;
+  let title = post[0].data.children[0].data.title;
+  if(selftext){
+    return `${selftext}`;
+  } else {
+    if(title) {
+      return `${title}`;
+    } else {
+      return "Reddit post"
+    }
   }
 }
 
@@ -122,4 +206,16 @@ export function logJsonUpdate(poolTitle: string, key: string, value: string): vo
 export function exitProcess(message: string, status: 0 | 1): void {
   console.log(status === 0 ? clc.green(message) : clc.red(message));
   process.exit(status);
+}
+
+export async function traverse(callBackFields: string[], obj: any, callBack: any) {
+  for (let key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      if(callBackFields.includes(key)){
+          await callBack(obj[key], key);
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+          await traverse(callBackFields, obj[key], callBack);
+      } 
+    }
+  }
 }
