@@ -45,7 +45,7 @@ export async function processIdsV2(poolClient: IPoolClient, args: {
       })
     }
     else {
-      log(`Asset already mined: ${generateAssetName(tweets[i])}`, 1);
+     log(`Asset already mined: ${generateAssetName(tweets[i])}`, 1);
     }
   }
   logValue(`Total Count Mined`, totalCount, 0);
@@ -121,10 +121,15 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     tweet: args.tweet,
     tmpdir: tmpdir
   });
+
+  const subTags = [
+    { name: TAGS.keys.application, value: TAGS.values.application },
+    { name: TAGS.keys.tweetId, value: `${args.tweet.id ?? "unknown"}` }
+  ]
   
-  const profileImagePath = await processMediaPathsLocal(poolClient, {
-    tweet: args.tweet,
-    tmpdir: tmpdir,
+  let profileImagePath = await processMediaPaths(poolClient, {
+    subTags: subTags, 
+    tmpdir: tmpdir, 
     path: "profile"
   });
 
@@ -134,8 +139,8 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     contentModeration: args.contentModeration
   });
 
-  const additionalMediaPaths = await processMediaPathsLocal(poolClient, {
-    tweet: args.tweet,
+  const additionalMediaPaths = await processMediaPaths(poolClient, {
+    subTags: subTags,
     tmpdir: tmpdir,
     path: "media"
   });
@@ -327,24 +332,6 @@ async function processMedia(poolClient: PoolClient, args: {
   }
 }
 
-async function processMediaPathsLocal(poolClient: IPoolClient, args: {
-  tweet: any,
-  tmpdir: any,
-  path: string
-}) {
-  const subTags = [
-    { name: TAGS.keys.application, value: TAGS.values.application },
-    { name: TAGS.keys.tweetId, value: `${args.tweet.id ?? "unknown"}` }
-  ]
-  
-  let additionalMediaPaths = processMediaPaths(poolClient, {
-    subTags: subTags, 
-    tmpdir: tmpdir, 
-    path: args.path
-  });
-
-  return additionalMediaPaths;
-}
 
 /**
  * Delete the stream rules before and after this run
