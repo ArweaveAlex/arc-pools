@@ -340,13 +340,11 @@ async function processMediaPathsLocal(poolClient: IPoolClient, args: {
     { name: TAGS.keys.application, value: TAGS.values.application },
     { name: TAGS.keys.tweetId, value: `${args.tweet.id ?? "unknown"}` }
   ]
-  
-  let additionalMediaPaths = processMediaPaths(poolClient, {
-    subTags: subTags, 
-    tmpdir: tmpdir, 
+  let additionalMediaPaths = await processMediaPaths(poolClient, {
+    subTags: subTags,
+    tmpdir: tmpdir,
     path: args.path
   });
-
   return additionalMediaPaths;
 }
 
