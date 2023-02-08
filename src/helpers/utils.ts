@@ -3,9 +3,12 @@ import path, * as p from "path";
 import axios from "axios";
 import clc from "cli-color";
 import mime from "mime-types";
+import { mkdir } from "fs/promises";
 
-import { STORAGE, CONTENT_TYPES, TAGS } from "./config";
-import { IPoolClient, KeyValueType } from "./types";
+var crypto = require("crypto");
+
+import { STORAGE, CONTENT_TYPES, TAGS, POOL_FILE } from "./config";
+import { IPoolClient, KeyValueType, PoolConfigType } from "./types";
 
 export function getTagValue(list: KeyValueType[], name: string): string {
   for (let i = 0; i < list.length; i++) {
@@ -149,7 +152,7 @@ export const generateRedditAssetDescription = (post: any) => {
   let selftext = post[0].data.children[0].data.selftext;
   let title = post[0].data.children[0].data.title;
   if(selftext){
-    return `${selftext}`;
+    return `${modifyString(selftext, (selftext.length > 200 ? 200 : selftext.length))}`;
   } else {
     if(title) {
       return `${title}`;
@@ -157,6 +160,25 @@ export const generateRedditAssetDescription = (post: any) => {
       return "Reddit post"
     }
   }
+}
+
+export function generateNostrAssetName(event: any) {
+  let content = event.content;
+  let pubkey = event.pubkey;
+  let truncPubKey = modifyString(pubkey, (pubkey.length > 5 ? 5 : pubkey.length));
+  let truncContent = modifyString(content, (content.length > 20 ? 20 : content.length));
+  if(content){
+    return `Nostr Pubkey: ${truncPubKey} Nostr Event: ${truncContent}`;
+  } 
+  return "Nostr event";
+}
+
+export function generateNostrAssetDescription(event: any) {
+  let content = event.content;
+  if(content){
+    return `Nostr event: ${modifyString(content, (content.length > 200 ? 200 : content.length))}`;
+  } 
+  return "Nostr event";
 }
 
 export function modifyString(str: string, num: number) {
@@ -218,4 +240,53 @@ export async function traverse(callBackFields: string[], obj: any, callBack: any
       } 
     }
   }
+}
+
+export function prettyPrint(obj: any){
+  return JSON.stringify(obj, null, 4);
+}
+
+export function saveConfig(config: PoolConfigType, poolLabel: string){
+  const pools_obj = JSON.parse(fs.readFileSync(POOL_FILE).toString());
+  pools_obj[poolLabel] = config;
+  fs.writeFileSync(POOL_FILE, prettyPrint(pools_obj));
+};
+
+export async function uploadFile(poolClient: IPoolClient, mediaDir: string, url: string, args: {
+  tmpdir: any,
+  contentModeration: boolean,
+  tags: any[]
+}) {
+  try {
+      if (!await checkPath(mediaDir)) {
+          await mkdir(mediaDir);
+      }
+  
+      let randomFileIndex = Math.floor(Math.random() * 10000000000);
+      const ext = getExtFromURL(url);
+      let fullFilePath = path.join(mediaDir, `${randomFileIndex}.${ext}`);
+  
+      await processMediaURL(url, mediaDir, randomFileIndex);
+
+  
+      let txId = await processMediaPath(
+          poolClient, 
+          fullFilePath,
+          {subTags: args.tags, tmpdir: args.tmpdir, path: "media"}
+      );
+  
+      return txId;
+  } catch(e: any) {
+      console.log(e);
+  }
+
+  return null;
+}
+
+export function sha256Object(obj: any) {
+  var serializedObj = JSON.stringify(obj);
+  var hash = crypto.createHash("sha256");
+  hash.update(serializedObj);
+  var eventId = hash.digest("hex");
+  return eventId;
 }

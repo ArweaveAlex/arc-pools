@@ -11,6 +11,7 @@ export function parseError(error: any, type: string): string {
 }
 
 function parseTwitterError(error: any): string {
+    console.log(error)
     let returnString = "Twitter Error";
     if (error.code && error.data && error.data.detail) {
         returnString += `: ${error.code} ${error.data.detail}`

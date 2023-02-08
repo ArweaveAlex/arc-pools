@@ -148,7 +148,7 @@ async function deployToBundlr(poolClient: IPoolClient, args: {
         await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
       }
       catch (e: any) {
-        log(`Error funding bundlr ...\n ${e}`, 1);
+        // log(`Error funding bundlr ...\n ${e}`, 1);
       }
     }
     catch (e: any) {
