@@ -75,6 +75,8 @@ export const CLI_ARGS = {
     }
 }
 
+export const RENDER_WITH_VALUE = "alex-renderers";
+
 export const TAGS = {
     keys: {
         alexPoolId: "Alex-Pool-Id",
@@ -97,6 +99,7 @@ export const TAGS = {
         initState: "Init-State",
         keywords: "Keywords",
         mediaIds: "Media-Ids",
+        renderWith: "Render-With",
         poolId: "Pool-Id",
         poolName: "Pool-Name",
         profileImage: "Profile-Image",

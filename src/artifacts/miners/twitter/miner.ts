@@ -68,7 +68,7 @@ async function mineTweetsByStream(poolClient: IPoolClient) {
     const rules = poolClient.poolConfig.keywords.map((keyword: string) => {
       return {
         value: keyword,
-        tag: keyword.toLowerCase().replace(/\s/g, '')
+        tag: keyword.toLowerCase().replace(/\s/g, "")
       }
     });
 
@@ -108,7 +108,7 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
       let params: tApiV2.Tweetv2SearchParams = {
         max_results: 100,
         query: query,
-        "tweet.fields": ['referenced_tweets']
+        "tweet.fields": ["referenced_tweets"]
       };
       if (resultSet) params.next_token = resultSet.meta.next_token;
       resultSet = await poolClient.twitterV2.v2.search(query, params);
@@ -118,6 +118,7 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
     }
     while (resultSet.meta.next_token);
 
+    log(`Filtering tweets ...`, null);
     let ids = allTweets.map((tweet: any) => {
       if (tweet.referenced_tweets && tweet.referenced_tweets.length > 0) {
         return tweet.referenced_tweets[0].id;
@@ -147,7 +148,7 @@ async function mineTweetsByUser(poolClient: IPoolClient, args: { username: strin
     user = await poolClient.twitterV2.v2.userByUsername(
       args.username.includes("@") ? args.username.replace("@", "") : args.username);
     logValue(`User Id`, user.data.id, 0);
-  
+
 
     if (user) {
       const uid = user.data.id;

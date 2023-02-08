@@ -18,6 +18,7 @@ export async function createAsset(poolClient: PoolClient, args: {
   associationId: string | null,
   associationSequence: string | null,
   childAssets: string[] | null,
+  renderWith: string | null,
   assetId: string
 }) {
   const contractTags = await createContractTags(poolClient, {
@@ -33,6 +34,7 @@ export async function createAsset(poolClient: PoolClient, args: {
     associationId: args.associationId,
     associationSequence: args.associationSequence,
     childAssets: args.childAssets,
+    renderWith: args.renderWith,
     assetId: args.assetId,
   });
 
@@ -41,7 +43,7 @@ export async function createAsset(poolClient: PoolClient, args: {
     contentType: args.contentType,
     contractTags: contractTags
   });
-
+  
   const contractId = await deployToWarp(poolClient, { assetId: assetId });
   if (contractId) {
     logValue(`Deployed Contract`, contractId, 0);
@@ -65,6 +67,7 @@ async function createContractTags(poolClient: IPoolClient, args: {
   associationId: string | null,
   associationSequence: string | null,
   childAssets: string[],
+  renderWith: string | null,
   assetId: string
 }) {
   const dateTime = new Date().getTime().toString();
@@ -111,6 +114,10 @@ async function createContractTags(poolClient: IPoolClient, args: {
     { name: TAGS.keys.implements, value: TAGS.values.ansVersion },
     { name: TAGS.keys.initState, value: initStateJson }
   ];
+
+  if (args.renderWith) {
+    tagList.push({ name: TAGS.keys.renderWith, value: args.renderWith })
+  }
 
   for (let i = 0; i < poolClient.poolConfig.topics.length; i++) {
     tagList.push(
@@ -165,17 +172,18 @@ async function deployToBundlr(poolClient: IPoolClient, args: {
 
 async function deployToWarp(poolClient: IPoolClient, args: { assetId: string }) {
   try {
-    await new Promise(r => setTimeout(r, 1000));
     const { contractTxId } = await poolClient.warp.register(args.assetId, "node2");
     return contractTxId;
   }
   catch (e: any) {
     logValue(`Error deploying to Warp - Asset ID`, args.assetId, 1);
-    let errorString = e.toString();
+
+    const errorString = e.toString();
     if (errorString.indexOf("500") > -1) {
       return null;
-    } 
-    if ((errorString.indexOf("502") > -1) || (errorString.indexOf("504") > -1)) {
+    }
+
+    if ((errorString.indexOf("502") > -1) || (errorString.indexOf("504") > -1) || (errorString.indexOf("FetchError") > -1)) {
       let retries = 5;
       for (let i = 0; i < retries; i++) {
         await new Promise(r => setTimeout(r, 2000));
@@ -197,9 +205,15 @@ async function deployToWarp(poolClient: IPoolClient, args: { assetId: string }) 
 }
 
 async function getRandomContributor(poolClient: IPoolClient) {
-  const evaluationResults: any = await poolClient.contract.readState();
-  const state = evaluationResults.cachedValue.state;
-  return selectTokenHolder(state.tokens, state.totalSupply);
+  try {
+    const evaluationResults: any = await poolClient.contract.readState();
+    const state = evaluationResults.cachedValue.state;
+    return selectTokenHolder(state.tokens, state.totalSupply);
+  }
+  catch (e: any) {
+    exitProcess(e, 1);
+    return null;
+  }
 }
 
 export function selectTokenHolder(tokens: any, totalSupply: number) {
