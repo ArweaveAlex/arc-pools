@@ -77,7 +77,8 @@ async function processPost(poolClient: IPoolClient, args: {
         associationId: null,
         associationSequence: null,
         childAssets: null,
-        assetId: args.post[0].data.id
+        assetId: args.post[0].data.id,
+        renderWith: null
     });
 
     if (contractId) {

@@ -44,6 +44,7 @@ export async function processEvent(poolClient: IPoolClient, args: {
     event: any,
     contentModeration: boolean
   }) {
+    console.log(args.event);
     const isDup = await poolClient.arClient.isDuplicate({
         artifactName: generateNostrAssetName(args.event),
         poolId: poolClient.poolConfig.contracts.pool.id
@@ -76,7 +77,8 @@ export async function processEvent(poolClient: IPoolClient, args: {
         associationId: null,
         associationSequence: null,
         childAssets: null,
-        assetId: sha256Object(args.event)
+        assetId: sha256Object(args.event.post),
+        renderWith: null
     });
 
     if (contractId) {
@@ -93,7 +95,7 @@ async function processMedia(poolClient: IPoolClient, args: {
     if (!await checkPath(mediaDir)) {
         await mkdir(mediaDir);
     }
-    args.event.tags.map(async (tag: string[]) => {
+    args.event.post.tags.map(async (tag: string[]) => {
         if(tag.includes('resource')) {
             console.log(tag);
             if(tag[2].includes("mpeg")) {console.log("Skipping audio file"); return;}

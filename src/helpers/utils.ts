@@ -163,8 +163,8 @@ export const generateRedditAssetDescription = (post: any) => {
 }
 
 export function generateNostrAssetName(event: any) {
-  let content = event.content;
-  let pubkey = event.pubkey;
+  let content = event.post.content;
+  let pubkey = event.post.pubkey;
   let truncPubKey = modifyString(pubkey, (pubkey.length > 5 ? 5 : pubkey.length));
   let truncContent = modifyString(content, (content.length > 20 ? 20 : content.length));
   if(content){
@@ -174,7 +174,7 @@ export function generateNostrAssetName(event: any) {
 }
 
 export function generateNostrAssetDescription(event: any) {
-  let content = event.content;
+  let content = event.post.content;
   if(content){
     return `Nostr event: ${modifyString(content, (content.length > 200 ? 200 : content.length))}`;
   } 

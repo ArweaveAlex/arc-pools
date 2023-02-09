@@ -294,6 +294,9 @@ export const DEFAULT_NOSTR_RELAYS = [
    {socket: "wss://nostr.fmt.wiz.biz"}
 ];
 
+export const RELAY_OVERHEAD_LIMIT = 1000;
+export const RELAY_QUEUE_PROC_SIZE = 10;
+
 export const DEFAULT_POOLS_JSON = 
      {
         "appType": "Alex-Archiving-Pool-v1.4", 
