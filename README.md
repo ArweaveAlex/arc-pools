@@ -40,12 +40,10 @@ balance <pool id>                                           Check the Bundlr and
 create <pool id>                                            Create a pool using pools.json
 dlist                                                       list all daemon mining processes
 dstop <daemon name>                                         Stop a daemon mining process by name
-fetch <pool id>                                             Fetch pool artifacts for search
 fund <pool id>                                              Fun the bundlr wallet for a pool
 help                                                        Display help text
 init <pool id>                                              Initialize pools.json
 mine <pool id>                                              Mine artifacts for a given pool
-sindex <pool id>                                            Index artifacts for search
 ```
 
 
@@ -205,22 +203,3 @@ pid: 0    pm_id: 0    name: <POOL_ID>    status: running
 
 ###### Stream the logs:
 ```pm2 logs```
-
-
-## Indexing a pool for search
-
-__As a pool operator you must index your pool for the artifacts to be searchable using the search bar in Alex.__ This is done using 2 commands. If there are a lot of artifacts in the pool already the fetch command will take a while so it is recommended that you start indexing early and then keep indexing after you mine new artifacts so the program will run quickly. There is no need to index until you have already mined artifacts.
-
-###### Fetch a pools artifacts and build local files that will be uploaded as a search index:
-
-```arcpool fetch <POOL_ID>```
-
-###### To fetch while also clearing the local index to do a fresh index you can run with the --clear option:
-```arcpool fetch <POOL_ID> --clear```
-
-__After running fetch upload the index to arweave.__
-
-###### Upload the index to arweave:
-```arcpool sindex <POOL_ID>```
-
-No other action is required this will populate Arweave with the search index and update your pools.json with the id of the index contract.
