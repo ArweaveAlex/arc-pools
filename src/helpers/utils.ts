@@ -254,7 +254,6 @@ export function saveConfig(config: PoolConfigType, poolLabel: string){
 
 export async function uploadFile(poolClient: IPoolClient, mediaDir: string, url: string, args: {
   tmpdir: any,
-  contentModeration: boolean,
   tags: any[]
 }) {
   try {

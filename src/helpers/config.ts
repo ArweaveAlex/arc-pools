@@ -285,7 +285,6 @@ export const REDSTONE_PAGE_LIMIT = 5000;
 
 export const DEFAULT_NOSTR_RELAYS = [
    {socket: "wss://relay.damus.io"},
-   {socket: "wss://nostr-pub.wellorder.net"},
    {socket: "wss://nos.lol"},
    {socket: "wss://nostr.relayer.se"},
    {socket: "wss://relay.current.fyi"},
