@@ -40,17 +40,11 @@ export async function genKeys(poolClient: IPoolClient, poolLabel: string) {
     saveConfig(poolClient.poolConfig, poolLabel);
 }
 
-export async function processThread(poolClient: IPoolClient, args: {
-    event: any,
-    contentModeration: boolean
-  }) {
-
-    console.log(args.event);
-    return;
-}
 
 export async function processEvent(poolClient: IPoolClient, args: {
     event: any,
+    associationId: string,
+    associationSequence: string,
     contentModeration: boolean
   }) {
     // const isDup = await poolClient.arClient.isDuplicate({
@@ -77,27 +71,27 @@ export async function processEvent(poolClient: IPoolClient, args: {
         contentModeration: args.contentModeration
     });
 
-    // const contractId = await createAsset(poolClient, {
-    //     index: { path: "event.json" },
-    //     paths: (assetId: string) => ({ "event.json": { id: assetId } }),
-    //     content: args.event,
-    //     contentType: CONTENT_TYPES.json,
-    //     artifactType: ArtifactEnum.Nostr,
-    //     name: generateNostrAssetName(args.event),
-    //     description: generateNostrAssetDescription(args.event),
-    //     type: TAGS.values.ansTypes.socialPost,
-    //     additionalMediaPaths: [],
-    //     profileImagePath: null,
-    //     associationId: null,
-    //     associationSequence: null,
-    //     childAssets: null,
-    //     assetId: sha256Object(args.event.post),
-    //     renderWith: null
-    // });
+    const contractId = await createAsset(poolClient, {
+        index: { path: "event.json" },
+        paths: (assetId: string) => ({ "event.json": { id: assetId } }),
+        content: args.event,
+        contentType: CONTENT_TYPES.json,
+        artifactType: ArtifactEnum.Nostr,
+        name: generateNostrAssetName(args.event),
+        description: generateNostrAssetDescription(args.event),
+        type: TAGS.values.ansTypes.socialPost,
+        additionalMediaPaths: [],
+        profileImagePath: null,
+        associationId: args.associationId,
+        associationSequence: args.associationSequence,
+        childAssets: null,
+        assetId: sha256Object(args.event.post),
+        renderWith: null
+    });
 
-    // if (contractId) {
-    //     return contractId;
-    // }
+    if (contractId) {
+        return contractId;
+    }
 }
 
 async function processProfileImage(poolClient: IPoolClient, args: {

@@ -40,6 +40,7 @@ export const Nostr = {
     relays: defaultRelays,
     subscriptionsByName: new Map<string, Set<Sub>>(),
     subscribedFiltersByName: new Map<string, Filter[]>(),
+    subscribedRepliesAndLikes: new Set<string>(),
     subscribedPosts: new Set<string>(),
     subscriptions: new Map<number, Subscription>(),
     eventsById,
@@ -66,7 +67,7 @@ export const Nostr = {
           const subs = this.subscriptionsByName.get(id);
           if (subs) {
             subs.forEach((sub: any) => {
-              console.log('unsub', id);
+              // console.log('unsub', id);
               sub.unsub();
             });
           }
@@ -385,6 +386,19 @@ export const Nostr = {
         this.subscribe([{ kinds: [1, 7] }], callback);
       },
 
+      getProfile(address: string, cb?: (profile: any, address: string) => void) {
+        const callback = () => {
+          cb?.(this.profiles.get(address), address);
+        };
+    
+        const profile = this.profiles.get(address);
+        if (profile) {
+          callback();
+        }
+    
+        this.subscribe([{ authors: [address], kinds: [0, 3] }], callback);
+      },
+
       handleMetadata(event: Event) {
         try {
           const existing = this.profiles.get(event.pubkey);
@@ -403,7 +417,7 @@ export const Nostr = {
           }
           return true;
         } catch (e) {
-          console.log('error parsing nostr profile', e, event);
+          //console.log('error parsing nostr profile', e, event);
           return false;
         }
       },
@@ -412,10 +426,10 @@ export const Nostr = {
       connectRelay: function (relay: Relay) {
         try {
           relay.connect().catch((e) => {
-            console.log(e);
+            //console.log(e);
           });
         } catch (e) {
-          console.log(e);
+          //console.log(e);
         }
       },
 
