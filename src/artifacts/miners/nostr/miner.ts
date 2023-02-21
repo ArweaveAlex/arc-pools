@@ -34,15 +34,41 @@ export async function mineGlobalMessages(poolClient: IPoolClient) {
   await new Promise(r => setTimeout(r, 5000));
 
   nostr.getMessagesByEveryone((messages: string[]) => {
-    messages.forEach(message => globalMessages.add(message));
+    messages.forEach(message => {if(message) globalMessages.add(message)});
   });
-
-
 
   while (true) {
     const eventId = globalMessages.values().next().value;
+    if(!eventId) {
+      console.log("Waiting for more messages");
+      await new Promise(r => setTimeout(r, 10000));
+      continue;
+    }
     let event = nostr.eventsById.get(eventId);
     globalMessages.delete(eventId);
+
+    console.log(event)
+
+    // if(!event) continue;
+
+    let containsKeyword = false;
+
+    for(let i=0; i<poolClient.poolConfig.keywords.length; i++) {
+      let keyword = poolClient.poolConfig.keywords[i];
+      containsKeyword = Object.keys(event).some((key: string) => {
+        const value = event[key];
+        if (typeof value === 'string' && value.toLowerCase().includes(keyword.toLowerCase())) {
+          return true;
+        } else {
+          return false;
+        }
+      });
+    }
+
+    if(!containsKeyword) {
+      console.log("Keyword not found");
+      continue;
+    }
 
     // getRepliesAndLikes does't return a Promise. It calls the callback
     // an unkown number of times for an unknown number of replies etc...
@@ -92,27 +118,9 @@ export async function mineGlobalMessages(poolClient: IPoolClient) {
         }
         return eventA?.created_at - eventB?.created_at;
       });
-
-
-    // console.log(event);
-    // console.log(replies);
-    // console.log(likedBy);
-    // console.log(threadReplyCount);
-    // console.log(sortedReplies);
     
     // subscribe to the profile event and wait until we get it back
-    let profile = await new Promise((resolve, _reject) => {
-      const callback = () => {
-        console.log()
-        resolve(nostr.profileEventByUser.get(event.pubkey));
-      };
-      console.log("lookin for prof")
-      nostr.getProfile(event.pubkey, callback);
-      setTimeout(() => {
-        console.log("could not find prof")
-        resolve(event.pubkey);
-      }, 4000);
-    });
+    let profile = await getProfile(event, nostr);
 
     let eventWithProfile = {
       post: event,
@@ -121,45 +129,61 @@ export async function mineGlobalMessages(poolClient: IPoolClient) {
 
     console.log(eventWithProfile)
 
-    // await processEvent(
-    //   poolClient, 
-    //   {
-    //     event: eventWithProfile, 
-    //     associationId: event.id, 
-    //     associationSequence: "0", 
-    //     contentModeration: false
-    //   }
-    // );
+    await processEvent(
+      poolClient, 
+      {
+        event: eventWithProfile, 
+        associationId: event.id, 
+        associationSequence: "0", 
+        contentModeration: false
+      }
+    );
 
-    // for(let i=0; i<sortedReplies.length; i++) {
-    //   let id = sortedReplies[i].toString();
-    //   let orderedEvent = nostr.eventsById.get(id);
+    for(let i=0; i<sortedReplies.length; i++) {
+      let id = sortedReplies[i].toString();
+      let orderedEvent = nostr.eventsById.get(id);
 
-    //   // subscribe to the profile event and wait until we get it back
-    //   let profileForOrderedEvent = await new Promise((resolve, _reject) => {
-    //     const callback = () => {
-    //       console.log()
-    //       resolve(nostr.profileEventByUser.get(event.pubkey));
-    //     };
-      
-    //     nostr.getProfile(event.pubkey, callback);
-    //   });
+      // subscribe to the profile event and wait until we get it back
+      let profileForOrderedEvent = await getProfile(event, nostr);
 
-    //   let orderedEventWithProfile = {
-    //     post: event,
-    //     profile: profileForOrderedEvent
-    //   };
+      let orderedEventWithProfile = {
+        post: event,
+        profile: profileForOrderedEvent
+      };
 
-    //   await processEvent(
-    //     poolClient, 
-    //     {
-    //       event: orderedEventWithProfile, 
-    //       associationId: orderedEvent.id, 
-    //       associationSequence: (i + 1).toString(), 
-    //       contentModeration: false
-    //     }
-    //   );
-    // }
+      await processEvent(
+        poolClient, 
+        {
+          event: orderedEventWithProfile, 
+          associationId: orderedEvent.id, 
+          associationSequence: (i + 1).toString(), 
+          contentModeration: false
+        }
+      );
+    }
 
   }
+}
+
+async function getProfile(event: any, nostr: any) {
+  let profile = await new Promise((resolve, _reject) => {
+    if(nostr.profileEventByUser.has(event.pubkey)){
+      resolve(nostr.profileEventByUser.get(event.pubkey));
+    }
+
+    const callback = () => {
+      console.log()
+      resolve(nostr.profileEventByUser.get(event.pubkey));
+    };
+
+    console.log("lookin for prof")
+    nostr.getProfile(event.pubkey, callback);
+    setTimeout(() => {
+      console.log("could not find prof")
+      resolve(event.pubkey);
+    }, 4000);
+
+  });
+
+  return profile;
 }
