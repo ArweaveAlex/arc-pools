@@ -1,4 +1,4 @@
-import { Relay, relayInit, Event, Sub, Filter,  } from "nostr-tools";
+import { Relay, relayInit, Event, Sub, Filter,  } from "./nostr-tools";
 import { sha256 } from '@noble/hashes/sha256';
 import 'websocket-polyfill';
 import { debounce, throttle } from 'lodash';

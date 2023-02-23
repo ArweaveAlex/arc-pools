@@ -1,5 +1,5 @@
 
-import { Relay, relayInit, Event, Sub, Filter,  } from "nostr-tools";
+import { Relay, relayInit, Event, Sub, Filter,  } from "./nostr-tools";
 
 export class SortedLimitedEventSet {
     private events: { id: string; created_at: number }[];
@@ -28,7 +28,8 @@ export class SortedLimitedEventSet {
   
     add(event: Event): boolean {
       if (!event || !event.id || !event.created_at) {
-        throw new Error('Invalid event');
+        return false;
+        // throw new Error('Invalid event');
       }
       if (this.eventIdSet.has(event.id)) {
         return false;

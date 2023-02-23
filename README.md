@@ -23,7 +23,6 @@ An arweave wallet is needed for creating a pool, create one and download the .js
 Usage: arcpool [commands] [options]
 
 Options                                                     Description
---clear                                                     Clear local search index for pool
 --content-moderation                                        Use content moderation on twitter mining
 --control-wallet <wallet file>                              Specifies a wallet to use in the pool creation
 --dname <string>                                            Specifies the daemon name to stop
@@ -31,7 +30,7 @@ Options                                                     Description
 --mention-tag <username>                                    Username for twitter or reddit with --method user
 --method <user / mention / subreddit / search>              Subcategory within source such as user
 --search-term <search term>                                 Search term to mine
---source <twitter / wikipedia / reddit>                     Specifies the data source
+--source <twitter / wikipedia / reddit / nostr>             Specifies the data source
 --subreddit <subreddit>                                     Subreddit to mine
 
 
@@ -40,12 +39,10 @@ balance <pool id>                                           Check the Bundlr and
 create <pool id>                                            Create a pool using pools.json
 dlist                                                       list all daemon mining processes
 dstop <daemon name>                                         Stop a daemon mining process by name
-fetch <pool id>                                             Fetch pool artifacts for search
 fund <pool id>                                              Fun the bundlr wallet for a pool
 help                                                        Display help text
 init <pool id>                                              Initialize pools.json
 mine <pool id>                                              Mine artifacts for a given pool
-sindex <pool id>                                            Index artifacts for search
 ```
 
 
@@ -178,7 +175,8 @@ __Run the client mine command from within the directory containing pools.json. I
 ###### Mine Reddit posts by username
 ```arcpool mine wildlife --source reddit --method user --username exampleusername```
 
-
+###### Mine common nostr threads for posts related to the keywords
+```arcpool mine <POOL_ID> --source nostr```
 
 ## Daemon mode mining
 
@@ -205,22 +203,3 @@ pid: 0    pm_id: 0    name: <POOL_ID>    status: running
 
 ###### Stream the logs:
 ```pm2 logs```
-
-
-## Indexing a pool for search
-
-__As a pool operator you must index your pool for the artifacts to be searchable using the search bar in Alex.__ This is done using 2 commands. If there are a lot of artifacts in the pool already the fetch command will take a while so it is recommended that you start indexing early and then keep indexing after you mine new artifacts so the program will run quickly. There is no need to index until you have already mined artifacts.
-
-###### Fetch a pools artifacts and build local files that will be uploaded as a search index:
-
-```arcpool fetch <POOL_ID>```
-
-###### To fetch while also clearing the local index to do a fresh index you can run with the --clear option:
-```arcpool fetch <POOL_ID> --clear```
-
-__After running fetch upload the index to arweave.__
-
-###### Upload the index to arweave:
-```arcpool sindex <POOL_ID>```
-
-No other action is required this will populate Arweave with the search index and update your pools.json with the id of the index contract.

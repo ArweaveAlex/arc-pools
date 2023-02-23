@@ -1,4 +1,3 @@
-
 import axios from "axios";
 import tmp from "tmp-promise";
 import * as path from "path";
@@ -21,7 +20,6 @@ import { TAGS, LOOKUP_PARAMS, CONTENT_TYPES, RENDER_WITH_VALUE } from "../../../
 import { ArtifactEnum, IPoolClient } from "../../../helpers/types";
 import { shouldUploadContent } from "../moderator";
 import { conversationEndpoint } from "../../../helpers/endpoints";
-import { tmpdir } from "os";
 
 let totalCount: number = 0;
 

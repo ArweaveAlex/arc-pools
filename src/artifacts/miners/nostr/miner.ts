@@ -1,7 +1,6 @@
 import * as async from 'async';
 
 import minimist from "minimist";
-import { relayInit} from 'nostr-tools';
 import 'websocket-polyfill';
 import { throttle } from 'lodash';
 

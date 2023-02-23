@@ -1,4 +1,4 @@
-import { generatePrivateKey, getPublicKey } from 'nostr-tools';
+import { generatePrivateKey, getPublicKey } from './nostr-tools';
 import tmp from "tmp-promise";
 import { mkdir } from "fs/promises";
 import path from "path";
