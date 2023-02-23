@@ -3,9 +3,12 @@ import path, * as p from "path";
 import axios from "axios";
 import clc from "cli-color";
 import mime from "mime-types";
+import { mkdir } from "fs/promises";
 
-import { STORAGE, CONTENT_TYPES, TAGS } from "./config";
-import { IPoolClient, KeyValueType } from "./types";
+var crypto = require("crypto");
+
+import { STORAGE, CONTENT_TYPES, TAGS, POOL_FILE } from "./config";
+import { IPoolClient, KeyValueType, PoolConfigType } from "./types";
 
 export function getTagValue(list: KeyValueType[], name: string): string {
   for (let i = 0; i < list.length; i++) {
@@ -119,7 +122,7 @@ export async function processMediaPath(poolClient: IPoolClient, f: string, args:
 export function generateAssetName(tweet: any) {
   if (tweet && (tweet.text || tweet.full_text)) {
     const tweetText = tweet.text ? tweet.text : tweet.full_text;
-    return `Username: ${removeEmojis(tweet.user.name)}, Tweet: ${modifyString(tweetText, (tweetText.length > 30 ? 30 : tweetText.length))}`;
+    return `${removeEmojis(tweet.user.name)}, ${modifyString(tweetText, (tweetText.length > 30 ? 30 : tweetText.length))}`;
   }
   else {
     return `Username: unknown`;
@@ -139,7 +142,7 @@ export const generateAssetDescription = (tweet: any) => {
 export function generateRedditAssetName(post: any) {
   let title = post[0].data.children[0].data.title;
   if(title) {
-    return `Reddit Post: ${modifyString(title, (title.length > 30 ? 30 : title.length))}`;
+    return `${modifyString(title, (title.length > 30 ? 30 : title.length))}`;
   } else {
     return `Reddit Post`;
   }
@@ -159,17 +162,37 @@ export const generateRedditAssetDescription = (post: any) => {
   }
 }
 
+export function generateNostrAssetName(event: any) {
+  let content = event.post.content;
+  let pubkey = event.post.pubkey;
+  let truncPubKey = modifyString(pubkey, (pubkey.length > 5 ? 5 : pubkey.length));
+  let truncContent = modifyString(content, (content.length > 20 ? 20 : content.length));
+  if(content){
+    return `${truncPubKey}, ${truncContent}`;
+  } 
+  return "Nostr event";
+}
+
+export function generateNostrAssetDescription(event: any) {
+  let content = event.post.content;
+  if(content){
+    return `${modifyString(content, (content.length > 200 ? 200 : content.length))}`;
+  } 
+  return "Nostr event";
+}
+
 export function modifyString(str: string, num: number) {
   let finalStr: string = "";
   if (str.length > num) {
+    const chars = Array.from(str);
     for (let i = 0; i < num; i++) {
-      finalStr += Array.from(str)[i];
+      finalStr += chars[i];
     }
     return removeEmojis(`${finalStr} ...`).replace(/(\r\n|\r|\n)/g, " ");
-  }
-  else {
-    for (let i = 0; i < str.length; i++) {
-      finalStr += Array.from(str)[i];
+  } else {
+    const chars = Array.from(str);
+    for (let i = 0; i < chars.length; i++) {
+      finalStr += chars[i];
     }
     return removeEmojis(finalStr).replace(/(\r\n|\r|\n)/g, " ");
   }
@@ -218,4 +241,52 @@ export async function traverse(callBackFields: string[], obj: any, callBack: any
       } 
     }
   }
+}
+
+export function prettyPrint(obj: any){
+  return JSON.stringify(obj, null, 4);
+}
+
+export function saveConfig(config: PoolConfigType, poolLabel: string){
+  const pools_obj = JSON.parse(fs.readFileSync(POOL_FILE).toString());
+  pools_obj[poolLabel] = config;
+  fs.writeFileSync(POOL_FILE, prettyPrint(pools_obj));
+};
+
+export async function uploadFile(poolClient: IPoolClient, mediaDir: string, url: string, args: {
+  tmpdir: any,
+  tags: any[]
+}) {
+  try {
+      if (!await checkPath(mediaDir)) {
+          await mkdir(mediaDir);
+      }
+  
+      let randomFileIndex = Math.floor(Math.random() * 10000000000);
+      const ext = getExtFromURL(url);
+      let fullFilePath = path.join(mediaDir, `${randomFileIndex}.${ext}`);
+  
+      await processMediaURL(url, mediaDir, randomFileIndex);
+
+  
+      let txId = await processMediaPath(
+          poolClient, 
+          fullFilePath,
+          {subTags: args.tags, tmpdir: args.tmpdir, path: "media"}
+      );
+  
+      return txId;
+  } catch(e: any) {
+      console.log(e);
+  }
+
+  return null;
+}
+
+export function sha256Object(obj: any) {
+  var serializedObj = JSON.stringify(obj);
+  var hash = crypto.createHash("sha256");
+  hash.update(serializedObj);
+  var eventId = hash.digest("hex");
+  return eventId;
 }

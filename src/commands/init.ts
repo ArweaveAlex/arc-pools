@@ -1,7 +1,7 @@
 import fs from "fs";
 
 import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
-import { CLI_ARGS, POOL_FILE } from "../helpers/config";
+import { CLI_ARGS, DEFAULT_POOLS_JSON, POOL_FILE } from "../helpers/config";
 import { exitProcess } from "../helpers/utils";
 
 const command: CommandInterface = {
@@ -28,72 +28,12 @@ const command: CommandInterface = {
             exitProcess(`Pool id already exists`, 1);
         }
 
-        poolJsonFile[poolArg] = poolJson;
+        poolJsonFile[poolArg] = DEFAULT_POOLS_JSON;
 
         fs.writeFileSync(POOL_FILE, JSON.stringify(poolJsonFile, null, 4));
 
         console.log("Pool initialized in " + POOL_FILE)
     }
 }
-
-let poolJson = 
-     {
-        "appType": "Alex-Archiving-Pool-v1.4", 
-        "contracts": {
-            "nft": {
-                "id": "",
-                "src": ""
-            },
-            "pool": {
-                "id": "",
-                "src": ""
-            },
-            "poolSearchIndex": {
-                "id": "",
-                "src": ""
-            }
-        },
-        "state": {
-            "owner": {
-                "pubkey": "",
-                "info": ""
-            },
-            "title": "Pool Title such as Russia Ukraine War",
-            "description": "Paragraph/html markup for long pool description on site",
-            "briefDescription": "Text for short pool description on site",
-            "link": "",
-            "rewards": "",
-            "image": "",
-            "timestamp": ""
-        },
-        "walletPath": "",
-        "bundlrNode": "https://node2.bundlr.network",
-        "twitter": {
-            "userIds": [
-                
-            ]
-        },
-        "keywords": [
-            "keyword1",
-        ],
-        "twitterApiKeys": {
-            "consumer_key": "",
-            "consumer_secret": "",
-            "token": "",
-            "token_secret": "",
-            "bearer_token": ""
-        },
-        "clarifaiApiKey": "",
-        "topics": [
-            "history"
-        ],
-        "redditApiKeys": {
-            "username": "",
-            "password": "",
-            "appId": "",
-            "appSecret": ""
-        }
-    };
-
 
 export default command;

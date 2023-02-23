@@ -11,10 +11,8 @@ import {
     generateRedditAssetName, 
     log, 
     logValue, 
-    processMediaPath, 
-    processMediaURL,
-    getExtFromURL,
-    traverse
+    traverse,
+    uploadFile
 } from "../../../helpers/utils";
 import { CONTENT_TYPES, TAGS } from "../../../helpers/config";
 import { createAsset } from "../..";
@@ -29,26 +27,12 @@ export async function processPosts(poolClient: IPoolClient, args: {
 
     logValue(`Parent Count`, parentPosts.length.toString(), 0);
 
-    // let testPosts = [
-    //     // single image in post
-    //     {data: {id: "10owm4v"}},
-    //     // multi image in post and image comments
-    //     {data: {id: "10nwr7k"}},
-    //     // link in post
-    //     {data: {id: "10oeksi"}},
-    //     // video in top level post 
-    //     {Data: {id: "10ohfvf"}}
-    // ]
-
-    // iterPosts variable just for testing
     let iterPosts = parentPosts;
-    // let iterPosts = testPosts;
 
     for(let i = 0; i < iterPosts.length; i++){
         let url = `/comments/${iterPosts[i].data.id}?depth=50`;
         
         let postWithComments = await poolClient.reddit.get(url);
-        // fs.writeFileSync("reddit6.json", JSON.stringify(postWithComments));
         
         const isDup = await poolClient.arClient.isDuplicate({
             artifactName: generateRedditAssetName(postWithComments),
@@ -204,7 +188,12 @@ async function processMediaMetadata(
                 }
             }
 
-            let txId = await uploadFile(poolClient, args.mediaDir, url, args);
+            const subTags = [
+                { name: TAGS.keys.application, value: TAGS.values.application },
+                { name: TAGS.keys.redditPostId, value: `${args.post[0].data.id ?? "unknown"}` }
+            ];
+
+            let txId = await uploadFile(poolClient, args.mediaDir, url, {...{tags: subTags}, ...args});
 
             if(!txId) continue;
 
@@ -248,44 +237,14 @@ async function processPreview(poolClient: IPoolClient, args: {
                 }
             }
 
-            let txId = await uploadFile(poolClient, args.mediaDir, url, args);
+            const subTags = [
+                { name: TAGS.keys.application, value: TAGS.values.application },
+                { name: TAGS.keys.redditPostId, value: `${args.post[0].data.id ?? "unknown"}` }
+            ];
+
+            let txId = await uploadFile(poolClient, args.mediaDir, url, {...{tags: subTags}, ...args});
 
             imageList[i].source.url = "https://arweave.net/" + txId;
         }
     }
-}
-
-async function uploadFile(poolClient: IPoolClient, mediaDir: string, url: string, args: {
-    post: any,
-    tmpdir: any,
-    contentModeration: boolean
-}) {
-    try {
-        if (!await checkPath(mediaDir)) {
-            await mkdir(mediaDir);
-        }
-    
-        let randomFileIndex = Math.floor(Math.random() * 10000000000);
-        const ext = getExtFromURL(url);
-        let fullFilePath = path.join(mediaDir, `${randomFileIndex}.${ext}`);
-    
-        await processMediaURL(url, mediaDir, randomFileIndex);
-    
-        const subTags = [
-            { name: TAGS.keys.application, value: TAGS.values.application },
-            { name: TAGS.keys.redditPostId, value: `${args.post[0].data.id ?? "unknown"}` }
-        ]
-    
-        let txId = await processMediaPath(
-            poolClient, 
-            fullFilePath,
-            {subTags: subTags, tmpdir: args.tmpdir, path: "media"}
-        );
-    
-        return txId;
-    } catch(e: any) {
-        console.log(e);
-    }
-
-    return null;
 }

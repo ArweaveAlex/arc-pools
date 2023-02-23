@@ -1,7 +1,8 @@
 import * as twitter from "../artifacts/miners/twitter/miner";
 import * as wikipedia from "../artifacts/miners/wikipedia/miner";
 import * as reddit from "../artifacts/miners/reddit/miner";
-import * as webpage from "../artifacts/miners/webpage/miner";
+// import * as webpage from "../artifacts/miners/webpage/miner";
+import * as nostr from "../artifacts/miners/nostr/miner";
 
 import source from "../options/source";
 import method from "../options/method";
@@ -35,8 +36,11 @@ const command: CommandInterface = {
             case CLI_ARGS.sources.reddit.name:
                 await reddit.run(poolConfig, args.argv);
                 return;
-            case CLI_ARGS.sources.webpage.name:
-                await webpage.run(poolConfig, args.argv);
+            // case CLI_ARGS.sources.webpage.name:
+            //     await webpage.run(poolConfig, args.argv);
+            //     return;
+            case CLI_ARGS.sources.nostr.name:
+                await nostr.run(poolConfig, args.argv);
                 return;
             default:
                 exitProcess(`Source Not Found`, 1);

@@ -23,7 +23,6 @@ An arweave wallet is needed for creating a pool, create one and download the .js
 Usage: arcpool [commands] [options]
 
 Options                                                     Description
---clear                                                     Clear local search index for pool
 --content-moderation                                        Use content moderation on twitter mining
 --control-wallet <wallet file>                              Specifies a wallet to use in the pool creation
 --dname <string>                                            Specifies the daemon name to stop
@@ -31,7 +30,7 @@ Options                                                     Description
 --mention-tag <username>                                    Username for twitter or reddit with --method user
 --method <user / mention / subreddit / search>              Subcategory within source such as user
 --search-term <search term>                                 Search term to mine
---source <twitter / wikipedia / reddit>                     Specifies the data source
+--source <twitter / wikipedia / reddit / nostr>             Specifies the data source
 --subreddit <subreddit>                                     Subreddit to mine
 
 
@@ -176,7 +175,8 @@ __Run the client mine command from within the directory containing pools.json. I
 ###### Mine Reddit posts by username
 ```arcpool mine wildlife --source reddit --method user --username exampleusername```
 
-
+###### Mine common nostr threads for posts related to the keywords
+```arcpool mine <POOL_ID> --source nostr```
 
 ## Daemon mode mining
 

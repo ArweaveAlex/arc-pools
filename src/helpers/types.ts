@@ -6,7 +6,8 @@ import { Contract } from "warp-contracts";
 export enum ArtifactEnum {
     Messaging = "Alex-Messaging",
     Webpage = "Alex-Webpage",
-    Reddit = "Alex-Reddit-Thread"
+    Reddit = "Alex-Reddit-Thread",
+    Nostr = "Alex-Nostr-Event"
 }
 
 export type GQLResponseType = {
@@ -90,8 +91,17 @@ export type PoolConfigType = {
     twitterApiKeys: any,
     clarifaiApiKey: string,
     topics: string[],
-    redditApiKeys: any
+    redditApiKeys: any,
+    nostr: {
+        keys: {
+            public: string,
+            private: string 
+        },
+        relays: NostrRelayType[]
+    }
 }
+
+export type NostrRelayType = { socket: string }
 
 export type TagFilterType = { name: string, values: string[] }
 
