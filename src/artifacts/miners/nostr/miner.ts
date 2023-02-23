@@ -9,7 +9,7 @@ import { PoolClient } from "../../../clients/pool";
 import { IPoolClient, PoolConfigType } from "../../../helpers/types";
 import { exitProcess, log } from "../../../helpers/utils";
 
-import { genKeys, processEvent } from ".";
+import { processEvent } from ".";
 import { Nostr } from "./Nostr"
 
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
@@ -21,7 +21,7 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
 
   log("Mining nostr", 0);
 
-  await genKeys(poolClient, argv._[1]);
+  // await genKeys(poolClient, argv._[1]);
 
   await mineGlobalMessages(poolClient);
 
@@ -31,6 +31,7 @@ export async function mineGlobalMessages(poolClient: IPoolClient) {
   let nostr = Nostr;
   let globalMessages = new Set<string>();
   nostr.init();
+
   await new Promise(r => setTimeout(r, 5000));
 
   nostr.getMessagesByEveryone((messages: string[]) => {
@@ -47,10 +48,6 @@ export async function mineGlobalMessages(poolClient: IPoolClient) {
     let event = nostr.eventsById.get(eventId);
     globalMessages.delete(eventId);
 
-    console.log(event)
-
-    // if(!event) continue;
-
     let containsKeyword = false;
 
     for(let i=0; i<poolClient.poolConfig.keywords.length; i++) {
@@ -66,7 +63,7 @@ export async function mineGlobalMessages(poolClient: IPoolClient) {
     }
 
     if(!containsKeyword) {
-      console.log("Keyword not found");
+      nostr.latestNotesByEveryone.delete(eventId);
       continue;
     }
 
@@ -75,22 +72,20 @@ export async function mineGlobalMessages(poolClient: IPoolClient) {
     // we still want to process sync here so we wait for a certain amount 
     // of time compiling replies and then proceed. This wrapping is done
     // to make the async call to nostr.getRepliesAndLikes into sync for now
-    let [replies, likedBy, threadReplyCount]: [Set<String>, Set<String>, number] = await new Promise((resolve, reject) => {
+    let [replies, likedBy]: [Set<String>, Set<String>] = await new Promise((resolve, reject) => {
       let allReplies: Set<String> = new Set();
       let allLikedBy: Set<String> = new Set();
-      let allThreadReplyCount: number;
       let timeoutId: NodeJS.Timeout;
     
-      const callback = (repliesI: Set<string>, likedByI: Set<string>, threadReplyCountI: number) => {
+      const callback = (repliesI: Set<string>, likedByI: Set<string>, _threadReplyCountI: number) => {
         repliesI.forEach(r => allReplies.add(r));
         likedByI.forEach(l => allLikedBy.add(l));
-        allThreadReplyCount = threadReplyCountI;
     
         // Reset the timeout each time a callback is received
         // if nothing has been received in 2 seconds resolve the promise
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
-          resolve([allReplies, allLikedBy, allThreadReplyCount]);
+          resolve([allReplies, allLikedBy]);
         }, 2000);
       };
     
@@ -98,7 +93,7 @@ export async function mineGlobalMessages(poolClient: IPoolClient) {
     
       // Set the initial timeout, if no callbacks in this time, resolve
       timeoutId = setTimeout(() => {
-        resolve([allReplies, allLikedBy, allThreadReplyCount]);
+        resolve([allReplies, allLikedBy]);
       }, 4000);
     });
 
@@ -124,65 +119,64 @@ export async function mineGlobalMessages(poolClient: IPoolClient) {
 
     let eventWithProfile = {
       post: event,
-      profile: profile
+      profile: profile,
+      likes: likedBy
     };
 
-    console.log(eventWithProfile)
-
-    await processEvent(
+    processEvent(
       poolClient, 
       {
         event: eventWithProfile, 
-        associationId: event.id, 
-        associationSequence: "0", 
+        associationId: sortedReplies.length > 0 ? event.id : null, 
+        associationSequence: sortedReplies.length > 0 ? "0" : null, 
         contentModeration: false
       }
-    );
+    ).then(() => {});
 
     for(let i=0; i<sortedReplies.length; i++) {
       let id = sortedReplies[i].toString();
       let orderedEvent = nostr.eventsById.get(id);
 
       // subscribe to the profile event and wait until we get it back
-      let profileForOrderedEvent = await getProfile(event, nostr);
+      let profileForOrderedEvent = await getProfile(orderedEvent, nostr);
 
       let orderedEventWithProfile = {
-        post: event,
+        post: orderedEvent,
         profile: profileForOrderedEvent
       };
 
-      await processEvent(
+      processEvent(
         poolClient, 
         {
           event: orderedEventWithProfile, 
-          associationId: orderedEvent.id, 
-          associationSequence: (i + 1).toString(), 
+          associationId: sortedReplies.length > 0 ? event.id : null, 
+          associationSequence: sortedReplies.length > 0 ? (i + 1).toString() : null, 
           contentModeration: false
         }
-      );
+      ).then(() => {});
     }
-
   }
 }
 
+// TODO: fetch profile not working
 async function getProfile(event: any, nostr: any) {
   let profile = await new Promise((resolve, _reject) => {
-    if(nostr.profileEventByUser.has(event.pubkey)){
-      resolve(nostr.profileEventByUser.get(event.pubkey));
-    }
+    // if(nostr.profileEventByUser.has(event.pubkey)){
+    //   resolve(nostr.profileEventByUser.get(event.pubkey));
+    // }
 
-    const callback = () => {
-      console.log()
-      resolve(nostr.profileEventByUser.get(event.pubkey));
-    };
+    // const callback = (profile: any, address: string) => {
+    //   resolve(profile);
+    // };
 
-    console.log("lookin for prof")
-    nostr.getProfile(event.pubkey, callback);
-    setTimeout(() => {
-      console.log("could not find prof")
-      resolve(event.pubkey);
-    }, 4000);
+    // // console.log("looking for profile")
+    // nostr.getProfile(event.pubkey, callback);
+    // setTimeout(() => {
+    //   // console.log("could not find profile")
+    //   resolve(event.pubkey);
+    // }, 4000);
 
+    resolve(event.pubkey);
   });
 
   return profile;

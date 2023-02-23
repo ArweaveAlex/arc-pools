@@ -413,6 +413,7 @@ export const Nostr = {
 
           const existingEvent = this.profileEventByUser.get(event.pubkey);
           if (!existingEvent || existingEvent.created_at < event.created_at) {
+            //console.log("profile event" + event.pubkey + JSON.stringify(event));
             this.profileEventByUser.set(event.pubkey, event);
           }
           return true;

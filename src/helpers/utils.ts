@@ -122,7 +122,7 @@ export async function processMediaPath(poolClient: IPoolClient, f: string, args:
 export function generateAssetName(tweet: any) {
   if (tweet && (tweet.text || tweet.full_text)) {
     const tweetText = tweet.text ? tweet.text : tweet.full_text;
-    return `Username: ${removeEmojis(tweet.user.name)}, Tweet: ${modifyString(tweetText, (tweetText.length > 30 ? 30 : tweetText.length))}`;
+    return `${removeEmojis(tweet.user.name)}, ${modifyString(tweetText, (tweetText.length > 30 ? 30 : tweetText.length))}`;
   }
   else {
     return `Username: unknown`;
@@ -142,7 +142,7 @@ export const generateAssetDescription = (tweet: any) => {
 export function generateRedditAssetName(post: any) {
   let title = post[0].data.children[0].data.title;
   if(title) {
-    return `Reddit Post: ${modifyString(title, (title.length > 30 ? 30 : title.length))}`;
+    return `${modifyString(title, (title.length > 30 ? 30 : title.length))}`;
   } else {
     return `Reddit Post`;
   }
@@ -168,7 +168,7 @@ export function generateNostrAssetName(event: any) {
   let truncPubKey = modifyString(pubkey, (pubkey.length > 5 ? 5 : pubkey.length));
   let truncContent = modifyString(content, (content.length > 20 ? 20 : content.length));
   if(content){
-    return `Nostr Pubkey: ${truncPubKey} Nostr Event: ${truncContent}`;
+    return `${truncPubKey}, ${truncContent}`;
   } 
   return "Nostr event";
 }
@@ -176,7 +176,7 @@ export function generateNostrAssetName(event: any) {
 export function generateNostrAssetDescription(event: any) {
   let content = event.post.content;
   if(content){
-    return `Nostr event: ${modifyString(content, (content.length > 200 ? 200 : content.length))}`;
+    return `${modifyString(content, (content.length > 200 ? 200 : content.length))}`;
   } 
   return "Nostr event";
 }
@@ -184,14 +184,15 @@ export function generateNostrAssetDescription(event: any) {
 export function modifyString(str: string, num: number) {
   let finalStr: string = "";
   if (str.length > num) {
+    const chars = Array.from(str);
     for (let i = 0; i < num; i++) {
-      finalStr += Array.from(str)[i];
+      finalStr += chars[i];
     }
     return removeEmojis(`${finalStr} ...`).replace(/(\r\n|\r|\n)/g, " ");
-  }
-  else {
-    for (let i = 0; i < str.length; i++) {
-      finalStr += Array.from(str)[i];
+  } else {
+    const chars = Array.from(str);
+    for (let i = 0; i < chars.length; i++) {
+      finalStr += chars[i];
     }
     return removeEmojis(finalStr).replace(/(\r\n|\r|\n)/g, " ");
   }

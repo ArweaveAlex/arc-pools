@@ -47,19 +47,19 @@ export async function processEvent(poolClient: IPoolClient, args: {
     associationSequence: string,
     contentModeration: boolean
   }) {
-    // const isDup = await poolClient.arClient.isDuplicate({
-    //     artifactName: generateNostrAssetName(args.event),
-    //     poolId: poolClient.poolConfig.contracts.pool.id
-    // });
+    const isDup = await poolClient.arClient.isDuplicate({
+        artifactName: generateNostrAssetName(args.event),
+        poolId: poolClient.poolConfig.contracts.pool.id
+    });
 
-    // if(isDup){
-    //     log("Duplicate artifact skipping...", 0);
-    //     return;
-    // } 
+    if(isDup){
+        log("Duplicate artifact skipping...", 0);
+        return;
+    } 
     
     const tmpdir = await tmp.dir({ unsafeCleanup: true });
 
-    await processProfileImage(poolClient, {
+    let profileImage = await processProfileImage(poolClient, {
         event: args.event,
         tmpdir: tmpdir,
         contentModeration: args.contentModeration
@@ -81,7 +81,7 @@ export async function processEvent(poolClient: IPoolClient, args: {
         description: generateNostrAssetDescription(args.event),
         type: TAGS.values.ansTypes.socialPost,
         additionalMediaPaths: [],
-        profileImagePath: null,
+        profileImagePath: profileImage,
         associationId: args.associationId,
         associationSequence: args.associationSequence,
         childAssets: null,
@@ -99,7 +99,7 @@ async function processProfileImage(poolClient: IPoolClient, args: {
     contentModeration: boolean,
     tmpdir: any
 }) {
-    console.log(args.event.profile.picture)
+    if(!args.event.profile) return null;
     if(args.event.profile.picture){
         let r = Math.floor(Math.random() * (100000000 - 0 + 1)) + 0;
         const profileDir = path.join(args.tmpdir.path, "profile-" + r);
@@ -119,7 +119,11 @@ async function processProfileImage(poolClient: IPoolClient, args: {
         if(arweaveUrl) args.event.profile.picture = arweaveUrl;
 
         console.log(args.event.profile.picture);
+
+        return arweaveUrl;
     }
+
+    return null;
 }
 
 async function processMedia(poolClient: IPoolClient, args: {
