@@ -1,24 +1,22 @@
-import fs from "fs";
 import axios from "axios";
 import tmp from "tmp-promise";
 import * as path from "path";
-import mime from "mime-types";
 import { mkdir } from "fs/promises";
 
 import { PoolClient } from "../../../clients/pool";
 
 import {
   log,
-  walk,
   logValue,
   checkPath,
   processMediaURL,
   exitProcess,
   generateAssetName,
-  generateAssetDescription
+  generateAssetDescription,
+  processMediaPaths
 } from "../../../helpers/utils";
 import { createAsset } from "../..";
-import { TAGS, LOOKUP_PARAMS, CONTENT_TYPES } from "../../../helpers/config";
+import { TAGS, LOOKUP_PARAMS, CONTENT_TYPES, RENDER_WITH_VALUE } from "../../../helpers/config";
 import { ArtifactEnum, IPoolClient } from "../../../helpers/types";
 import { shouldUploadContent } from "../moderator";
 import { conversationEndpoint } from "../../../helpers/endpoints";
@@ -45,7 +43,7 @@ export async function processIdsV2(poolClient: IPoolClient, args: {
       })
     }
     else {
-      log(`Asset already mined: ${generateAssetName(tweets[i])}`, 1);
+     log(`Asset already mined: ${generateAssetName(tweets[i])}`, 1);
     }
   }
   logValue(`Total Count Mined`, totalCount, 0);
@@ -121,10 +119,15 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     tweet: args.tweet,
     tmpdir: tmpdir
   });
+
+  const subTags = [
+    { name: TAGS.keys.application, value: TAGS.values.application },
+    { name: TAGS.keys.tweetId, value: `${args.tweet.id ?? "unknown"}` }
+  ]
   
-  const profileImagePath = await processMediaPaths(poolClient, {
-    tweet: args.tweet,
-    tmpdir: tmpdir,
+  let profileImagePath = await processMediaPaths(poolClient, {
+    subTags: subTags, 
+    tmpdir: tmpdir, 
     path: "profile"
   });
 
@@ -135,7 +138,7 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
   });
 
   const additionalMediaPaths = await processMediaPaths(poolClient, {
-    tweet: args.tweet,
+    subTags: subTags,
     tmpdir: tmpdir,
     path: "media"
   });
@@ -158,6 +161,7 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
     associationId: args.associationId,
     associationSequence: args.associationSequence,
     childAssets: referencedTweets,
+    renderWith: RENDER_WITH_VALUE,
     assetId: args.tweet.id
   });
 
@@ -175,7 +179,6 @@ async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }
 
     try {
       logValue(`Fetching from API`, splitIds.length, 0);
-      await new Promise(r => setTimeout(r, 1000));
       const tweets = await poolClient.twitterV2.v2.tweets(splitIds, LOOKUP_PARAMS);
       if (tweets.data && tweets.data.length > 0) {
         for (let j = 0; j < tweets.data.length; j++) {
@@ -191,7 +194,7 @@ async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }
       }
       else {
         if (tweets.errors) {
-          for (let k = 0; k < tweets.errors.length; k++ ) {
+          for (let k = 0; k < tweets.errors.length; k++) {
             log(tweets.errors[k].detail, 1);
           }
         }
@@ -214,7 +217,6 @@ async function getThread(poolClient: IPoolClient, args: {
   let allTweets: any[] = [];
 
   do {
-    await new Promise(r => setTimeout(r, 1000));
     const response = await axios.get(conversationEndpoint(
       args.conversationId, 
       paginationToken
@@ -236,7 +238,7 @@ async function getThread(poolClient: IPoolClient, args: {
     }
   }
   while (paginationToken);
-  
+
   return allTweets;
 }
 
@@ -244,14 +246,14 @@ async function processReferences(poolClient: IPoolClient, args: {
   tweet: any,
   contentModeration: boolean,
   tmpdir: any
-})  {
+}) {
   const referencedTweets: any[] = []
   if (args.tweet && args.tweet.referenced_tweets) {
     for (let i = 0; i < args.tweet.referenced_tweets.length; i++) {
       if (args.tweet.referenced_tweets[i].type && args.tweet.referenced_tweets[i].type === "quoted") {
         logValue(`Reference`, args.tweet.referenced_tweets[i].id, 0);
         const fetchedTweets: any[] = await getTweetsfromIds(poolClient, { ids: [args.tweet.referenced_tweets[i].id] });
-        
+
         for (let j = 0; j < fetchedTweets.length; j++) {
           const contractId = await processTweetV2(poolClient, {
             tweet: fetchedTweets[j],
@@ -265,7 +267,7 @@ async function processReferences(poolClient: IPoolClient, args: {
       }
     }
   }
-  
+
   return referencedTweets;
 }
 
@@ -280,7 +282,12 @@ async function processProfileImage(args: {
   }
 
   if (args.tweet?.user?.profile_image_url) {
-    await processMediaURL(args.tweet.user.profile_image_url, profileDir, 0);
+    try {
+      await processMediaURL(args.tweet.user.profile_image_url, profileDir, 0);
+    }
+    catch (e) {
+      log(e, 1);
+    }
   }
 }
 
@@ -327,50 +334,6 @@ async function processMedia(poolClient: PoolClient, args: {
   }
 }
 
-async function processMediaPaths(poolClient: IPoolClient, args: {
-  tweet: any,
-  tmpdir: any,
-  path: string
-}) {
-  const subTags = [
-    { name: TAGS.keys.application, value: TAGS.values.application },
-    { name: TAGS.keys.tweetId, value: `${args.tweet.id ?? "unknown"}` }
-  ]
-  const additionalMediaPaths: { [key: string]: any } = {};
-  const dir = `${args.tmpdir.path}/${args.path}`;
-
-  if (await checkPath(dir)) {
-    for await (const f of walk(dir)) {
-      const relPath = path.relative(args.tmpdir.path, f)
-      try {
-        const mimeType = mime.contentType(mime.lookup(relPath) || CONTENT_TYPES.octetStream) as string;
-        const tx = poolClient.bundlr.createTransaction(
-          await fs.promises.readFile(path.resolve(f)),
-          { tags: [...subTags, { name: TAGS.keys.contentType, value: mimeType }] }
-        )
-        await tx.sign();
-        const id = tx.id;
-        const cost = await poolClient.bundlr.getPrice(tx.size);
-        fs.rmSync(path.resolve(f));
-        try {
-          await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
-        }
-        catch (e: any) {
-          log(`Error funding bundlr ...\n ${e}`, 1);
-        }
-        await tx.upload();
-        if (!id) exitProcess(`Upload Error`, 1);
-        additionalMediaPaths[relPath] = { id: id };
-      }
-      catch (e: any) {
-        fs.rmSync(path.resolve(f));
-        log(`Error uploading ${f} for ${args.tweet.id} - ${e}`, 1);
-      }
-    }
-  }
-
-  return additionalMediaPaths;
-}
 
 /**
  * Delete the stream rules before and after this run

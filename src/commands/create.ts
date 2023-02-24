@@ -34,12 +34,12 @@ const command: CommandInterface = {
         const POOLS_JSON = JSON.parse(fs.readFileSync(poolPath).toString());
         
         const poolArg = args.commandValues[0];
-        console.log(`Pool JSON Key ${poolArg}`);
         
-        console.log(`Generating Wallet ...`)
-        let walletInfo = await createWallet(poolArg);
+        const walletInfo = await createWallet(poolArg);
+
         POOLS_JSON[poolArg].state.owner.pubkey = walletInfo.address;
         POOLS_JSON[poolArg].walletPath = walletInfo.file;
+        
         logJsonUpdate(poolConfig.state.title, `state.owner.pubkey`, walletInfo.address);
         logJsonUpdate(poolConfig.state.title, `walletPath`, walletInfo.file);
 

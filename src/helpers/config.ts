@@ -41,7 +41,9 @@ export const CLI_ARGS = {
         controlWallet: "control-wallet",
         contentModeration: "content-moderation",
         image: "image",
-        clear: "clear"
+        clear: "clear",
+        subreddit: "subreddit",
+        searchTerm: "search-term"
     },
     sources: {
         twitter: {
@@ -55,8 +57,25 @@ export const CLI_ARGS = {
         wikipedia: {
             name: "wikipedia"
         },
+        reddit: {
+            name: "reddit",
+            methods: {
+                subreddit: "subreddit",
+                user: "user",
+                posts: "posts",
+                search: "search"
+            }
+        },
+        webpage: {
+            name: "webpage"
+        },
+        nostr: {
+            name: "nostr"
+        }
     }
 }
+
+export const RENDER_WITH_VALUE = "alex-renderers";
 
 export const TAGS = {
     keys: {
@@ -80,12 +99,15 @@ export const TAGS = {
         initState: "Init-State",
         keywords: "Keywords",
         mediaIds: "Media-Ids",
+        renderWith: "Render-With",
         poolId: "Pool-Id",
         poolName: "Pool-Name",
         profileImage: "Profile-Image",
         title: "Title",
         topic: (topic: string) => `Topic:${topic}`,
         tweetId: "Tweet-ID",
+        redditPostId: "Reddit-Post-ID",
+        nostrEventId: "Nostr-Event-ID",
         type: "Type",
         uploaderTxId: "Uploader-Tx-Id",
     },
@@ -260,3 +282,82 @@ export const INDECES_DIR = "/indeces/";
 export const FINAL_INDEX_FILE_NAME = "/finalindex";
 
 export const REDSTONE_PAGE_LIMIT = 5000;
+
+export const DEFAULT_NOSTR_RELAYS = [
+   {socket: "wss://relay.damus.io"},
+   {socket: "wss://nos.lol"},
+   {socket: "wss://nostr.relayer.se"},
+   {socket: "wss://relay.current.fyi"},
+   {socket: "wss://nostr.bitcoiner.social"},
+   {socket: "wss://relay.nostr.info"},
+   {socket: "wss://nostr.fmt.wiz.biz"}
+];
+
+export const RELAY_OVERHEAD_LIMIT = 1000;
+export const RELAY_QUEUE_PROC_SIZE = 10;
+
+export const DEFAULT_POOLS_JSON = 
+     {
+        "appType": "Alex-Archiving-Pool-v1.4", 
+        "contracts": {
+            "nft": {
+                "id": "",
+                "src": ""
+            },
+            "pool": {
+                "id": "",
+                "src": ""
+            },
+            "poolSearchIndex": {
+                "id": "",
+                "src": ""
+            }
+        },
+        "state": {
+            "owner": {
+                "pubkey": "",
+                "info": ""
+            },
+            "title": "Pool Title such as Russia Ukraine War",
+            "description": "Paragraph/html markup for long pool description on site",
+            "briefDescription": "Text for short pool description on site",
+            "link": "",
+            "rewards": "",
+            "image": "",
+            "timestamp": ""
+        },
+        "walletPath": "",
+        "bundlrNode": "https://node2.bundlr.network",
+        "twitter": {
+            "userIds": [
+                
+            ]
+        },
+        "keywords": [
+            "keyword1",
+        ],
+        "twitterApiKeys": {
+            "consumer_key": "",
+            "consumer_secret": "",
+            "token": "",
+            "token_secret": "",
+            "bearer_token": ""
+        },
+        "clarifaiApiKey": "",
+        "topics": [
+            "history"
+        ],
+        "redditApiKeys": {
+            "username": "",
+            "password": "",
+            "appId": "",
+            "appSecret": ""
+        },
+        "nostr": {
+            "keys": {
+                "public": "",
+                "private": "" 
+            },
+            "relays": DEFAULT_NOSTR_RELAYS
+        }
+};

@@ -1,10 +1,14 @@
 import * as fs from "fs";
-import * as p from "path";
+import path, * as p from "path";
 import axios from "axios";
 import clc from "cli-color";
+import mime from "mime-types";
+import { mkdir } from "fs/promises";
 
-import { STORAGE } from "./config";
-import { KeyValueType } from "./types";
+var crypto = require("crypto");
+
+import { STORAGE, CONTENT_TYPES, TAGS, POOL_FILE } from "./config";
+import { IPoolClient, KeyValueType, PoolConfigType } from "./types";
 
 export function getTagValue(list: KeyValueType[], name: string): string {
   for (let i = 0; i < list.length; i++) {
@@ -35,14 +39,19 @@ export async function* walk(dir: string): any {
   }
 }
 
+export function getExtFromURL(url: string) {
+  const ext = url?.split("/")?.at(-1)?.split(".")?.at(1)?.split("?").at(0) ?? "unknown";
+  return ext;
+}
+
 export async function processMediaURL(url: string, dir: string, i: number) {
   return new Promise(async (resolve, reject) => {
-    const ext = url?.split("/")?.at(-1)?.split(".")?.at(1)?.split("?").at(0) ?? "unknown"
-    const wstream = fs.createWriteStream(p.join(dir, `${i}.${ext}`))
+    const ext = getExtFromURL(url);
+    const wstream = fs.createWriteStream(p.join(dir, `${i}.${ext}`));
     const res = await axios.get(url, {
       responseType: "stream"
     }).catch((e) => {
-      log(`Getting ${url} - ${e.message}`, null);
+      log(`Getting ${url} - ${e.message}`, 1);
     })
     if (!res) { return }
     await res.data.pipe(wstream)
@@ -55,10 +64,65 @@ export async function processMediaURL(url: string, dir: string, i: number) {
   })
 }
 
+export async function processMediaPaths(poolClient: IPoolClient, args: {
+  subTags: any,
+  tmpdir: any,
+  path: string
+}) {
+
+  const additionalMediaPaths: { [key: string]: any } = {};
+  const dir = `${args.tmpdir.path}/${args.path}`;
+  
+  if (await checkPath(dir)) {
+    for await (const f of walk(dir)) {
+      const relPath = path.relative(args.tmpdir.path, f)
+      try {
+        let id = await processMediaPath(
+          poolClient,
+          f,
+          args
+        );
+        additionalMediaPaths[relPath] = { id: id };
+      }
+      catch (e: any) {
+        fs.rmSync(path.resolve(f));
+        log(`Error uploading ${f} for ${JSON.stringify(args)} - ${e}`, 1);
+      }
+    }
+  }
+
+  return additionalMediaPaths;
+}
+
+export async function processMediaPath(poolClient: IPoolClient, f: string, args: {
+  subTags: any,
+  tmpdir: any,
+  path: string
+}) {
+  const mimeType = mime.contentType(mime.lookup(f) || CONTENT_TYPES.octetStream) as string;
+  const tx = poolClient.bundlr.createTransaction(
+    await fs.promises.readFile(path.resolve(f)),
+    { tags: [...args.subTags, { name: TAGS.keys.contentType, value: mimeType }] }
+  )
+  await tx.sign();
+  const id = tx.id;
+  const cost = await poolClient.bundlr.getPrice(tx.size);
+  fs.rmSync(path.resolve(f));
+  try {
+    await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
+  }
+  catch (e: any) {
+    log(`Error funding bundlr ...\n ${e}`, 1);
+  }
+  await tx.upload();
+  if (!id) exitProcess(`Upload Error`, 1);
+  return id;
+}
+
 export function generateAssetName(tweet: any) {
   if (tweet && (tweet.text || tweet.full_text)) {
     const tweetText = tweet.text ? tweet.text : tweet.full_text;
-    return `Username: ${removeEmojis(tweet.user.name)}, Tweet: ${modifyString(tweetText, (tweetText.length > 30 ? 30 : tweetText.length))}`;
+    return `${removeEmojis(tweet.user.name)}, ${modifyString(tweetText, (tweetText.length > 30 ? 30 : tweetText.length))}`;
   }
   else {
     return `Username: unknown`;
@@ -75,17 +139,60 @@ export const generateAssetDescription = (tweet: any) => {
   }
 }
 
+export function generateRedditAssetName(post: any) {
+  let title = post[0].data.children[0].data.title;
+  if(title) {
+    return `${modifyString(title, (title.length > 30 ? 30 : title.length))}`;
+  } else {
+    return `Reddit Post`;
+  }
+}
+
+export const generateRedditAssetDescription = (post: any) => {
+  let selftext = post[0].data.children[0].data.selftext;
+  let title = post[0].data.children[0].data.title;
+  if(selftext){
+    return `${modifyString(selftext, (selftext.length > 200 ? 200 : selftext.length))}`;
+  } else {
+    if(title) {
+      return `${title}`;
+    } else {
+      return "Reddit post"
+    }
+  }
+}
+
+export function generateNostrAssetName(event: any) {
+  let content = event.post.content;
+  let pubkey = event.post.pubkey;
+  let truncPubKey = modifyString(pubkey, (pubkey.length > 5 ? 5 : pubkey.length));
+  let truncContent = modifyString(content, (content.length > 20 ? 20 : content.length));
+  if(content){
+    return `${truncPubKey}, ${truncContent}`;
+  } 
+  return "Nostr event";
+}
+
+export function generateNostrAssetDescription(event: any) {
+  let content = event.post.content;
+  if(content){
+    return `${modifyString(content, (content.length > 200 ? 200 : content.length))}`;
+  } 
+  return "Nostr event";
+}
+
 export function modifyString(str: string, num: number) {
   let finalStr: string = "";
   if (str.length > num) {
+    const chars = Array.from(str);
     for (let i = 0; i < num; i++) {
-      finalStr += Array.from(str)[i];
+      finalStr += chars[i];
     }
     return removeEmojis(`${finalStr} ...`).replace(/(\r\n|\r|\n)/g, " ");
-  }
-  else {
-    for (let i = 0; i < str.length; i++) {
-      finalStr += Array.from(str)[i];
+  } else {
+    const chars = Array.from(str);
+    for (let i = 0; i < chars.length; i++) {
+      finalStr += chars[i];
     }
     return removeEmojis(finalStr).replace(/(\r\n|\r|\n)/g, " ");
   }
@@ -122,4 +229,64 @@ export function logJsonUpdate(poolTitle: string, key: string, value: string): vo
 export function exitProcess(message: string, status: 0 | 1): void {
   console.log(status === 0 ? clc.green(message) : clc.red(message));
   process.exit(status);
+}
+
+export async function traverse(callBackFields: string[], obj: any, callBack: any) {
+  for (let key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      if(callBackFields.includes(key)){
+          await callBack(obj[key], key);
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+          await traverse(callBackFields, obj[key], callBack);
+      } 
+    }
+  }
+}
+
+export function prettyPrint(obj: any){
+  return JSON.stringify(obj, null, 4);
+}
+
+export function saveConfig(config: PoolConfigType, poolLabel: string){
+  const pools_obj = JSON.parse(fs.readFileSync(POOL_FILE).toString());
+  pools_obj[poolLabel] = config;
+  fs.writeFileSync(POOL_FILE, prettyPrint(pools_obj));
+};
+
+export async function uploadFile(poolClient: IPoolClient, mediaDir: string, url: string, args: {
+  tmpdir: any,
+  tags: any[]
+}) {
+  try {
+      if (!await checkPath(mediaDir)) {
+          await mkdir(mediaDir);
+      }
+  
+      let randomFileIndex = Math.floor(Math.random() * 10000000000);
+      const ext = getExtFromURL(url);
+      let fullFilePath = path.join(mediaDir, `${randomFileIndex}.${ext}`);
+  
+      await processMediaURL(url, mediaDir, randomFileIndex);
+
+  
+      let txId = await processMediaPath(
+          poolClient, 
+          fullFilePath,
+          {subTags: args.tags, tmpdir: args.tmpdir, path: "media"}
+      );
+  
+      return txId;
+  } catch(e: any) {
+      console.log(e);
+  }
+
+  return null;
+}
+
+export function sha256Object(obj: any) {
+  var serializedObj = JSON.stringify(obj);
+  var hash = crypto.createHash("sha256");
+  hash.update(serializedObj);
+  var eventId = hash.digest("hex");
+  return eventId;
 }

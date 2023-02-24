@@ -1,6 +1,6 @@
 {
     "name": "arcpool",
-    "version": "1.3.6",
+    "version": "1.4.8",
     "main": "./bin/index.js",
     "repository": "https://github.com/ArweaveAlex/arc-pools.git",
     "author": "NickJ202",
@@ -13,9 +13,12 @@
     },
     "dependencies": {
         "@bundlr-network/client": "0.9.6",
+        "@noble/hashes": "^1.1.5",
+        "@scure/bip32": "^1.1.5",
         "@types/fs-extra": "^8.1.0",
-        "arweave": "1.11.6",
+        "arweave": "1.12.4",
         "axios": "^0.26.1",
+        "bech32-buffer": "^0.2.1",
         "bip39-web-crypto": "^4.0.1",
         "clarifai-nodejs-grpc": "^8.0.0",
         "cli-color": "^2.0.3",
@@ -32,9 +35,11 @@
         "minimist": "^1.2.7",
         "node-tweet-stream": "^2.1.0",
         "pm2": "^5.2.2",
+        "reddit": "^1.2.1",
         "ts-node": "^10.9.1",
         "twitter-api-v2": "^1.12.0",
-        "warp-contracts": "1.2.39",
+        "warp-contracts": "1.2.51",
+        "websocket-polyfill": "^0.0.3",
         "wikijs": "^6.3.3"
     },
     "devDependencies": {
