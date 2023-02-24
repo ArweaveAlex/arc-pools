@@ -56,7 +56,7 @@ Options                                                     Description
 --mention-tag <username>                                    Username for twitter or reddit with --method user
 --method <user / mention / subreddit / search>              Subcategory within source such as user
 --search-term <search term>                                 Search term to mine
---source <twitter / wikipedia / reddit>                     Specifies the data source
+--source <twitter / wikipedia / reddit / nostr>                     Specifies the data source
 --subreddit <subreddit>                                     Subreddit to mine
 
 
