@@ -2,66 +2,118 @@
 
 [Alex](https://alex.arweave.dev). is a decentralized archival platform that leverages the immutable and permanent data storage of Arweave and includes a mechanism that encourages end user participation.
 
-Users contribute to pools and they receive “artifacts” back into their wallet as they are minted. Artifacts are NFTs of items the pool is storing. Since the artifacts are stored on Arweave, they cannot be changed or removed in any way by anyone.
+Users contribute to pools and they receive “artifacts” back into their wallet as they are minted. Artifacts are NFTs of items that the pool is storing. Since the artifacts are stored on Arweave, they cannot be changed or removed in any way by anyone.
 
 This repository is the client tool for creating the pools and mining artifacts.
 
+## Table of Contents
+  - [How it works](#how-it-works)
+  - [Requirements](#requirements)
+  - [Installing Alex. CLI](#installing-alex-cli)
+  - [Configuring a pool](#configuring-a-pool)
+  - [Creating a pool](#creating-a-pool)
+  - [Funding a pool wallet](#funding-a-pool-wallet)
+  - [Mining artifacts](#mining-artifacts)
+  - [Daemon mode mining](#daemon-mode-mining)
+
+## How it works
+
+### Pool Operator
+
+Anyone can create a pool with Alex. for any given topic/event. An operator creates a pool and mines artifacts into it. These artifacts are deployed as assets to Arweave and distributed to the contributors based on the amount of $AR contributed. These artifacts are in the form of a tweet, Wikipedia page, Reddit post, and Nostr posts and as they are processed they get randomly transferred to a contributor's wallet.
+
+### Pool Contributor
+
+Users contribute to pools and they receive “artifacts” in their wallet as they are mined. The more a user contributes to any given collection, the higher the chances are of receiving these artifacts.
 
 ## Requirements
-`arcpool` requires NodeJS/NPM and Git installed. 
+`arcpool` requires NodeJS (v18+)/NPM and Git installed.
 [NodeJS](https://nodejs.org/en/download/)
 [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
-An arweave wallet is needed for creating a pool, create one and download the .json wallet file. 
-[Arweave Wallet](https://docs.arweave.org/info/wallets/arweave-wallet)
-[ArConnect](https://arconnect.io)
+An Arweave web wallet with a small amount of $AR on it is needed to deploy your pool. You can get one here:
+
+*   [Arweave Wallet](https://docs.arweave.org/info/wallets/arweave-wallet)
+*   [ArConnect](https://arconnect.io)
+*   [Arweave faucet wallet](https://faucet.arweave.net) (0.2 $AR loaded if your Twitter account is approved)
 
 ## Installing Alex. CLI
-```npm install --global arcpool```
+To install arcpool run `npm install --global arcpool` in your terminal.
+
+```sh 
+npm install --global arcpool
+```
 
 ```
 Usage: arcpool [commands] [options]
 
-Options                                 Description
---clear                                 Clear local search index for pool
---content-moderation                    Use content moderation on twitter mining
---control-wallet <wallet file>          Specifies a wallet to use in the pool creation
---dname <string>                        Specifies the daemon name to stop
---image <path to image file>            Specifies an image to use for pool
---mention-tag <twitter username>        Username for twitter with --method user (do not include @ or #)
---method <user or mention>              Used to pull user or mentions for twitter
---source <twitter or wikipedia>         Specifies the data source
+Options                                                     Description
+--clear                                                     Clear local search index for pool
+--content-moderation                                        Use content moderation on twitter mining
+--control-wallet <wallet file>                              Specifies a wallet to use in the pool creation
+--dname <string>                                            Specifies the daemon name to stop
+--image <path to image file>                                Specifies an image to use for pool
+--mention-tag <username>                                    Username for twitter or reddit with --method user
+--method <user / mention / subreddit / search>              Subcategory within source such as user
+--search-term <search term>                                 Search term to mine
+--source <twitter / wikipedia / reddit>                     Specifies the data source
+--subreddit <subreddit>                                     Subreddit to mine
 
 
-Commands                                Description
-balance <pool id>                       Check the Bundlr and Arweave balance for the pool wallet
-create <pool id>                        Create a pool using pools.json
-dlist                                   list all daemon mining processes
-dstop <daemon name>                     Stop a daemon mining process by name
-fetch <pool id>                         Fetch pool artifacts for search
-fund <pool id>                          Fun the bundlr wallet for a pool
-help                                    Display help text
-init <pool id>                          Initialize pools.json
-mine <pool id>                          Mine artifacts for a given pool
-sindex <pool id>                        Index artifacts for search
+Commands                                                    Description
+balance <pool id>                                           Check the Bundlr and Arweave balance for the pool wallet
+create <pool id>                                            Create a pool using pools.json
+dlist                                                       list all daemon mining processes
+dstop <daemon name>                                         Stop a daemon mining process by name
+fund <pool id>                                              Fun the bundlr wallet for a pool
+help                                                        Display help text
+init <pool id>                                              Initialize pools.json
+mine <pool id>                                              Mine artifacts for a given pool
 ```
 
 
-## Creating pool
+## Configuring a pool
 Create a directory for the pool configurations and wallets. Name the directory anything you want.
 
-```mkdir alexfiles```
-Change into the directory you created
-```cd alexfiles```
+To create a pool you must do the following steps:
+1. Initiate the pool
+2. Configure the pool
+3. Connect wallet client and create pool 
 
-Next, create a pools.json file using the `arcpool init` command. You will edit this file and it will also be modified by the client so do not delete it after running the create and mine commands, unless you need to start over. Run the init command with a POOL_ID of your choosing, containing no spaces. Here is an example -
+### Initiate the pool
 
-In this guide POOL_ID refers to a string of your choosing which will identify the pool locally for the client. It will not show up on alex it will just be used in cli commands to identify which pool you are working with. This can be changed at any time in pools.json.
+In the terminal you will create a directory for pool configurations and wallets.
 
-```arcpool init POOL_ID```
-
-A pools.json file will be generated looking similar to the one below
+1. Create directory
+```sh
+mkdir {DIRECTORY_NAME}
 ```
+2. Change into the directory that you created 
+```sh 
+cd {DIRECTORY_NAME}
+```
+3.  Create a ```pools.json``` file. 
+```sh
+arcpool init {POOL_ID}
+``` 
+
+>- {POOL_ID} refers to a string of your choosing which will identify the pool locally for the client. 
+>- This string is only used in CLI commands to identify which pool you are working with and this will not be visible on Alex.
+>- You will edit this ```pools.json``` file and it will also be modified by the client so do not delete it after running the <strong>create </strong> and <strong>mine</strong> commands, unless you need to start over.
+
+
+### Example: 
+
+```
+mkdir alex-test
+cd alex-test
+arcpool init test-alex
+```
+
+### Edit the pool.json configuration
+
+Below is the ```pools.json``` file that has been initiated that now needs to be configured.
+```json
 {
     "POOL_ID": {
         "appType": "Alex-Archiving-Pool-v1.4",
@@ -103,106 +155,193 @@ A pools.json file will be generated looking similar to the one below
         "clarifaiApiKey": "",
         "topics": [
             "history"
-        ]
+        ],
+        "redditApiKeys":{
+            "username": "",
+            "password": "",
+            "appId": "",
+            "appSecret": ""
+        }
     }
 }
 ```
+Configure the `pools.json` file to generate your pool. 
 
-__Modify the pools.json file to generate your pool.__ Modify the following configs - 
-1. `state.title` is the title of your pool on the [Home Page](https://alex.arweave.dev) of Alex.
-2. `state.description` is a long description of your pool on the [Pool Detail](https://alex.arweave.dev/#/pool/zIZXNTl-GtTDbO8eP8LpkHks5S5WhB4j82YX-N2RuGw) page of Alex. It can contain Text and/or HTML.
-3. `state.briefDescription` is a brief description of your pool on the [Home Page](https://alex.arweave.dev) of Alex.
-4. `keywords` is a list of the main keywords to track in the mining process. This is the core driving data that instructs the mining programs of what to pull from mining sources such as Twitter and Wikipedia.
-5. `twitterApiKeys` is for mining from Twitter. [Get twitter API credentials](https://developer.twitter.com/en/docs/authentication/oauth-1-0a/api-key-and-secret#:~:text=Navigate%20to%20the%20developer%20portal,the%20Keys%20and%20tokens%20tab) and enter them into `twitterApiKeys`, get elevated access from twitter for better mining this is not mandatory though. consumer_key and consumer_secret are also referred to as API key and Secret in the twitter developer platform. token and token_secret are also referred to as Access Token and Access Token Secret in the twitter developer platform. bearer_token is referred to as Bearer Token in the twitter developer platform. You can skip putting these keys in pools.json if you don't plan to mine twitter, you can also add them later.
-6. `clarifaiApiKey` if you plan to use content moderation on tweets in the mining process, you can get an api key from [Clarifai](https://www.clarifai.com/) and put it here. This will filter out explicit content from being mined into the pool. This is a bit expensive and unecessary in most situations but if you are finding a lot of explicit content in the pool it may be of value to you.
-7. `topics` A list of more general topics the pool fits into these generate ANS110 Topic tags in the data. Examples: history, funny, humor, science.
+- `state.title` is the title of your pool on the [Home Page](https://alex.arweave.dev) of Alex.
+- `state.description` is a long description of your pool on the [Pool Detail](https://alex.arweave.dev/#/pool/zIZXNTl-GtTDbO8eP8LpkHks5S5WhB4j82YX-N2RuGw) page of Alex., under the About header. It can contain Text and/or HTML.
+- `state.briefDescription` is a brief description of your pool on the [Home Page](https://alex.arweave.dev) of Alex.
+- `keywords` is a list of the main keywords to track in the mining process. This is the core driving data that instructs the mining programs of what to pull from mining sources such as Twitter, Wikipedia, Reddit, or Nostr
+- `topics` A list of more general topics the pool fits into these generate ANS110 Topic tags in the data. Examples: history, funny, humor, science.
 
-__Lastly run the client from within the directory containing pools.json.__
+### Configure Twitter API Keys 
 
-###### ***note: do not include < > in your command when you run it, these are here to represent values specific to you.
-```arcpool create <POOL_ID> --control-wallet <PATH_TO_WALLET.json> --image <PATH_TO_IMAGE>```
+- Get Twitter API credentials [here](https://developer.twitter.com/en/docs/authentication/oauth-1-0a/api-key-and-secret#:~:text=Navigate%20to%20the%20developer%20portal,the%20Keys%20and%20tokens%20tab). (Get elevated access for better mining, but not mandatory)
+- Enter credentials into `twitterApiKeys`
+  - `consumer_key` = **API key** in the Twitter developer platform
+  - `consumer_secret` = **Secret** in the Twitter developer platform
+  - `token` = **Access Token** in the Twitter developer platform
+  - `token_secret` = **Access Token Secret** in the Twitter developer platform
+  - `bearer_token` =  **Bearer Token**  in the Twitter developer platform
+  - `clarifaiApiKey` if you plan to use content moderation on tweets in the mining process, you can get an api key from [Clarifai](https://www.clarifai.com/) and put it here. This will filter out explicit content from being mined into the pool. This is a bit expensive and unecessary in most situations but if you are finding a lot of explicit content in the pool it may be of value to you.
 
-__Example:__
+### Configure Reddit API Keys 
+- `redditApiKeys` login or create a Reddit account and then get API access [here](https://www.reddit.com/prefs/apps)  
+- Use `username` and `password` from Reddit 
+- Insert `appId` and `appSecret` recieved from Reddit
 
-```arcpool create russia-ukraine-test --control-wallet wallet.json --image background.jpg```
+## Creating a pool
 
-If the transaction is successful, you will see a new wallet in a `wallets` directory, you should also have been given a seed phrase. __KEEP THE WALLET FILE SAFE. IT IS FOR YOUR POOLS CONTRIBUTION AND MINING PROCESS. ALSO WRITE DOWN THE SEED PHRASE__ Visit https://alex.arweave.dev/#/pools to view your new pool, it may take some time to show up.
+To create a pool you only need to run 1 command with a few arguments passed in, including the name from when you initialized the pool, path to wallet you created and saved from the steps in [Requirements](#Requirements), along with a path to your pools header image.
 
-__To add another pool, follow the same steps as above in the same directory with the pools.json__
+```sh 
+arcpool create <POOL_NAME> --control-wallet <PATH_TO_WALLET.json> --image <PATH_TO_IMAGE>
+``` 
+  
+For example: 
+```sh
+arcpool create init-test-alex --control-wallet ../wallet.json --image ../pool-image.jpg
+```
 
-## Mining artifacts into a pool
+Take note of the line at the top of the logs for your pool wallets seed phrase. Inside your working directory should be a `wallets` directory. This is where your pool collection wallet is stored and should be kept safe, along with the seed phrase logged by the CLI. Write down your seed phrase.
 
-__The mining process will not run without funds in the pool wallet. In this case, go to [Alex](https://alex.arweave.dev) and contribute to your pool, wait for these funds to show in the pool wallet before proceeding.__ The pool wallet can be found in the wallets directory in the directory where you run arcpool. Check the pool via the sonar link provided at creation to see if the state has updated with the contribution.
+**Do not give this to anyone. Without this you have no way to recover your wallet should anything happen.**
 
-__After contribution funds have come through, we need to fund bundlr from the pool wallet as the final step, run the arcpool fund command, then wait 20-30 minutes for the funds to come through. Check with arcpool balance, once it shows bundlr funds proceed with mining__
+    *** Write the following seed phrase down ***
+    
+     this will be your pool wallet seed phrase do not give out
+     
+    *** THERE IS NO WAY TO RECOVER YOUR SEED PHRASE SO WRITE IT DOWN AND KEEP IT OUT OF OTHERS HANDS ***
+    
 
-###### Fund bundlr from the pool wallet
-###### (Note: This command will use half of the contribution amount to fund bundlr, this is the only time you need to run this command as the mining process will continually fund bundlr moving forward)
-```arcpool fund <POOL_ID>```
+If your pool has been successfully created, you can now navigate to [https://alex.arweave.dev/#/pools](https://alex.arweave.dev/#/pools) and view your new pool.
 
-###### Check the bundlr funds on the wallet
-```arcpool balance <POOL_ID>```
+To add another pool, follow the same steps as above in the same directory with the `pools.json`
 
-__Run the client mine command from within the directory containing pools.json. It can be run with different options:__
+## Funding a pool wallet
 
-###### Mine tweets into the pool
-```arcpool mine <POOL_ID> --source twitter```
+Before we start to mine artifacts, we will need contributions. This can be a small amount to get started just to trigger the CLI to start transferring your funds to your pools Bundlr instance. We will only need to do this once and as more contributions are made it will be updated automatically as we run the mining service.
 
-###### Mine tweets into the pool and use content moderation to filter explicit content, you must have clarifaiApiKey configured in pools.json to run this. 
-```arcpool mine <POOL_ID> --source twitter --content-moderation```
+Find and navigate to your pool in [https://alex.arweave.dev/#/pools](https://alex.arweave.dev/#/pools) and click the contribute button. Contribute a small amount of $AR to your collection and wait for that contribution to display in the UI. Once that has registered the funds to the pool, go back to your terminal and run:
 
-###### Mine all tweets where users commented/quoted on twitter with "@thealexarchive #ukraine", this --mention-tag value can be whatever you want, mention tags must be in double quotes.
-```arcpool mine <POOL_ID> --source twitter --method mention --mention-tag "@thealexarchive #ukraine"```
+```sh
+arcpool fund POOL_NAME
+```
 
-###### Mine all tweets ever from a particular user for example user @SBF_FTX
-```arcpool mine <POOL_ID> --source twitter --method user --username @SBF_FTX```
+For example:
 
-###### Mine a single wikipedia article related to the given keywords in config
-```arcpool mine <POOL_ID> --source wikipedia```
+![](https://arweave.net/i5plrxbqSoSTMt0jL5LhZAND4CjUohRkSDjIezXaOZc)
 
+Please note that funding a Bundlr instance can take up to 30 minutes. To check the status of the funding you can use the command: 
 
+```sh
+arcpool balance POOL_NAME
+```
+
+![](https://arweave.net/BNHao7jhk061DOv9XErm5jcdOUUsB0UgNvmLXLJZEF8)
+
+Once we see that we have Bundlr funds we can proceed to the mining process.
+
+## Mining artifacts
+
+> **Before Mining:** double check the `keywords` in the `pools.json` to prevent unwanted artifacts in your pool.
+
+The mining process can begin in the directory containing the `pools.json` by running these commands.
+
+### Twitter
+
+**Mine tweets (runs 100 tweets at a time)**
+
+```sh
+arcpool mine POOL_NAME --source twitter
+```
+
+**Mine all tweets based on user and tag** 
+
+For example: mine all tweets with  "@thealexarchive #TOPIC"
+
+```sh
+arcpool mine POOL_NAME --source twitter --method mention --mention-tag "@thealexarchive #TOPIC"
+```
+
+**Mine all tweets ever from a particular user** 
+
+For example: mine all tweets from SBF\_FTX 
+- Do not include the @ in the **--username value**
+
+```sh
+arcpool mine POOL_NAME --source twitter --method user --username SBF_FTX
+```
+
+### Wikipedia
+
+**Mine a single Wikipedia article related to the given `keywords` in config**
+
+```sh 
+arcpool mine POOL_NAME --source wikipedia
+```
+
+### Reddit
+
+**Mine Reddit posts by search term**
+```sh 
+arcpool mine wildlife --source reddit --method search --search-term america
+```
+
+**Mine Reddit posts by subreddit**
+```sh
+arcpool mine wildlife --source reddit --method subreddit --subreddit webdev
+```
+
+**Mine Reddit posts by username**
+```sh
+arcpool mine wildlife --source reddit --method user --username exampleusername
+```
+
+### Nostr
+**Mine common Nostr threads for posts related to the keywords**
+
+```sh
+arcpool mine <POOL_ID> --source nostr
+```
+
+## Checking mining process
+
+After a few minutes of mining we can navigate back to our collection at Alex. and see that our collection count is growing and contributors are having artifacts minted to their addresses as expected. ![](https://arweave.net/5ba8fVrTZZYFSc4hCVM2lf0wTwfad7n0FKZfnqSBHbM)
 
 ## Daemon mode mining
 
-__The mining commands run either a finite process or in the foreground.__ If we wish to run these forever use daemon mode by passing the `--d` flag to any of the above mining commands. Daemon mode is built on top of pm2.
+If you wish to continually run a mining process, use daemon mode by passing the `--d` flag to any of the above mining commands. Daemon mode is built on top of pm2.
 
-###### Mine tweets into the pool, daemon mode will continue restarting the program infinetly if it shuts down. Note the `--d` flag.
+#### Mine tweets into the pool from above, still runs for 20 seconds but the daemon mode will continue restarting the program infinetly. Note the `--d` flag.
 
-```arcpool mine <POOL_ID> --source twitter --d```
-
-###### To view all the daemon mode mining processes:
-```arcpool dlist```
-
-###### Output will look similar to:
-```
-daemon processes -
-pid: 0    pm_id: 0    name: <POOL_ID>    status: running
+```sh
+arcpool mine POOL_NAME --source twitter --d
 ```
 
-###### Stop a pools daemon process by name:
-```arcpool dstop --dname <POOL_ID>```
+**To view all the daemon mode mining processes:**
+```sh
+arcpool dlist
+```
 
-###### To view logs for the mining processes install pm2:
-```npm install --global pm2```
+**Output will look similar to:**
 
-###### Stream the logs:
-```pm2 logs```
+    daemon processes -
+    pid: 0    pm_id: 0    name: POOL_NAME    status: running
+    
 
+**Stop a pools daemon process by name:**
+```sh
+arcpool dstop --dname POOL_NAME
+```
 
-## Indexing a pool for search
+**To view logs for the mining processes install pm2:**
 
-__As a pool operator you must index your pool for the artifacts to be searchable using the search bar in Alex.__ This is done using 2 commands. If there are a lot of artifacts in the pool already the fetch command will take a while so it is recommended that you start indexing early and then keep indexing after you mine new artifacts so the program will run quickly. There is no need to index until you have already mined artifacts.
+```sh
+npm install --global pm2
+```
 
-###### Fetch a pools artifacts and build local files that will be uploaded as a search index:
+**Stream the logs:**
 
-```arcpool fetch <POOL_ID>```
-
-###### To fetch while also clearing the local index to do a fresh index you can run with the --clear option:
-```arcpool fetch <POOL_ID> --clear```
-
-__After running fetch upload the index to arweave.__
-
-###### Upload the index to arweave:
-```arcpool sindex <POOL_ID>```
-
-No other action is required this will populate Arweave with the search index and update your pools.json with the id of the index contract.
+```sh
+pm2 logs
+```
