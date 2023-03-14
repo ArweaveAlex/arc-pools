@@ -4,6 +4,14 @@ import { PoolClient } from "../clients/pool";
 import { contentType } from "mime-types";
 import { log, logValue, exitProcess } from "../helpers/utils";
 
+// Artifacts per second
+let APS = 0;
+
+setInterval(() => {
+  log(`Artifacts per second - ${APS}`, 0);
+  APS = 0;
+}, 1000);
+
 export async function createAsset(poolClient: PoolClient, args: {
   index: any,
   paths: any,
@@ -181,6 +189,7 @@ async function deployToBundlr(poolClient: IPoolClient, args: {
 async function deployToWarp(poolClient: IPoolClient, args: { assetId: string }) {
   try {
     const { contractTxId } = await poolClient.warp.register(args.assetId, "node2");
+    APS++;
     return contractTxId;
   }
   catch (e: any) {
@@ -199,6 +208,7 @@ async function deployToWarp(poolClient: IPoolClient, args: { assetId: string }) 
           log(`Retrying Warp ...`, null);
           const { contractTxId } = await poolClient.warp.register(args.assetId, "node2");
           log(`Retry succeeded`, 0);
+          APS++;
           return contractTxId;
         }
         catch (e2: any) {
