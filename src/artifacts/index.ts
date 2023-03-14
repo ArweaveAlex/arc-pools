@@ -150,12 +150,16 @@ async function deployToBundlr(poolClient: IPoolClient, args: {
     await transaction.sign();
     try {
       const cost = await poolClient.bundlr.getPrice(transaction.size);
+      let balance  = await poolClient.arClient.arweavePost.wallets.getBalance(poolClient.poolConfig.state.owner.pubkey);
 
-      try {
-        await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
-      }
-      catch (e: any) {
-        // log(`Error funding bundlr ...\n ${e}`, 1);
+      // stop trying to fund bundlr once the wallet is empty
+      if(balance >= cost.integerValue()) {
+        try {
+          await poolClient.bundlr.fund(cost.integerValue());
+        }
+        catch (e: any) {
+          // log(`Error funding bundlr ...\n ${e}`, 1);
+        }
       }
     }
     catch (e: any) {
