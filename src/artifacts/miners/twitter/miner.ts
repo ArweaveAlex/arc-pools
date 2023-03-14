@@ -19,6 +19,10 @@ let contentModeration: boolean;
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
   const poolClient = new PoolClient(poolConfig);
 
+  if(!poolClient.twitterV2 || !poolClient.twitterV2Bearer) {
+    exitProcess(`Invalid twitter keys, configure twitter keys`, 1);
+  }
+
   if (!poolClient.walletKey) {
     exitProcess(`Invalid Pool Wallet Configuration`, 1);
   }

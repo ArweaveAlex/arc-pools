@@ -112,7 +112,8 @@ async function createContractTags(poolClient: IPoolClient, args: {
     { name: TAGS.keys.associationSequence, value: args.associationSequence ? args.associationSequence : "" },
     { name: TAGS.keys.childAssets, value: args.childAssets ? JSON.stringify(args.childAssets) : "" },
     { name: TAGS.keys.implements, value: TAGS.values.ansVersion },
-    { name: TAGS.keys.initState, value: initStateJson }
+    { name: TAGS.keys.initState, value: initStateJson },
+    { name: TAGS.keys.license, value: TAGS.values.license }
   ];
 
   if (args.renderWith) {
