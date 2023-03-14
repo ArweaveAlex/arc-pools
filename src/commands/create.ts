@@ -3,6 +3,8 @@ import clc from "cli-color";
 import mime from 'mime';
 import path from "path";
 
+const readline = require('readline');
+
 import { ArweaveClient } from "../clients/arweave";
 import { getPools } from "../gql/pools";
 import { exitProcess, logJsonUpdate } from "../helpers/utils";
@@ -20,6 +22,11 @@ import {
     POOL_FILE,
     FALLBACK_IMAGE
 } from "../helpers/config";
+
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.create,
@@ -165,9 +172,59 @@ const command: CommandInterface = {
         fs.writeFileSync(poolPath, JSON.stringify(POOLS_JSON, null, 4));
         console.log(`Pool File Updated`);
 
-        console.log(`Your pool has been deployed, please wait for the pool to display correctly from the below link before proceeding...`);
-        console.log(clc.magenta(sonarLink(poolDeployment.contractTxId)));
+        rl.question('Would you like to contribute to your pool from your control wallet to begin mining sooner? (y/n) ', async (answer: string) => {
+            if (answer.toLowerCase() === 'y') {
+                const controlWalletAddress = await arClient.arweavePost.wallets.jwkToAddress(controlWallet);
+                let controlWalletBalance  = await arClient.arweavePost.wallets.getBalance(controlWalletAddress);
+
+                let arBalance = arClient.arweavePost.ar.winstonToAr(controlWalletBalance);
+
+                askForBalance(arBalance, arClient, poolDeployment, walletInfo); 
+            } else {
+                console.log(`Your pool has been deployed, please wait for the pool to display correctly from the below link before proceeding...`);
+                console.log(clc.magenta(sonarLink(poolDeployment.contractTxId)));
+                rl.close();
+            }
+        });
     }
 }
+
+function askForBalance(
+    arBalance: number, 
+    arClient: ArweaveClient, 
+    poolDeployment: any, 
+    walletInfo: {
+        file: string;
+        address: any;
+    }
+) {
+    rl.question(`How much would you like to contribute. You have ${arBalance} ar to contribute, enter a decimal amount: `, async (amount: string) => {
+        const am = parseFloat(amount);
+        if (isNaN(am) || (am <= 0) || (am > arBalance)) {
+            console.log('Invalid input. Please enter a valid positive number.');
+            askForBalance(arBalance, arClient, poolDeployment, walletInfo); 
+        } else {
+            const warpContract = arClient.warp.contract(poolDeployment.contractTxId).connect(
+                JSON.parse(fs.readFileSync(walletInfo.file).toString())
+            ).setEvaluationOptions({
+                waitForConfirmation: false,
+            });
+            await warpContract.writeInteraction(
+                { function: 'contribute' },
+                {
+                    disableBundling: true,
+                    transfer: {
+                        target: walletInfo.address,
+                        winstonQty: arClient.arweavePost.ar.arToWinston(amount),
+                    },
+                }
+            );
+            console.log("Your funds have been contributed...");
+            console.log(`Your pool has been deployed, please wait for the pool to display correctly from the below link before proceeding...`);
+            console.log(clc.magenta(sonarLink(poolDeployment.contractTxId)));
+            rl.close();
+        }
+    });
+  }
 
 export default command;
