@@ -144,8 +144,6 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
       const batchEnd = (i + 1) * batchSize;
       const batchIds = ids.slice(batchStart, batchEnd);
 
-      console.log("batch ids length " + batchIds.length);
-
       await processIdsV2(poolClient, {
         ids: batchIds,
         contentModeration: contentModeration
