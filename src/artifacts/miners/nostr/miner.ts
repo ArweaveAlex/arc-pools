@@ -9,6 +9,7 @@ import { IPoolClient, PoolConfigType } from "../../../helpers/types";
 import { exitProcess, log } from "../../../helpers/utils";
 
 import { processEvent } from ".";
+import { initCounter } from "../..";
 import { Nostr } from "./Nostr"
 
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
@@ -21,6 +22,8 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
   log("Mining nostr", 0);
 
   // await genKeys(poolClient, argv._[1]);
+
+  initCounter();
 
   await mineGlobalMessages(poolClient);
 

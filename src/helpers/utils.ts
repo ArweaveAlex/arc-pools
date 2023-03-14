@@ -108,12 +108,17 @@ export async function processMediaPath(poolClient: IPoolClient, f: string, args:
   const id = tx.id;
   const cost = await poolClient.bundlr.getPrice(tx.size);
   fs.rmSync(path.resolve(f));
-  try {
-    await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
+  
+  let balance  = await poolClient.arClient.arweavePost.wallets.getBalance(poolClient.poolConfig.state.owner.pubkey);
+  if(balance > 0) {
+    try {
+      await poolClient.bundlr.fund(balance >= cost.integerValue() ? cost.integerValue() : balance);
+    }
+    catch (e: any) {
+      // log(`Error funding bundlr ...\n ${e}`, 1);
+    }
   }
-  catch (e: any) {
-    log(`Error funding bundlr ...\n ${e}`, 1);
-  }
+
   await tx.upload();
   if (!id) exitProcess(`Upload Error`, 1);
   return id;

@@ -17,9 +17,6 @@ const command: CommandInterface = {
         if(!fs.existsSync(POOL_FILE)){
             fs.writeFileSync(POOL_FILE, JSON.stringify({}, null, 4));
         }
-        else {
-            exitProcess(`${POOL_FILE} already exists`, 1);
-        }
 
         const poolArg = args.commandValues[0];
         const poolJsonFile = JSON.parse(fs.readFileSync(POOL_FILE).toString());

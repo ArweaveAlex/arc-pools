@@ -14,6 +14,8 @@ import { PoolConfigType, IPoolClient } from "../../../helpers/types";
 import { CLI_ARGS, STREAM_PARAMS } from "../../../helpers/config";
 import { parseError } from "../../../helpers/errors";
 
+import { initCounter } from "../..";
+
 let contentModeration: boolean;
 
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
@@ -36,6 +38,8 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
   const username = argv["username"];
 
   contentModeration = argv["content-moderation"];
+
+  initCounter();
 
   switch (method) {
     case undefined: case CLI_ARGS.sources.twitter.methods.stream:
@@ -134,6 +138,8 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
       ids: ids,
       contentModeration: contentModeration
     });
+
+    exitProcess(`Mining complete`, 0);
   }
   catch (e: any) {
     exitProcess(parseError(e, "twitter"), 1);
@@ -178,6 +184,8 @@ async function mineTweetsByUser(poolClient: IPoolClient, args: { username: strin
         ids: ids,
         contentModeration: contentModeration
       });
+
+      exitProcess(`Mining complete`, 0);
     }
   } catch (e: any){
     exitProcess(parseError(e, "twitter"), 1);

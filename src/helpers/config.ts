@@ -129,7 +129,7 @@ export const TAGS = {
         license: "x5UYiin_eRB0XCpZAkpduL0JIaXAUe9Bi2-RXGloBQI",
         poolVersions: {
             "1.2": "Alex-Archiving-Pool-v1.2",
-            "1.4": "Alex-Archiving-Pool-v1.4"
+            "1.4": "Alex-Archiving-Pool-Thread-Testing-v1.0"
         },
         topic: (topic: string) => `Topic:${topic}`
     }
@@ -300,7 +300,7 @@ export const RELAY_QUEUE_PROC_SIZE = 10;
 
 export const DEFAULT_POOLS_JSON = 
      {
-        "appType": "Alex-Archiving-Pool-v1.4", 
+        "appType": TAGS.values.poolVersions["1.4"], 
         "contracts": {
             "nft": {
                 "id": "",

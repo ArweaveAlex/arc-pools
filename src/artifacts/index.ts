@@ -7,10 +7,12 @@ import { log, logValue, exitProcess } from "../helpers/utils";
 // Artifacts per second
 let APS = 0;
 
-setInterval(() => {
-  log(`Artifacts per second - ${APS}`, 0);
-  APS = 0;
-}, 1000);
+export function initCounter() {
+  setInterval(() => {
+    log(`Artifacts per second - ${APS}`, 0);
+    APS = 0;
+  }, 1000);
+}
 
 export async function createAsset(poolClient: PoolClient, args: {
   index: any,
@@ -170,7 +172,7 @@ async function deployToBundlr(poolClient: IPoolClient, args: {
           await poolClient.bundlr.fund(balance >= cost.integerValue() ? cost.integerValue() : balance);
         }
         catch (e: any) {
-          log(`Error funding bundlr ...\n ${e}`, 1);
+          // log(`Error funding bundlr ...\n ${e}`, 1);
         }
       }
     }
