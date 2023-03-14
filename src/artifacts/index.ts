@@ -153,12 +153,15 @@ async function deployToBundlr(poolClient: IPoolClient, args: {
       let balance  = await poolClient.arClient.arweavePost.wallets.getBalance(poolClient.poolConfig.state.owner.pubkey);
 
       // stop trying to fund bundlr once the wallet is empty
-      if(balance >= cost.integerValue()) {
+      // otherwise fund either the cost or the rest of the balance
+      // TODO: this will intermittenly throw the error until arweave.net 
+      // is synced up to Bundlr
+      if(balance > 0) {
         try {
-          await poolClient.bundlr.fund(cost.integerValue());
+          await poolClient.bundlr.fund(balance >= cost.integerValue() ? cost.integerValue() : balance);
         }
         catch (e: any) {
-          // log(`Error funding bundlr ...\n ${e}`, 1);
+          log(`Error funding bundlr ...\n ${e}`, 1);
         }
       }
     }
