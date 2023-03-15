@@ -129,7 +129,7 @@ export const TAGS = {
         license: "x5UYiin_eRB0XCpZAkpduL0JIaXAUe9Bi2-RXGloBQI",
         poolVersions: {
             "1.2": "Alex-Archiving-Pool-v1.2",
-            "1.4": "Alex-Archiving-Pool-Thread-Testing-v1.0"
+            "1.4": "Alex-Archiving-Pool-v1.4"
         },
         topic: (topic: string) => `Topic:${topic}`
     }

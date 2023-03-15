@@ -39,12 +39,14 @@ export async function getPools(): Promise<PoolType[]> {
     const arClient = new ArweaveClient();
 
     const pools: PoolType[] = [];
+    console.log("hello")
     const poolIds = await getPoolIds();
-
+    console.log("hello2")
     for (let i = 0; i < poolIds.length; i++) {
         if (poolIds[i]) {
             try {
                 const contract = arClient.warp.contract(poolIds[i]).setEvaluationOptions({ allowBigInt: true });
+                console.log(contract)
                 try {
                     pools.push({ id: poolIds[i], state: (await contract.readState() as any).cachedValue.state });
                 }
