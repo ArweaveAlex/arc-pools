@@ -10,7 +10,7 @@ import { exitProcess } from "../helpers/utils";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.fund,
-    description: `Fun the bundlr wallet for a pool`,
+    description: `Fund the bundlr wallet for a pool`,
     args: ["pool id"],
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const poolConfig: PoolConfigType = validatePoolConfig(args);

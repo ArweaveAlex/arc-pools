@@ -115,7 +115,7 @@ arcpool init test-alex
 Below is the ```pools.json``` file that has been initiated that now needs to be configured.
 ```json
 {
-    "POOL_ID": {
+    "POOL-ID": {
         "appType": "Alex-Archiving-Pool-v1.4",
         "contracts": {
             "nft": {
@@ -125,6 +125,10 @@ Below is the ```pools.json``` file that has been initiated that now needs to be 
             "pool": {
                 "id": "",
                 "src": ""
+            },
+            "poolSearchIndex": {
+                "id": "",
+                "src": ""
             }
         },
         "state": {
@@ -132,9 +136,9 @@ Below is the ```pools.json``` file that has been initiated that now needs to be 
                 "pubkey": "",
                 "info": ""
             },
-            "title": "Pool Title eg. Russia Ukraine War",
-            "description": "Paragraph/HTML for long pool description",
-            "briefDescription": "Paragraph/HTML for short pool description",
+            "title": "Pool Title",
+            "description": "Paragraph/html markup for long pool description",
+            "briefDescription": "Text for short pool description",
             "link": "",
             "rewards": "",
             "image": "",
@@ -142,6 +146,9 @@ Below is the ```pools.json``` file that has been initiated that now needs to be 
         },
         "walletPath": "",
         "bundlrNode": "https://node2.bundlr.network",
+        "twitter": {
+            "userIds": []
+        },
         "keywords": [
             "keyword1"
         ],
@@ -156,11 +163,40 @@ Below is the ```pools.json``` file that has been initiated that now needs to be 
         "topics": [
             "history"
         ],
-        "redditApiKeys":{
+        "redditApiKeys": {
             "username": "",
             "password": "",
             "appId": "",
             "appSecret": ""
+        },
+        "nostr": {
+            "keys": {
+                "public": "",
+                "private": ""
+            },
+            "relays": [
+                {
+                    "socket": "wss://relay.damus.io"
+                },
+                {
+                    "socket": "wss://nos.lol"
+                },
+                {
+                    "socket": "wss://nostr.relayer.se"
+                },
+                {
+                    "socket": "wss://relay.current.fyi"
+                },
+                {
+                    "socket": "wss://nostr.bitcoiner.social"
+                },
+                {
+                    "socket": "wss://relay.nostr.info"
+                },
+                {
+                    "socket": "wss://nostr.fmt.wiz.biz"
+                }
+            ]
         }
     }
 }
