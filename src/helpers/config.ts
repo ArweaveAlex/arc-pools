@@ -98,6 +98,7 @@ export const TAGS = {
         initialOwner: "Initial-Owner",
         initState: "Init-State",
         keywords: "Keywords",
+        license: "License",
         mediaIds: "Media-Ids",
         renderWith: "Render-With",
         poolId: "Pool-Id",
@@ -125,6 +126,7 @@ export const TAGS = {
             ticker: (assetId: string) => `ATOMIC-ASSET-${assetId}`,
             title: (name: string) => `Alex Artifact - ${name}`
         },
+        license: "x5UYiin_eRB0XCpZAkpduL0JIaXAUe9Bi2-RXGloBQI",
         poolVersions: {
             "1.2": "Alex-Archiving-Pool-v1.2",
             "1.4": "Alex-Archiving-Pool-v1.4"
@@ -298,7 +300,7 @@ export const RELAY_QUEUE_PROC_SIZE = 10;
 
 export const DEFAULT_POOLS_JSON = 
      {
-        "appType": "Alex-Archiving-Pool-v1.4", 
+        "appType": TAGS.values.poolVersions["1.4"], 
         "contracts": {
             "nft": {
                 "id": "",

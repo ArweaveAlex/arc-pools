@@ -40,11 +40,12 @@ export async function getPools(): Promise<PoolType[]> {
 
     const pools: PoolType[] = [];
     const poolIds = await getPoolIds();
-
+    
     for (let i = 0; i < poolIds.length; i++) {
         if (poolIds[i]) {
             try {
                 const contract = arClient.warp.contract(poolIds[i]).setEvaluationOptions({ allowBigInt: true });
+                console.log(contract)
                 try {
                     pools.push({ id: poolIds[i], state: (await contract.readState() as any).cachedValue.state });
                 }

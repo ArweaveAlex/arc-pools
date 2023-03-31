@@ -14,10 +14,16 @@ import { PoolConfigType, IPoolClient } from "../../../helpers/types";
 import { CLI_ARGS, STREAM_PARAMS } from "../../../helpers/config";
 import { parseError } from "../../../helpers/errors";
 
+import { initCounter } from "../..";
+
 let contentModeration: boolean;
 
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
   const poolClient = new PoolClient(poolConfig);
+
+  if(!poolClient.twitterV2 || !poolClient.twitterV2Bearer) {
+    exitProcess(`Invalid twitter keys, configure twitter keys`, 1);
+  }
 
   if (!poolClient.walletKey) {
     exitProcess(`Invalid Pool Wallet Configuration`, 1);
@@ -32,6 +38,8 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
   const username = argv["username"];
 
   contentModeration = argv["content-moderation"];
+
+  initCounter();
 
   switch (method) {
     case undefined: case CLI_ARGS.sources.twitter.methods.stream:
@@ -98,7 +106,8 @@ async function mineTweetsByStream(poolClient: IPoolClient) {
  * @param mentionTag: string
 */
 async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: string }) {
-  log(`Mining Tweets by mention ...`, null); logValue(`Mention Tag`, args.mentionTag, 0);
+  log(`Mining Tweets by mention ...`, null); 
+  logValue(`Mention Tag`, args.mentionTag, 0);
 
   try {
     let query = args.mentionTag.includes("@") ? args.mentionTag.replace("@", "") : args.mentionTag;
@@ -111,6 +120,7 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
         "tweet.fields": ['referenced_tweets']
       };
       if (resultSet) params.next_token = resultSet.meta.next_token;
+      await new Promise(resolve => setTimeout(resolve, 1000));
       resultSet = await poolClient.twitterV2.v2.search(query, params);
 
       if (resultSet.data.data) allTweets = allTweets.concat(resultSet.data.data);
@@ -126,10 +136,24 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
       return self.indexOf(item) == pos;
     }).filter(id => id !== undefined);
 
-    await processIdsV2(poolClient, {
-      ids: ids,
-      contentModeration: contentModeration
-    });
+    const batchSize = 500;
+    const numBatches = Math.ceil(ids.length / batchSize);
+
+    for (let i = 0; i < numBatches; i++) {
+      const batchStart = i * batchSize;
+      const batchEnd = (i + 1) * batchSize;
+      const batchIds = ids.slice(batchStart, batchEnd);
+
+      await processIdsV2(poolClient, {
+        ids: batchIds,
+        contentModeration: contentModeration
+      });
+
+      log("Delaying processing ...", 0);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
+
+    exitProcess(`Mining complete`, 0);
   }
   catch (e: any) {
     exitProcess(parseError(e, "twitter"), 1);
@@ -174,6 +198,8 @@ async function mineTweetsByUser(poolClient: IPoolClient, args: { username: strin
         ids: ids,
         contentModeration: contentModeration
       });
+
+      exitProcess(`Mining complete`, 0);
     }
   } catch (e: any){
     exitProcess(parseError(e, "twitter"), 1);

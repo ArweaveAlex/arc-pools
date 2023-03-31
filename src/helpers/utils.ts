@@ -108,12 +108,17 @@ export async function processMediaPath(poolClient: IPoolClient, f: string, args:
   const id = tx.id;
   const cost = await poolClient.bundlr.getPrice(tx.size);
   fs.rmSync(path.resolve(f));
-  try {
-    await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
+  
+  let balance  = await poolClient.arClient.arweavePost.wallets.getBalance(poolClient.poolConfig.state.owner.pubkey);
+  if(balance > 0) {
+    try {
+      await poolClient.bundlr.fund(balance >= cost.integerValue() ? cost.integerValue() : balance);
+    }
+    catch (e: any) {
+      // log(`Error funding bundlr ...\n ${e}`, 1);
+    }
   }
-  catch (e: any) {
-    log(`Error funding bundlr ...\n ${e}`, 1);
-  }
+
   await tx.upload();
   if (!id) exitProcess(`Upload Error`, 1);
   return id;
@@ -204,25 +209,31 @@ function removeEmojis(string: string) {
 }
 
 export function log(message: any, status: 0 | 1 | null): void {
+  const now = new Date();
+  const formattedDate = now.toISOString().slice(0, 19).replace('T', ' ');
   if (status !== null) {
-    console.log(status === 0 ? clc.green(message) : clc.red(message));
+    console.log(`${formattedDate} - ${status === 0 ? clc.green(message) : clc.red(message)}`);
   }
   else {
-    console.log(message);
+    console.log(`${formattedDate} - ${message}`);
   }
 }
 
 export function logValue(message: any, value: any, status: 0 | 1 | null): void {
+  const now = new Date();
+  const formattedDate = now.toISOString().slice(0, 19).replace('T', ' ');
   if (status !== null) {
-    console.log(`${message} - [`, status === 0 ? clc.green(`'${value}'`) : clc.red(`'${value}'`), `]`);
+    console.log(`${formattedDate} - ${message} - [`, status === 0 ? clc.green(`'${value}'`) : clc.red(`'${value}'`), `]`);
   }
   else {
-    console.log(`${message} - ['${value}']`);
+    console.log(`${formattedDate} - ${message} - ['${value}']`);
   }
 }
 
 export function logJsonUpdate(poolTitle: string, key: string, value: string): void {
-  console.log(`Updating ${poolTitle} JSON Object - ${key} - [`, clc.green(`'${value}'`), `]`);
+  const now = new Date();
+  const formattedDate = now.toISOString().slice(0, 19).replace('T', ' ');
+  console.log(`${formattedDate} - Updating ${poolTitle} JSON Object - ${key} - [`, clc.green(`'${value}'`), `]`);
 }
 
 

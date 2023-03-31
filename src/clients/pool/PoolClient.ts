@@ -7,6 +7,7 @@ import { Contract, LoggerFactory } from "warp-contracts";
 
 import { ArweaveClient } from "../arweave";
 import { PoolConfigType, IPoolClient } from "../../helpers/types";
+import { log } from "../../helpers/utils";
 
 export default class PoolClient implements IPoolClient {
     arClient = new ArweaveClient();
@@ -37,13 +38,17 @@ export default class PoolClient implements IPoolClient {
             this.walletKey = null;
         }
 
-        this.twitterV2 = new tApiV2.TwitterApi({
-            appKey: poolConfig.twitterApiKeys.consumer_key,
-            appSecret: poolConfig.twitterApiKeys.consumer_secret,
-            accessToken: poolConfig.twitterApiKeys.token,
-            accessSecret: poolConfig.twitterApiKeys.token_secret,
-        });
-        this.twitterV2Bearer = new tApiV2.TwitterApi(poolConfig.twitterApiKeys.bearer_token);
+       try {
+            this.twitterV2 = new tApiV2.TwitterApi({
+                appKey: poolConfig.twitterApiKeys.consumer_key,
+                appSecret: poolConfig.twitterApiKeys.consumer_secret,
+                accessToken: poolConfig.twitterApiKeys.token,
+                accessSecret: poolConfig.twitterApiKeys.token_secret,
+            });
+            this.twitterV2Bearer = new tApiV2.TwitterApi(poolConfig.twitterApiKeys.bearer_token);
+       } catch(e: any) {
+            log("Twitter keys invalid, twitter mining unavailable, ignore this if you are not mining twitter", 1);
+       }
 
         this.bundlr = new Bundlr(poolConfig.bundlrNode, "arweave", this.walletKey);
         this.contract = this.arClient.warp.contract(poolConfig.contracts.pool.id).setEvaluationOptions({

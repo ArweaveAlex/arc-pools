@@ -4,6 +4,8 @@ import { exitProcess } from "../../../helpers/utils";
 import { PoolConfigType } from "../../../helpers/types";
 import { processWikipedia } from ".";
 
+import { initCounter } from "../..";
+
 export async function run(poolConfig: PoolConfigType) {
     const poolClient = new PoolClient(poolConfig);
 
@@ -15,5 +17,9 @@ export async function run(poolConfig: PoolConfigType) {
         exitProcess(`Configure topics in pools.json`, 1);
     }
 
+    initCounter();
+
     await processWikipedia(poolClient);
+
+    exitProcess(`Mining complete`, 0);
 }

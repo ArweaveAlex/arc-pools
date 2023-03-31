@@ -4,6 +4,16 @@ import { PoolClient } from "../clients/pool";
 import { contentType } from "mime-types";
 import { log, logValue, exitProcess } from "../helpers/utils";
 
+// Artifacts per second
+let APS = 0;
+
+export function initCounter() {
+  setInterval(() => {
+    log(`Artifacts per second - ${APS}`, 0);
+    APS = 0;
+  }, 1000);
+}
+
 export async function createAsset(poolClient: PoolClient, args: {
   index: any,
   paths: any,
@@ -112,7 +122,8 @@ async function createContractTags(poolClient: IPoolClient, args: {
     { name: TAGS.keys.associationSequence, value: args.associationSequence ? args.associationSequence : "" },
     { name: TAGS.keys.childAssets, value: args.childAssets ? JSON.stringify(args.childAssets) : "" },
     { name: TAGS.keys.implements, value: TAGS.values.ansVersion },
-    { name: TAGS.keys.initState, value: initStateJson }
+    { name: TAGS.keys.initState, value: initStateJson },
+    { name: TAGS.keys.license, value: TAGS.values.license }
   ];
 
   if (args.renderWith) {
@@ -150,12 +161,19 @@ async function deployToBundlr(poolClient: IPoolClient, args: {
     await transaction.sign();
     try {
       const cost = await poolClient.bundlr.getPrice(transaction.size);
+      let balance  = await poolClient.arClient.arweavePost.wallets.getBalance(poolClient.poolConfig.state.owner.pubkey);
 
-      try {
-        await poolClient.bundlr.fund(cost.multipliedBy(1.1).integerValue());
-      }
-      catch (e: any) {
-        // log(`Error funding bundlr ...\n ${e}`, 1);
+      // stop trying to fund bundlr once the wallet is empty
+      // otherwise fund either the cost or the rest of the balance
+      // TODO: this will intermittenly throw the error until arweave.net 
+      // is synced up to Bundlr
+      if(balance > 0) {
+        try {
+          await poolClient.bundlr.fund(balance >= cost.integerValue() ? cost.integerValue() : balance);
+        }
+        catch (e: any) {
+          // log(`Error funding bundlr ...\n ${e}`, 1);
+        }
       }
     }
     catch (e: any) {
@@ -173,6 +191,7 @@ async function deployToBundlr(poolClient: IPoolClient, args: {
 async function deployToWarp(poolClient: IPoolClient, args: { assetId: string }) {
   try {
     const { contractTxId } = await poolClient.warp.register(args.assetId, "node2");
+    APS++;
     return contractTxId;
   }
   catch (e: any) {
@@ -191,6 +210,7 @@ async function deployToWarp(poolClient: IPoolClient, args: { assetId: string }) 
           log(`Retrying Warp ...`, null);
           const { contractTxId } = await poolClient.warp.register(args.assetId, "node2");
           log(`Retry succeeded`, 0);
+          APS++;
           return contractTxId;
         }
         catch (e2: any) {
