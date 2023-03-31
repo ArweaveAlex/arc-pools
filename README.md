@@ -212,14 +212,16 @@ Take note of the line at the top of the logs for your pool wallets seed phrase. 
      
     *** THERE IS NO WAY TO RECOVER YOUR SEED PHRASE SO WRITE IT DOWN AND KEEP IT OUT OF OTHERS HANDS ***
     
+At the end of the process the cli should ask you if you want to contribute funds from your control wallet. This is recommended as it will allow you to begin mining
+more quickly and will skip steps later. When the prompt asks, enter a decimal amount of AR less than what you have in your wallet and hit enter. The funding portion
+will take a long time because it is waiting for the transactions to process on the blockchain. Wait for the program to finish.
 
 If your pool has been successfully created, you can now navigate to [https://alex.arweave.dev/#/pools](https://alex.arweave.dev/#/pools) and view your new pool.
 
 To add another pool, follow the same steps as above in the same directory with the `pools.json`
 
 ## Funding a pool wallet
-
-Before we start to mine artifacts, we will need contributions. This can be a small amount to get started just to trigger the CLI to start transferring your funds to your pools Bundlr instance. We will only need to do this once and as more contributions are made it will be updated automatically as we run the mining service.
+If you have not contributed when creating the pool, then before we start to mine artifacts, we will need contributions from the site. This can be a small amount to get started just to trigger the CLI to start transferring your funds to your pools Bundlr instance. We will only need to do this once and as more contributions are made it will be updated automatically as we run the mining service.
 
 Find and navigate to your pool in [https://alex.arweave.dev/#/pools](https://alex.arweave.dev/#/pools) and click the contribute button. Contribute a small amount of $AR to your collection and wait for that contribution to display in the UI. Once that has registered the funds to the pool, go back to your terminal and run:
 
