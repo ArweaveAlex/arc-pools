@@ -320,6 +320,10 @@ export const DEFAULT_POOLS_JSON =
                 "pubkey": "",
                 "info": ""
             },
+            "controller": {
+                "pubkey": "",
+                "contribPercent": 0
+            },
             "title": "Pool Title such as Russia Ukraine War",
             "description": "Paragraph/html markup for long pool description on site",
             "briefDescription": "Text for short pool description on site",

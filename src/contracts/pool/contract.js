@@ -35,8 +35,8 @@ async function handle(state, action) {
             const totalSupply = parseInt(state.totalSupply);
             const totalContributions = BigInt(state.totalContributions);
             // check inputs
-            if (target != state.owner) {
-                throw new ContractError(`Please fund the correct owner: ${state.owner}.`);
+            if ((target !== state.owner) && (target !== state.controlPubkey)) {
+                throw new ContractError(`Please fund the correct owner or controller.`);
             }
             if (contribution == BigInt(0)) {
                 throw new ContractError("Please fund a non-zero amount");
