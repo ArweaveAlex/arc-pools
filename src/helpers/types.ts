@@ -54,6 +54,8 @@ export interface PoolStateType {
     totalSupply: string
     balance: string
     canEvolve: boolean
+    controlPubkey: NStringType
+    contribPercent: number | null
 }
 
 export type PoolConfigType = {
@@ -68,7 +70,7 @@ export type PoolConfigType = {
             src: NStringType
         },
         poolSearchIndex: {
-            id: NStringType,
+            id: NStringType
             src: NStringType
         }
     },
@@ -76,6 +78,10 @@ export type PoolConfigType = {
         owner: {
             pubkey: string
             info: string
+        },
+        controller: {
+            pubkey: NStringType
+            contribPercent: number | null
         },
         title: string
         description: string

@@ -136,6 +136,10 @@ Below is the ```pools.json``` file that has been initiated that now needs to be 
                 "pubkey": "",
                 "info": ""
             },
+            "controller": {
+                "pubkey": "",
+                "contribPercent": 0
+            },
             "title": "Pool Title",
             "description": "Paragraph/html markup for long pool description",
             "briefDescription": "Text for short pool description",
@@ -208,6 +212,7 @@ Configure the `pools.json` file to generate your pool.
 - `state.briefDescription` is a brief description of your pool on the [Home Page](https://alex.arweave.dev) of Alex.
 - `keywords` is a list of the main keywords to track in the mining process. This is the core driving data that instructs the mining programs of what to pull from mining sources such as Twitter, Wikipedia, Reddit, or Nostr
 - `topics` A list of more general topics the pool fits into these generate ANS110 Topic tags in the data. Examples: history, funny, humor, science.
+- `controller.contribPercent` If you would like to take a percentage of contributions that come into the pool into your control wallet, for your own uses other than mining put a decimal number in here between 0 and 100. Note: this will be displayed on the site so if you are taking a high percentage of contributions people will likely not contribute to your pool.
 
 ### Configure Twitter API Keys 
 
