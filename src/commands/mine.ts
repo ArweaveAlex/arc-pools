@@ -3,6 +3,7 @@ import * as wikipedia from "../artifacts/miners/wikipedia/miner";
 import * as reddit from "../artifacts/miners/reddit/miner";
 // import * as webpage from "../artifacts/miners/webpage/miner";
 import * as nostr from "../artifacts/miners/nostr/miner";
+import * as files from "../artifacts/miners/files/miner";
 
 import source from "../options/source";
 import method from "../options/method";
@@ -41,6 +42,9 @@ const command: CommandInterface = {
             //     return;
             case CLI_ARGS.sources.nostr.name:
                 await nostr.run(poolConfig, args.argv);
+                return;
+            case CLI_ARGS.sources.files.name:
+                await files.run(poolConfig, args.argv);
                 return;
             default:
                 exitProcess(`Source Not Found`, 1);

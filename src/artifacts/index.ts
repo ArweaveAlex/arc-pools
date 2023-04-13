@@ -29,7 +29,8 @@ export async function createAsset(poolClient: PoolClient, args: {
   associationSequence: string | null,
   childAssets: string[] | null,
   renderWith: string | null,
-  assetId: string
+  assetId: string,
+  fileType?: string
 }) {
   const contractTags = await createContractTags(poolClient, {
     index: args.index,
@@ -46,6 +47,7 @@ export async function createAsset(poolClient: PoolClient, args: {
     childAssets: args.childAssets,
     renderWith: args.renderWith,
     assetId: args.assetId,
+    fileType: args.fileType
   });
 
   const assetId: string = await deployToBundlr(poolClient, {
@@ -78,7 +80,8 @@ async function createContractTags(poolClient: IPoolClient, args: {
   associationSequence: string | null,
   childAssets: string[],
   renderWith: string | null,
-  assetId: string
+  assetId: string,
+  fileType?: string | null | undefined
 }) {
   const dateTime = new Date().getTime().toString();
   const tokenHolder = await getRandomContributor(poolClient);
@@ -128,6 +131,10 @@ async function createContractTags(poolClient: IPoolClient, args: {
 
   if (args.renderWith) {
     tagList.push({ name: TAGS.keys.renderWith, value: args.renderWith })
+  }
+
+  if(args.fileType) {
+    tagList.push({ name: TAGS.keys.fileType, value: args.fileType })
   }
 
   for (let i = 0; i < poolClient.poolConfig.topics.length; i++) {

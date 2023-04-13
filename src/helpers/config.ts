@@ -43,7 +43,9 @@ export const CLI_ARGS = {
         image: "image",
         clear: "clear",
         subreddit: "subreddit",
-        searchTerm: "search-term"
+        searchTerm: "search-term",
+        fileDir: "file-dir",
+        fileConfig: "file-config"
     },
     sources: {
         twitter: {
@@ -71,6 +73,9 @@ export const CLI_ARGS = {
         },
         nostr: {
             name: "nostr"
+        },
+        files: {
+            name: "files"
         }
     }
 }
@@ -94,6 +99,7 @@ export const TAGS = {
         contractSrc: "Contract-Src",
         dateCreated: "Date-Created",
         description: "Description",
+        fileType: "File-Type",
         implements: "Implements",
         initialOwner: "Initial-Owner",
         initState: "Init-State",
@@ -116,7 +122,8 @@ export const TAGS = {
         ansVersion: "ANS-110",
         ansTypes: {
             socialPost: "social-post",
-            webPage: "web-page"
+            webPage: "web-page",
+            image: "image"
         },
         appName: "SmartWeaveContract",
         appVersion: "0.3.0",
@@ -129,7 +136,8 @@ export const TAGS = {
         license: "x5UYiin_eRB0XCpZAkpduL0JIaXAUe9Bi2-RXGloBQI",
         poolVersions: {
             "1.2": "Alex-Archiving-Pool-v1.2",
-            "1.4": "Alex-Archiving-Pool-v1.4"
+            "1.4": "Alex-Archiving-Pool-v1.4",
+            "1.5": "Alex-Archiving-Pool-v1.5"
         },
         topic: (topic: string) => `Topic:${topic}`
     }
@@ -300,7 +308,7 @@ export const RELAY_QUEUE_PROC_SIZE = 10;
 
 export const DEFAULT_POOLS_JSON = 
      {
-        "appType": TAGS.values.poolVersions["1.4"], 
+        "appType": TAGS.values.poolVersions["1.5"], 
         "contracts": {
             "nft": {
                 "id": "",
@@ -326,7 +334,8 @@ export const DEFAULT_POOLS_JSON =
             "link": "",
             "rewards": "",
             "image": "",
-            "timestamp": ""
+            "timestamp": "",
+            "ownerMaintained": false
         },
         "walletPath": "",
         "bundlrNode": "https://node2.bundlr.network",
