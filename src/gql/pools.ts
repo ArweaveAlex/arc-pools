@@ -39,9 +39,8 @@ export async function getPools(): Promise<PoolType[]> {
     const arClient = new ArweaveClient();
 
     const pools: PoolType[] = [];
-    console.log("hello")
     const poolIds = await getPoolIds();
-    console.log("hello2")
+    
     for (let i = 0; i < poolIds.length; i++) {
         if (poolIds[i]) {
             try {

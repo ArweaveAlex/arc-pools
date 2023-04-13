@@ -6,7 +6,7 @@ import { getGQLData } from "../../gql";
 
 import { TAGS } from "../../helpers/config";
 
-const GET_ENDPOINT = "arweave.net";
+const GET_ENDPOINT = "arweave-search.goldsky.com";
 const POST_ENDPOINT = "arweave.net";
 
 const PORT = 443;

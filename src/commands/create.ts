@@ -62,10 +62,13 @@ const command: CommandInterface = {
         let nftInitState: any;
         let poolSrc: any;
         let nftDeployment: any;
+        let controlWalletAddress: string;
 
         try {
             controlWallet = JSON.parse(fs.readFileSync(controlWalletPath).toString());
-            const controlWalletAddress = await arClient.arweavePost.wallets.jwkToAddress(controlWallet);
+            controlWalletAddress = await arClient.arweavePost.wallets.jwkToAddress(controlWallet);
+            POOLS_JSON[poolArg].state.controller.pubkey = controlWalletAddress;
+            
             let controlWalletBalance  = await arClient.arweavePost.wallets.getBalance(controlWalletAddress);
             if(controlWalletBalance == 0) {
                 exitProcess(`Control wallet is empty`, 1);
@@ -147,7 +150,9 @@ const command: CommandInterface = {
             totalContributions: "0",
             totalSupply: "10000000",
             balance: "0",
-            canEvolve: true
+            canEvolve: true,
+            controlPubkey: controlWalletAddress,
+            contribPercent: POOLS_JSON[poolArg].state.controller.contribPercent
         }
 
         const tags = [

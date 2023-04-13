@@ -115,7 +115,7 @@ arcpool init test-alex
 Below is the ```pools.json``` file that has been initiated that now needs to be configured.
 ```json
 {
-    "POOL_ID": {
+    "POOL-ID": {
         "appType": "Alex-Archiving-Pool-v1.4",
         "contracts": {
             "nft": {
@@ -125,6 +125,10 @@ Below is the ```pools.json``` file that has been initiated that now needs to be 
             "pool": {
                 "id": "",
                 "src": ""
+            },
+            "poolSearchIndex": {
+                "id": "",
+                "src": ""
             }
         },
         "state": {
@@ -132,9 +136,13 @@ Below is the ```pools.json``` file that has been initiated that now needs to be 
                 "pubkey": "",
                 "info": ""
             },
-            "title": "Pool Title eg. Russia Ukraine War",
-            "description": "Paragraph/HTML for long pool description",
-            "briefDescription": "Paragraph/HTML for short pool description",
+            "controller": {
+                "pubkey": "",
+                "contribPercent": 0
+            },
+            "title": "Pool Title",
+            "description": "Paragraph/html markup for long pool description",
+            "briefDescription": "Text for short pool description",
             "link": "",
             "rewards": "",
             "image": "",
@@ -142,6 +150,9 @@ Below is the ```pools.json``` file that has been initiated that now needs to be 
         },
         "walletPath": "",
         "bundlrNode": "https://node2.bundlr.network",
+        "twitter": {
+            "userIds": []
+        },
         "keywords": [
             "keyword1"
         ],
@@ -156,22 +167,52 @@ Below is the ```pools.json``` file that has been initiated that now needs to be 
         "topics": [
             "history"
         ],
-        "redditApiKeys":{
+        "redditApiKeys": {
             "username": "",
             "password": "",
             "appId": "",
             "appSecret": ""
+        },
+        "nostr": {
+            "keys": {
+                "public": "",
+                "private": ""
+            },
+            "relays": [
+                {
+                    "socket": "wss://relay.damus.io"
+                },
+                {
+                    "socket": "wss://nos.lol"
+                },
+                {
+                    "socket": "wss://nostr.relayer.se"
+                },
+                {
+                    "socket": "wss://relay.current.fyi"
+                },
+                {
+                    "socket": "wss://nostr.bitcoiner.social"
+                },
+                {
+                    "socket": "wss://relay.nostr.info"
+                },
+                {
+                    "socket": "wss://nostr.fmt.wiz.biz"
+                }
+            ]
         }
     }
 }
 ```
-Configure the `pools.json` file to generate your pool. 
+Configure the `pools.json` file to generate your pool. If there is a field not marked in this section that exists in `pools.json`, it does not need to be modified.
 
 - `state.title` is the title of your pool on the [Home Page](https://alex.arweave.dev) of Alex.
 - `state.description` is a long description of your pool on the [Pool Detail](https://alex.arweave.dev/#/pool/zIZXNTl-GtTDbO8eP8LpkHks5S5WhB4j82YX-N2RuGw) page of Alex., under the About header. It can contain Text and/or HTML.
 - `state.briefDescription` is a brief description of your pool on the [Home Page](https://alex.arweave.dev) of Alex.
 - `keywords` is a list of the main keywords to track in the mining process. This is the core driving data that instructs the mining programs of what to pull from mining sources such as Twitter, Wikipedia, Reddit, or Nostr
 - `topics` A list of more general topics the pool fits into these generate ANS110 Topic tags in the data. Examples: history, funny, humor, science.
+- `controller.contribPercent` is a reward percentage of the contributions. This value can be from **0 - 100** and represents the total percentage of contributions that go to your control wallet for mining. If the value of **controller.contribPercent** is **10**, then **10%** of all contributions will go to your control wallet as a reward. This percentage will appear in the User Interface to let contributors know how much of their contribution will go to the operator.
 
 ### Configure Twitter API Keys 
 
@@ -212,14 +253,16 @@ Take note of the line at the top of the logs for your pool wallets seed phrase. 
      
     *** THERE IS NO WAY TO RECOVER YOUR SEED PHRASE SO WRITE IT DOWN AND KEEP IT OUT OF OTHERS HANDS ***
     
+At the end of the process the cli should ask you if you want to contribute funds from your control wallet. This is recommended as it will allow you to begin mining
+more quickly and will skip steps later. When the prompt asks, enter a decimal amount of AR less than what you have in your wallet and hit enter. The funding portion
+will take a long time because it is waiting for the transactions to process on the blockchain. Wait for the program to finish.
 
 If your pool has been successfully created, you can now navigate to [https://alex.arweave.dev/#/pools](https://alex.arweave.dev/#/pools) and view your new pool.
 
 To add another pool, follow the same steps as above in the same directory with the `pools.json`
 
 ## Funding a pool wallet
-
-Before we start to mine artifacts, we will need contributions. This can be a small amount to get started just to trigger the CLI to start transferring your funds to your pools Bundlr instance. We will only need to do this once and as more contributions are made it will be updated automatically as we run the mining service.
+If you have not contributed when creating the pool, then before we start to mine artifacts, we will need contributions from the site. This can be a small amount to get started just to trigger the CLI to start transferring your funds to your pools Bundlr instance. We will only need to do this once and as more contributions are made it will be updated automatically as we run the mining service.
 
 Find and navigate to your pool in [https://alex.arweave.dev/#/pools](https://alex.arweave.dev/#/pools) and click the contribute button. Contribute a small amount of $AR to your collection and wait for that contribution to display in the UI. Once that has registered the funds to the pool, go back to your terminal and run:
 
