@@ -1,5 +1,6 @@
 import path from "path";
 import * as tApiV2 from "twitter-api-v2";
+import { ArtifactEnum } from "./types";
 
 export const APP_TITLE = "arcpool";
 
@@ -44,8 +45,8 @@ export const CLI_ARGS = {
         clear: "clear",
         subreddit: "subreddit",
         searchTerm: "search-term",
-        fileDir: "file-dir",
-        fileConfig: "file-config"
+        path: "path",
+        metaFile: "meta-file"
     },
     sources: {
         twitter: {
@@ -375,4 +376,44 @@ export const DEFAULT_POOLS_JSON =
             },
             "relays": DEFAULT_NOSTR_RELAYS
         }
+};
+
+
+export const ARTIFACT_TYPES_BY_FILE: { [ext: string]: ArtifactEnum } = {
+    // Images
+    'jpg': ArtifactEnum.Image,
+    'jpeg': ArtifactEnum.Image,
+    'png': ArtifactEnum.Image,
+    'gif': ArtifactEnum.Image,
+    'bmp': ArtifactEnum.Image,
+    'tiff': ArtifactEnum.Image,
+    'svg': ArtifactEnum.Image,
+    'webp': ArtifactEnum.Image,
+    // Documents
+    'pdf': ArtifactEnum.Document,
+    'txt': ArtifactEnum.Document,
+    'doc': ArtifactEnum.Document,
+    'docx': ArtifactEnum.Document,
+    'xls': ArtifactEnum.Document,
+    'xlsx': ArtifactEnum.Document,
+    'ppt': ArtifactEnum.Document,
+    'pptx': ArtifactEnum.Document,
+    'csv': ArtifactEnum.Document,
+    'rtf': ArtifactEnum.Document,
+    'html': ArtifactEnum.Document,
+    'htm': ArtifactEnum.Document,
+    'xml': ArtifactEnum.Document,
+    // Audio
+    'mp3': ArtifactEnum.Audio,
+    'm4a': ArtifactEnum.Audio,
+    'wav': ArtifactEnum.Audio,
+    'ogg': ArtifactEnum.Audio,
+    'flac': ArtifactEnum.Audio,
+    // Video
+    'mp4': ArtifactEnum.Video,
+    'mpeg': ArtifactEnum.Video,
+    'avi': ArtifactEnum.Video,
+    'wmv': ArtifactEnum.Video,
+    'mov': ArtifactEnum.Video,
+    'mkv': ArtifactEnum.Video,
 };

@@ -8,7 +8,10 @@ export enum ArtifactEnum {
     Webpage = "Alex-Webpage",
     Reddit = "Alex-Reddit-Thread",
     Nostr = "Alex-Nostr-Event",
-    Image = "Alex-Image"
+    Image = "Alex-Image",
+    Document = "Alex-Document",
+    Video = "Alex-Video",
+    Audio = "Alex-Audio"
 }
 
 export type GQLResponseType = {

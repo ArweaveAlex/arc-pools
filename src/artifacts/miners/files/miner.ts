@@ -1,27 +1,21 @@
-import * as fs from "fs";
-
 import minimist from "minimist";
+import * as fs from "fs";
+import * as pathI from 'path';
 
+import { ArtifactEnum, PoolConfigType } from "../../../helpers/types";
 import { PoolClient } from "../../../clients/pool";
-
-
-import { exitProcess, findFileAbsolutePath, processMediaPath } from "../../../helpers/utils";
-import { ArtifactEnum, IPoolClient, PoolConfigType } from "../../../helpers/types";
-import { CONTENT_TYPES, TAGS } from "../../../helpers/config";
+import { 
+    exitProcess, 
+    log, 
+    processMediaPath,
+    walk
+} from "../../../helpers/utils";
+import { CONTENT_TYPES, ARTIFACT_TYPES_BY_FILE, TAGS } from "../../../helpers/config";
 import { createAsset } from "../..";
 
-// state for building association sequences by collection
-const filePath = './sequence.json';
-let associationIdsByCollection = {
-    lastIndexProcessed: 0
-};
-
-if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-  const fileData = fs.readFileSync(filePath, 'utf-8');
-  associationIdsByCollection = JSON.parse(fileData);
-} else {
-  console.log('File not found or is not a file.');
-}
+const sentFilesFilename = 'sentFiles.json';
+let sentFiles = [];
+let sentFilesFilepath = null;
 
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
     const poolClient = new PoolClient(poolConfig);
@@ -32,56 +26,98 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
 
     console.log("Mining files");
 
-    const fileDir = argv["file-dir"];
-    const fileConfig = argv["file-config"];
+    const path = argv["path"];
+    const metaFile = argv["meta-file"];
+    const clear = argv["clear"];
 
-    if(!fileDir || !fileConfig){
-        console.log("Please enter a file directory and file metadata config");
+    console.log(clear)
+
+    if(!path){
+        log("Please provide a --path", 1);
         return;
     }
 
-    let fileList = JSON.parse(fs.readFileSync(fileConfig).toString());
-    let index = associationIdsByCollection.lastIndexProcessed + 1;
-    console.log(index)
-    console.log(fileList.length)
-    for(let i=index; i<fileList.length; i++) {
-        let entry = fileList[i];
-        let fileAbsolutePath = findFileAbsolutePath(fileDir, entry["FileName"]);
-        console.log(fileAbsolutePath)
-        if(fileAbsolutePath){
-            console.log(entry["MetaData"]["Title"])
-            await processEntry(poolClient, fileAbsolutePath, entry);
-            associationIdsByCollection.lastIndexProcessed = i;
-            fs.writeFileSync(filePath, JSON.stringify(associationIdsByCollection));
+    let metaConfig = null;
+
+    // if they send a meta-file option parse it to config
+    if(metaFile){
+        if (!fs.existsSync(metaFile) || !fs.statSync(metaFile).isFile()) {
+            exitProcess('meta-file not found or is not a file.', 1);
+        }
+        try {
+            const metaFileData = fs.readFileSync(metaFile, 'utf-8');
+            metaConfig = JSON.parse(metaFileData);  
+        } catch(e: any) {
+            log(e, 1);
+            exitProcess('Failed to parse metadata config.', 1)
         }
     }
 
-    console.log("Completed file list");
+    if (fs.existsSync(path)) {
+        if(fs.statSync(path).isFile()){
+            log('Archiving file', 0);
+            await archiveFile(poolClient, metaConfig, path);
+        } else if (fs.statSync(path).isDirectory()){
+            log('Archiving directory', 0);
+            
+            genSentFiles(path, clear);
+            // await archiveDirectory(poolClient, metaConfig, path);
+        } else {
+            exitProcess('path is not a file or directory.', 1);
+        }
+      } else {
+        exitProcess('path not found.', 1);
+      }
+    
+    log("Completed file list", 0);
 }
 
-function genAssociation(entry: any){
-    let collectionName = entry["MetaData"]["Collection"];
-    if(associationIdsByCollection[collectionName]){
-        associationIdsByCollection[collectionName].sequence = associationIdsByCollection[collectionName].sequence + 1;
+function genSentFiles(path: string, clear: boolean) {
+    sentFilesFilepath = pathI.join(path, sentFilesFilename);
+    if(clear) {
+        fs.rmSync(sentFilesFilepath);
+    }
+    if (fs.existsSync(sentFilesFilepath) && fs.statSync(sentFilesFilepath).isFile()) {
+        const fileData = fs.readFileSync(sentFilesFilepath, 'utf-8');
+        sentFiles = JSON.parse(fileData);
+        console.log(sentFiles)
     } else {
-        let r = Math.floor(Math.random() * 1000000) + 1;
-        associationIdsByCollection[collectionName] = {
-            id: r,
-            sequence: 0
-        }
+        fs.writeFileSync(sentFilesFilepath, "[]");
     }
-    fs.writeFileSync(filePath, JSON.stringify(associationIdsByCollection));
 }
 
-async function processEntry(poolClient: IPoolClient, fileAbsolutePath: string, entry: any) {
-    genAssociation(entry);
+function findFileConfig(fileName: string, metaConfig: any) {
+    return metaConfig.find((obj: any) => obj["FileName"] === fileName);
+}
 
-    let fileTransactionId = await processFile(poolClient, fileAbsolutePath);
-    let metaData = JSON.stringify(entry["MetaData"]);
+async function archiveDirectory(poolClient: PoolClient, metaConfig: any, path: string) {
+    for await (const f of walk(path)) {
+        if (pathI.basename(f) !== sentFilesFilename) {
+            if(!sentFiles.includes(pathI.basename(f))) {
+                await archiveFile(poolClient, metaConfig, f);
+            } else {
+                log(`Skipping ${pathI.basename(f)}, file already sent to this pool, run with --clear option to resend all files from this directory`, 0);
+            }
+        }
+    }
+}
+
+async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string) {
+    let fileName = pathI.basename(path);
+    let fileConfig = findFileConfig(fileName, metaConfig);
+
+    let name = fileConfig && fileConfig["ArtifactName"] ? fileConfig["ArtifactName"] : fileName;
+    let metaData = fileConfig && fileConfig["MetaData"] ? JSON.stringify(fileConfig["MetaData"]) : JSON.stringify({empty: "empty"});
+    let fileType = pathI.extname(path).slice(1);
+    let associationId = fileConfig && fileConfig["ArtifactGroup"] && fileConfig["ArtifactGroupSequence"] ? fileConfig["ArtifactGroup"] : null;
+    let associationSequence = associationId ? fileConfig["ArtifactGroupSequence"] : null;
+
     const subTags = [
         { name: TAGS.keys.application, value: TAGS.values.application },
         { name: TAGS.keys.contentType, value: CONTENT_TYPES.json }
     ];
+
+    let fileTransactionId = await processFile(poolClient, path);
 
     let metadataTx = poolClient.bundlr.createTransaction(
         metaData,
@@ -99,35 +135,32 @@ async function processEntry(poolClient: IPoolClient, fileAbsolutePath: string, e
         metadataTxId: metadataTxId
     };
 
-    let assocId = associationIdsByCollection[entry["MetaData"]["Collection"]].id;
-    let associationSequence = associationIdsByCollection[entry["MetaData"]["Collection"]].sequence;
-
-    let name = entry["MetaData"]["Title"];
-    if(!name) {
-        name = entry["MetaData"]["Collection"];
-    }
-
-    await createAsset(poolClient, {
+    let asset = await createAsset(poolClient, {
         index: { path: "file.json" },
         paths: (assetId: string) => ({ "file.json": { id: assetId } }),
         content: fileJson,
         contentType: CONTENT_TYPES.json,
-        artifactType: ArtifactEnum.Image,
+        artifactType: ARTIFACT_TYPES_BY_FILE[fileType],
         name: name,
         description: name,
         type: TAGS.values.ansTypes.image,
         additionalMediaPaths: [],
         profileImagePath: null,
-        associationId: assocId.toString(),
-        associationSequence: associationSequence.toString(),
+        associationId: associationId,
+        associationSequence: associationSequence,
         childAssets: null,
         renderWith: null,
         assetId: fileTransactionId,
-        fileType: "jpeg"
+        fileType: fileType
     });
+
+    if(asset) {
+        sentFiles.push(fileName);
+        fs.writeFileSync(sentFilesFilepath, JSON.stringify(sentFiles));
+    }
 }
 
-async function processFile(poolClient: IPoolClient, filePath: string) {
+async function processFile(poolClient: PoolClient, filePath: string) {
     const subTags = [
         { name: TAGS.keys.application, value: TAGS.values.application }
     ];
