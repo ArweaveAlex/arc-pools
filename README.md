@@ -293,9 +293,11 @@ The mining process can begin in the directory containing the `pools.json` by run
 ### Files and Documents
 
 **Mine a file**
+
 arcpool mine POOL_NAME --source files --path examplefile.jpg
 
 **Mine a directory of files**
+
 arcpool mine POOL_NAME --source files --path ./exampledirectory
 
 **Optionally you can add metadata to your files by creating a metadata file that contains a JSON array with entries as follows, name this file whatever you want it will be passed as an argument**
@@ -333,12 +335,15 @@ arcpool mine POOL_NAME --source files --path ./exampledirectory
     - MetaData, can be any data fields you want to be stored alongside the file.
 
 **Mine a file with a metadata config**
+
 arcpool mine POOL_NAME --source files --path examplefile.jpg --meta-file ./metafile.json
 
 **Mine a directory of files with a metadata config**
+
 arcpool mine POOL_NAME --source files --path ./exampledirectory --meta-file ./metafile.json
 
 **Lastly, when you sending a directory, arcpool will store a list of files already sent and not send duplicates, to send all files again, use the --clear option**
+
 arcpool mine POOL_NAME --source files --path ./exampledirectory --meta-file ./metafile.json --clear
 
 ### Twitter
