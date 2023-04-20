@@ -48,15 +48,17 @@ npm install --global arcpool
 Usage: arcpool [commands] [options]
 
 Options                                                     Description
---clear                                                     Clear local search index for pool
+--clear                                                     Clear local files used on command
 --content-moderation                                        Use content moderation on twitter mining
 --control-wallet <wallet file>                              Specifies a wallet to use in the pool creation
 --dname <string>                                            Specifies the daemon name to stop
 --image <path to image file>                                Specifies an image to use for pool
 --mention-tag <username>                                    Username for twitter or reddit with --method user
+--meta-file <path to metadata file>                         Specifies a metadata config for file uploads
 --method <user / mention / subreddit / search>              Subcategory within source such as user
+--path <path to file or directory>                          Specifies a directory or file to upload
 --search-term <search term>                                 Search term to mine
---source <twitter / wikipedia / reddit / nostr>                     Specifies the data source
+--source <files / twitter / wikipedia / reddit / nostr>     Specifies the data source
 --subreddit <subreddit>                                     Subreddit to mine
 
 
@@ -65,7 +67,7 @@ balance <pool id>                                           Check the Bundlr and
 create <pool id>                                            Create a pool using pools.json
 dlist                                                       list all daemon mining processes
 dstop <daemon name>                                         Stop a daemon mining process by name
-fund <pool id>                                              Fun the bundlr wallet for a pool
+fund <pool id>                                              Fund the bundlr wallet for a pool
 help                                                        Display help text
 init <pool id>                                              Initialize pools.json
 mine <pool id>                                              Mine artifacts for a given pool
