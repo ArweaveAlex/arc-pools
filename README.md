@@ -350,7 +350,7 @@ arcpool mine POOL_NAME --source files --path examplefile.jpg --meta-file ./metaf
 arcpool mine POOL_NAME --source files --path ./exampledirectory --meta-file ./metafile.json
 ```
 
-**Lastly, when you sending a directory, arcpool will store a list of files already sent and not send duplicates, to send all files again, use the --clear option**
+**Lastly, when sending a directory, arcpool will store a list of files already sent and not send duplicates, to send all files again, use the --clear option**
 
 ```sh
 arcpool mine POOL_NAME --source files --path ./exampledirectory --meta-file ./metafile.json --clear
