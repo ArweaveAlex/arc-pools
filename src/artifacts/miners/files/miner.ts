@@ -57,9 +57,8 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
             await archiveFile(poolClient, metaConfig, path);
         } else if (fs.statSync(path).isDirectory()){
             log('Archiving directory', 0);
-            
             genSentFiles(path, clear);
-            // await archiveDirectory(poolClient, metaConfig, path);
+            await archiveDirectory(poolClient, metaConfig, path);
         } else {
             exitProcess('path is not a file or directory.', 1);
         }
