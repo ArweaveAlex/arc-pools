@@ -290,6 +290,57 @@ Once we see that we have Bundlr funds we can proceed to the mining process.
 
 The mining process can begin in the directory containing the `pools.json` by running these commands.
 
+### Files and Documents
+
+**Mine a file**
+arcpool mine POOL_NAME --source files --path examplefile.jpg
+
+**Mine a directory of files**
+arcpool mine POOL_NAME --source files --path ./exampledirectory
+
+**Optionally you can add metadata to your files by creating a metadata file that contains a JSON array with entries as follows, name this file whatever you want it will be passed as an argument**
+
+```json
+[
+  {
+    "FileName": "examplefile.jpg",
+    "ArtifactName": "test name",
+    "ArtifactGroup": "Group1",
+    "ArtifactGroupSequence": "1",
+    "MetaData": {
+      "ExampleMetaDataField1(whatever you want for example AddressWherePictureTaken)": "Here is some metadata about the file",
+      "ExampleMetaDataField2": "Here is some more metadata about the file"
+    }
+  },
+  {
+    "FileName": "examplefile2.jpg",
+    "ArtifactName": "test name 2",
+    "ArtifactGroup": "Group2",
+    "ArtifactGroupSequence": "1",
+    "MetaData": {
+      "ExampleMetaDataField1(whatever you want for example AddressWherePictureTaken)": "Here is some metadata about the file",
+      "ExampleMetaDataField2": "Here is some more metadata about the file"
+    }
+  }
+]
+```
+
+- Fill out the metadata file as follows
+    - FileName, the only mandatory field which ties this entry in the file to the filename being mined
+    - ArtifactName, an optional name for the artifact that will show up in Alex
+    - ArtifactGroup, an optional grouping for the artifact, if multiple files have the same group they will be grouped together
+    - ArtifactGroupSequence, an ordering within the group, the lower numbers will display first in Alex
+    - MetaData, can be any data fields you want to be stored alongside the file.
+
+**Mine a file with a metadata config**
+arcpool mine POOL_NAME --source files --path examplefile.jpg --meta-file ./metafile.json
+
+**Mine a directory of files with a metadata config**
+arcpool mine POOL_NAME --source files --path ./exampledirectory --meta-file ./metafile.json
+
+**Lastly, when you sending a directory, arcpool will store a list of files already sent and not send duplicates, to send all files again, use the --clear option**
+arcpool mine POOL_NAME --source files --path ./exampledirectory --meta-file ./metafile.json --clear
+
 ### Twitter
 
 **Mine tweets (runs 100 tweets at a time)**

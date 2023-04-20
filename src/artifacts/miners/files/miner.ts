@@ -30,8 +30,6 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
     const metaFile = argv["meta-file"];
     const clear = argv["clear"];
 
-    console.log(clear)
-
     if(!path){
         log("Please provide a --path", 1);
         return;
@@ -80,7 +78,6 @@ function genSentFiles(path: string, clear: boolean) {
     if (fs.existsSync(sentFilesFilepath) && fs.statSync(sentFilesFilepath).isFile()) {
         const fileData = fs.readFileSync(sentFilesFilepath, 'utf-8');
         sentFiles = JSON.parse(fileData);
-        console.log(sentFiles)
     } else {
         fs.writeFileSync(sentFilesFilepath, "[]");
     }
@@ -96,7 +93,11 @@ async function archiveDirectory(poolClient: PoolClient, metaConfig: any, path: s
             if(!sentFiles.includes(pathI.basename(f))) {
                 await archiveFile(poolClient, metaConfig, f);
             } else {
-                log(`Skipping ${pathI.basename(f)}, file already sent to this pool, run with --clear option to resend all files from this directory`, 0);
+                log(
+                    `Skipping ${pathI.basename(f)}, 
+                    file already sent to this pool, run with --clear option to resend all files from this directory`, 
+                    0
+                );
             }
         }
     }
@@ -107,9 +108,10 @@ async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string
     let fileConfig = findFileConfig(fileName, metaConfig);
 
     let name = fileConfig && fileConfig["ArtifactName"] ? fileConfig["ArtifactName"] : fileName;
-    let metaData = fileConfig && fileConfig["MetaData"] ? JSON.stringify(fileConfig["MetaData"]) : JSON.stringify({empty: "empty"});
+    let metaData = fileConfig && fileConfig["MetaData"] ? JSON.stringify(fileConfig["MetaData"]) : JSON.stringify({});
     let fileType = pathI.extname(path).slice(1);
-    let associationId = fileConfig && fileConfig["ArtifactGroup"] && fileConfig["ArtifactGroupSequence"] ? fileConfig["ArtifactGroup"] : null;
+    let grouped = fileConfig && fileConfig["ArtifactGroup"] && fileConfig["ArtifactGroupSequence"];
+    let associationId = grouped ? fileConfig["ArtifactGroup"] : null;
     let associationSequence = associationId ? fileConfig["ArtifactGroupSequence"] : null;
 
     const subTags = [
@@ -135,6 +137,18 @@ async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string
         metadataTxId: metadataTxId
     };
 
+    let ansType: string;
+    switch (ARTIFACT_TYPES_BY_FILE[fileType]){
+        case ArtifactEnum.Video:
+            ansType = TAGS.values.ansTypes.video;
+            break;
+        case ArtifactEnum.Audio:
+            ansType = TAGS.values.ansTypes.music;
+            break;
+        default:
+            ansType = TAGS.values.ansTypes.image;
+    }
+
     let asset = await createAsset(poolClient, {
         index: { path: "file.json" },
         paths: (assetId: string) => ({ "file.json": { id: assetId } }),
@@ -143,7 +157,7 @@ async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string
         artifactType: ARTIFACT_TYPES_BY_FILE[fileType],
         name: name,
         description: name,
-        type: TAGS.values.ansTypes.image,
+        type: ansType,
         additionalMediaPaths: [],
         profileImagePath: null,
         associationId: associationId,

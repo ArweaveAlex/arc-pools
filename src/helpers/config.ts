@@ -124,7 +124,9 @@ export const TAGS = {
         ansTypes: {
             socialPost: "social-post",
             webPage: "web-page",
-            image: "image"
+            image: "image",
+            video: "video",
+            music: "music"
         },
         appName: "SmartWeaveContract",
         appVersion: "0.3.0",
