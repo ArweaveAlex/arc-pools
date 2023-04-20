@@ -48,15 +48,17 @@ npm install --global arcpool
 Usage: arcpool [commands] [options]
 
 Options                                                     Description
---clear                                                     Clear local search index for pool
+--clear                                                     Clear local files used on command
 --content-moderation                                        Use content moderation on twitter mining
 --control-wallet <wallet file>                              Specifies a wallet to use in the pool creation
 --dname <string>                                            Specifies the daemon name to stop
 --image <path to image file>                                Specifies an image to use for pool
 --mention-tag <username>                                    Username for twitter or reddit with --method user
+--meta-file <path to metadata file>                         Specifies a metadata config for file uploads
 --method <user / mention / subreddit / search>              Subcategory within source such as user
+--path <path to file or directory>                          Specifies a directory or file to upload
 --search-term <search term>                                 Search term to mine
---source <twitter / wikipedia / reddit / nostr>                     Specifies the data source
+--source <files / twitter / wikipedia / reddit / nostr>     Specifies the data source
 --subreddit <subreddit>                                     Subreddit to mine
 
 
@@ -65,7 +67,7 @@ balance <pool id>                                           Check the Bundlr and
 create <pool id>                                            Create a pool using pools.json
 dlist                                                       list all daemon mining processes
 dstop <daemon name>                                         Stop a daemon mining process by name
-fund <pool id>                                              Fun the bundlr wallet for a pool
+fund <pool id>                                              Fund the bundlr wallet for a pool
 help                                                        Display help text
 init <pool id>                                              Initialize pools.json
 mine <pool id>                                              Mine artifacts for a given pool
@@ -289,6 +291,72 @@ Once we see that we have Bundlr funds we can proceed to the mining process.
 > **Before Mining:** double check the `keywords` in the `pools.json` to prevent unwanted artifacts in your pool.
 
 The mining process can begin in the directory containing the `pools.json` by running these commands.
+
+### Files and Documents
+
+**Mine a file**
+
+```sh
+arcpool mine POOL_NAME --source files --path examplefile.jpg
+```
+
+**Mine a directory of files**
+
+```sh
+arcpool mine POOL_NAME --source files --path ./exampledirectory
+```
+
+**Optionally you can add metadata to your files by creating a metadata file that contains a JSON array with entries as follows, name this file whatever you want it will be passed as an argument**
+
+```json
+[
+  {
+    "FileName": "examplefile.jpg",
+    "ArtifactName": "test name",
+    "ArtifactGroup": "Group1",
+    "ArtifactGroupSequence": "1",
+    "MetaData": {
+      "ExampleMetaDataField1(whatever you want for example AddressWherePictureTaken)": "Here is some metadata about the file",
+      "ExampleMetaDataField2": "Here is some more metadata about the file"
+    }
+  },
+  {
+    "FileName": "examplefile2.jpg",
+    "ArtifactName": "test name 2",
+    "ArtifactGroup": "Group2",
+    "ArtifactGroupSequence": "1",
+    "MetaData": {
+      "ExampleMetaDataField1(whatever you want for example AddressWherePictureTaken)": "Here is some metadata about the file",
+      "ExampleMetaDataField2": "Here is some more metadata about the file"
+    }
+  }
+]
+```
+
+- Fill out the metadata file as follows
+    - FileName, the only mandatory field which ties this entry in the file to the filename being mined
+    - ArtifactName, an optional name for the artifact that will show up in Alex
+    - ArtifactGroup, an optional grouping for the artifact, if multiple files have the same group they will be grouped together
+    - ArtifactGroupSequence, an ordering within the group, the lower numbers will display first in Alex
+    - MetaData, can be any data fields you want to be stored alongside the file.
+
+**Mine a file with a metadata config**
+
+```sh
+arcpool mine POOL_NAME --source files --path examplefile.jpg --meta-file ./metafile.json
+```
+
+**Mine a directory of files with a metadata config**
+
+```sh
+arcpool mine POOL_NAME --source files --path ./exampledirectory --meta-file ./metafile.json
+```
+
+**Lastly, when sending a directory, arcpool will store a list of files already sent and not send duplicates, to send all files again, use the --clear option**
+
+```sh
+arcpool mine POOL_NAME --source files --path ./exampledirectory --meta-file ./metafile.json --clear
+```
 
 ### Twitter
 

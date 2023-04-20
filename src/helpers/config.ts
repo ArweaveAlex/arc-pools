@@ -1,5 +1,6 @@
 import path from "path";
 import * as tApiV2 from "twitter-api-v2";
+import { ArtifactEnum } from "./types";
 
 export const APP_TITLE = "arcpool";
 
@@ -43,7 +44,9 @@ export const CLI_ARGS = {
         image: "image",
         clear: "clear",
         subreddit: "subreddit",
-        searchTerm: "search-term"
+        searchTerm: "search-term",
+        path: "path",
+        metaFile: "meta-file"
     },
     sources: {
         twitter: {
@@ -71,6 +74,9 @@ export const CLI_ARGS = {
         },
         nostr: {
             name: "nostr"
+        },
+        files: {
+            name: "files"
         }
     }
 }
@@ -94,6 +100,7 @@ export const TAGS = {
         contractSrc: "Contract-Src",
         dateCreated: "Date-Created",
         description: "Description",
+        fileType: "File-Type",
         implements: "Implements",
         initialOwner: "Initial-Owner",
         initState: "Init-State",
@@ -116,7 +123,10 @@ export const TAGS = {
         ansVersion: "ANS-110",
         ansTypes: {
             socialPost: "social-post",
-            webPage: "web-page"
+            webPage: "web-page",
+            image: "image",
+            video: "video",
+            music: "music"
         },
         appName: "SmartWeaveContract",
         appVersion: "0.3.0",
@@ -129,7 +139,8 @@ export const TAGS = {
         license: "x5UYiin_eRB0XCpZAkpduL0JIaXAUe9Bi2-RXGloBQI",
         poolVersions: {
             "1.2": "Alex-Archiving-Pool-v1.2",
-            "1.4": "Alex-Archiving-Pool-v1.4"
+            "1.4": "Alex-Archiving-Pool-v1.4",
+            "1.5": "Alex-Archiving-Pool-v1.5"
         },
         topic: (topic: string) => `Topic:${topic}`
     }
@@ -300,7 +311,7 @@ export const RELAY_QUEUE_PROC_SIZE = 10;
 
 export const DEFAULT_POOLS_JSON = 
      {
-        "appType": TAGS.values.poolVersions["1.4"], 
+        "appType": TAGS.values.poolVersions["1.5"], 
         "contracts": {
             "nft": {
                 "id": "",
@@ -330,7 +341,8 @@ export const DEFAULT_POOLS_JSON =
             "link": "",
             "rewards": "",
             "image": "",
-            "timestamp": ""
+            "timestamp": "",
+            "ownerMaintained": false
         },
         "walletPath": "",
         "bundlrNode": "https://node2.bundlr.network",
@@ -366,4 +378,44 @@ export const DEFAULT_POOLS_JSON =
             },
             "relays": DEFAULT_NOSTR_RELAYS
         }
+};
+
+
+export const ARTIFACT_TYPES_BY_FILE: { [ext: string]: ArtifactEnum } = {
+    // Images
+    'jpg': ArtifactEnum.Image,
+    'jpeg': ArtifactEnum.Image,
+    'png': ArtifactEnum.Image,
+    'gif': ArtifactEnum.Image,
+    'bmp': ArtifactEnum.Image,
+    'tiff': ArtifactEnum.Image,
+    'svg': ArtifactEnum.Image,
+    'webp': ArtifactEnum.Image,
+    // Documents
+    'pdf': ArtifactEnum.Document,
+    'txt': ArtifactEnum.Document,
+    'doc': ArtifactEnum.Document,
+    'docx': ArtifactEnum.Document,
+    'xls': ArtifactEnum.Document,
+    'xlsx': ArtifactEnum.Document,
+    'ppt': ArtifactEnum.Document,
+    'pptx': ArtifactEnum.Document,
+    'csv': ArtifactEnum.Document,
+    'rtf': ArtifactEnum.Document,
+    'html': ArtifactEnum.Document,
+    'htm': ArtifactEnum.Document,
+    'xml': ArtifactEnum.Document,
+    // Audio
+    'mp3': ArtifactEnum.Audio,
+    'm4a': ArtifactEnum.Audio,
+    'wav': ArtifactEnum.Audio,
+    'ogg': ArtifactEnum.Audio,
+    'flac': ArtifactEnum.Audio,
+    // Video
+    'mp4': ArtifactEnum.Video,
+    'mpeg': ArtifactEnum.Video,
+    'avi': ArtifactEnum.Video,
+    'wmv': ArtifactEnum.Video,
+    'mov': ArtifactEnum.Video,
+    'mkv': ArtifactEnum.Video,
 };

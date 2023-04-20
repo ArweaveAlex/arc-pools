@@ -97,7 +97,8 @@ export async function processMediaPaths(poolClient: IPoolClient, args: {
 export async function processMediaPath(poolClient: IPoolClient, f: string, args: {
   subTags: any,
   tmpdir: any,
-  path: string
+  path: string,
+  keepFile?: boolean
 }) {
   const mimeType = mime.contentType(mime.lookup(f) || CONTENT_TYPES.octetStream) as string;
   const tx = poolClient.bundlr.createTransaction(
@@ -107,7 +108,8 @@ export async function processMediaPath(poolClient: IPoolClient, f: string, args:
   await tx.sign();
   const id = tx.id;
   const cost = await poolClient.bundlr.getPrice(tx.size);
-  fs.rmSync(path.resolve(f));
+
+  if(!args.keepFile) fs.rmSync(path.resolve(f));
   
   let balance  = await poolClient.arClient.arweavePost.wallets.getBalance(poolClient.poolConfig.state.owner.pubkey);
   if(balance > 0) {
@@ -300,4 +302,21 @@ export function sha256Object(obj: any) {
   hash.update(serializedObj);
   var eventId = hash.digest("hex");
   return eventId;
+}
+
+export function findFileAbsolutePath(directory: string, filename: string): string | undefined {
+  const files = fs.readdirSync(directory);
+  for (const file of files) {
+    const absolutePath = path.join(directory, file);
+    const stats = fs.statSync(absolutePath);
+    if (stats.isFile() && (path.basename(absolutePath).toLowerCase() === filename.toLowerCase())) {
+      return absolutePath;
+    } else if (stats.isDirectory()) {
+      const result = findFileAbsolutePath(absolutePath, filename);
+      if (result !== undefined) {
+        return result;
+      }
+    }
+  }
+  return undefined;
 }
