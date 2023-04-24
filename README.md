@@ -213,7 +213,7 @@ Configure the `pools.json` file to generate your pool. If there is a field not m
 - `state.description` is a long description of your pool on the [Pool Detail](https://alex.arweave.dev/#/pool/zIZXNTl-GtTDbO8eP8LpkHks5S5WhB4j82YX-N2RuGw) page of Alex., under the About header. It can contain Text and/or HTML.
 - `state.briefDescription` is a brief description of your pool on the [Home Page](https://alex.arweave.dev) of Alex.
 - `keywords` is a list of the main keywords to track in the mining process. This is the core driving data that instructs the mining programs of what to pull from mining sources such as Twitter, Wikipedia, Reddit, or Nostr
-- `topics` A list of more general topics the pool fits into these generate ANS110 Topic tags in the data. Examples: history, funny, humor, science.
+- `topics` A list of more general topics the pool fits into, these generate ANS110 Topic tags in the data. These drive filters on the Alex site and must be one of the following strings, History, Philosophy, International, Culture, Art, Music, Faith, Spirituality, Sports, Business, Technology, Politics, Other.
 - `controller.contribPercent` is a reward percentage of the contributions. This value can be from **0 - 100** and represents the total percentage of contributions that go to your control wallet for mining. If the value of **controller.contribPercent** is **10**, then **10%** of all contributions will go to your control wallet as a reward. This percentage will appear in the User Interface to let contributors know how much of their contribution will go to the operator.
 
 ### Configure Twitter API Keys 

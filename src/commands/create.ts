@@ -10,7 +10,7 @@ import Bundlr from "@bundlr-network/client";
 import { ArweaveClient } from "../clients/arweave";
 import { getPools } from "../gql/pools";
 import { exitProcess, logJsonUpdate } from "../helpers/utils";
-import { PoolType, PoolStateType, PoolConfigType } from "../helpers/types";
+import { PoolType, PoolStateType, PoolConfigType, ANSTopicEnum } from "../helpers/types";
 import { validatePoolConfig, validateControlWalletPath } from "../helpers/validations";
 import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
 import { createWallet } from "../helpers/wallet";
@@ -153,12 +153,26 @@ const command: CommandInterface = {
             canEvolve: true,
             controlPubkey: controlWalletAddress,
             contribPercent: POOLS_JSON[poolArg].state.controller.contribPercent
-        }
+        };
 
         const tags = [
             { "name": TAGS.keys.appType, "value": poolConfig.appType },
-            { "name": TAGS.keys.poolName, "value": poolConfig.state.title }
-        ]
+            { "name": TAGS.keys.poolName, "value": poolConfig.state.title },
+            // ANS 110 tags
+            { "name": TAGS.keys.title, "value": poolConfig.state.title },
+            { "name": TAGS.keys.type, "value": 'token' },
+            { "name": TAGS.keys.description, "value": poolConfig.state.briefDescription }
+        ];
+
+        poolConfig.topics.map((topic: string) => {
+            if(topic in ANSTopicEnum){
+                tags.push(
+                    { "name": TAGS.keys.topic(topic), "value": topic},
+                );
+            } else {
+                console.log(`Invalid ANS topic skipping ${topic}`);
+            }
+        });
 
         console.log(`Deploying Pool from Source Tx ...`);
         const poolInitState = JSON.stringify(poolInitJson, null, 2);

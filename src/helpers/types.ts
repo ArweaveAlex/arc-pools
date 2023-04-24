@@ -3,6 +3,22 @@ import * as tApiV2 from "twitter-api-v2";
 import Bundlr from "@bundlr-network/client";
 import { Contract } from "warp-contracts";
 
+export enum ANSTopicEnum {
+	History = 'History',
+	Philosophy = 'Philosophy',
+	International = 'International',
+	Culture = 'Culture',
+	Art = 'Art',
+	Music = 'Music',
+	Faith = 'Faith',
+	Spirituality = 'Spirituality',
+	Sports = 'Sports',
+	Business = 'Business',
+	Technology = 'Technology',
+	Politics = 'Politics',
+	Other = 'Other',
+}
+
 export enum ArtifactEnum {
     Messaging = "Alex-Messaging",
     Webpage = "Alex-Webpage",

@@ -363,7 +363,7 @@ export const DEFAULT_POOLS_JSON =
         },
         "clarifaiApiKey": "",
         "topics": [
-            "history"
+            "History"
         ],
         "redditApiKeys": {
             "username": "",
