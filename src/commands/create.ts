@@ -10,7 +10,7 @@ import Bundlr from "@bundlr-network/client";
 import { ArweaveClient } from "../clients/arweave";
 import { getPools } from "../gql/pools";
 import { exitProcess, logJsonUpdate } from "../helpers/utils";
-import { PoolType, PoolStateType, PoolConfigType, ANSTopicEnum } from "../helpers/types";
+import { PoolType, PoolStateType, PoolConfigType, ANSTopicEnum, ArtifactEnum } from "../helpers/types";
 import { validatePoolConfig, validateControlWalletPath } from "../helpers/validations";
 import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
 import { createWallet } from "../helpers/wallet";
@@ -38,6 +38,26 @@ const command: CommandInterface = {
         const POOLS_JSON = JSON.parse(fs.readFileSync(poolPath).toString());
         
         const poolArg = args.commandValues[0];
+
+        console.log(`Checking Exisiting Pools ...`);
+        const exisitingPools = await getPools();
+        exisitingPools.forEach(function (pool: PoolType) {
+            if (poolConfig.state.title === pool.state.title) {
+                exitProcess(`Pool Already Exists`, 1);
+            }
+        });
+
+        let validTopic = false;
+        poolConfig.topics.map((topic: string) => {
+            if(topic in ANSTopicEnum){
+                validTopic = true;
+            } 
+        });
+
+        let topics = Object.values(ANSTopicEnum).join(', ');
+        if(!validTopic){
+            exitProcess(`Must configure at least 1 topic in pools.json with one of the following values ${topics}`, 1);
+        }
         
         const walletInfo = await createWallet(poolArg);
 
@@ -48,14 +68,6 @@ const command: CommandInterface = {
         logJsonUpdate(poolConfig.state.title, `walletPath`, walletInfo.file);
 
         const arClient = new ArweaveClient();
-        
-        console.log(`Checking Exisiting Pools ...`);
-        const exisitingPools = await getPools();
-        exisitingPools.forEach(function (pool: PoolType) {
-            if (poolConfig.state.title === pool.state.title) {
-                exitProcess(`Pool Already Exists`, 1);
-            }
-        });
 
         let controlWallet: any;
         let nftSrc: any;
