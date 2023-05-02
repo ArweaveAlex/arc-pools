@@ -5,7 +5,8 @@ import { validatePoolConfig } from "../helpers/validations";
 import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
 import { CLI_ARGS } from "../helpers/config";
 import { ArweaveClient } from "../clients/arweave";
-import { exitProcess } from "../helpers/utils";
+import { exitProcess, saveConfig } from "../helpers/utils";
+import { log } from "../helpers/utils";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.topics,
@@ -13,6 +14,7 @@ const command: CommandInterface = {
     args: ["pool id"],
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
+        const poolArg = args.commandValues[0];
         let poolWalletJwk = JSON.parse(fs.readFileSync(poolConfig.walletPath).toString());
         let arClient = new ArweaveClient();
         let topics = args.argv["topic-values"];
@@ -41,6 +43,10 @@ const command: CommandInterface = {
             function: "setTopics",
             data: topicValues
         });
+
+        poolConfig.topics = topicValues;
+        saveConfig(poolConfig, poolArg);
+        log('Topics saved', 0);
     }
 }
 
