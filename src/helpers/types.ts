@@ -10,7 +10,9 @@ export enum ANSTopicEnum {
 	Culture = 'Culture',
 	Art = 'Art',
 	Music = 'Music',
+    News = 'News',
 	Faith = 'Faith',
+    Science = 'Science',
 	Spirituality = 'Spirituality',
 	Sports = 'Sports',
 	Business = 'Business',
@@ -26,8 +28,10 @@ export enum ArtifactEnum {
     Nostr = "Alex-Nostr-Event",
     Image = "Alex-Image",
     Document = "Alex-Document",
+    Ebook = "Alex-Ebook",
     Video = "Alex-Video",
-    Audio = "Alex-Audio"
+    Audio = "Alex-Audio",
+    File = "Alex-File"
 }
 
 export type GQLResponseType = {

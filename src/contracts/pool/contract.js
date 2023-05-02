@@ -65,13 +65,23 @@ async function handle(state, action) {
             }
             return { state };
         }
+        case "setTopics": {
+            if (state.owner !== caller) {
+                throw new ContractError('Only the owner can add topics.');
+            }
+        
+            // set topic values to input list
+            state.topics = action.input.data;
+        
+            return { state };
+        }
         case "evolve": {
             if (canEvolve) {
                 if (state.owner !== caller) {
                   throw new ContractError('Only the owner can evolve a contract.');
                 }
             
-                state.evolve = input.value;
+                state.evolve = action.input.value;
             
                 return { state };
             }

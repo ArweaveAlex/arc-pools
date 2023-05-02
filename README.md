@@ -45,8 +45,6 @@ npm install --global arcpool
 ```
 
 ```
-Usage: arcpool [commands] [options]
-
 Options                                                     Description
 --clear                                                     Clear local files used on command
 --content-moderation                                        Use content moderation on twitter mining
@@ -60,6 +58,7 @@ Options                                                     Description
 --search-term <search term>                                 Search term to mine
 --source <files / twitter / wikipedia / reddit / nostr>     Specifies the data source
 --subreddit <subreddit>                                     Subreddit to mine
+--topic-values <comma seperated list of topics>             Comma seperated list of topics
 
 
 Commands                                                    Description
@@ -67,10 +66,12 @@ balance <pool id>                                           Check the Bundlr and
 create <pool id>                                            Create a pool using pools.json
 dlist                                                       list all daemon mining processes
 dstop <daemon name>                                         Stop a daemon mining process by name
+evolve <pool id>                                            Evolve the pool contract
 fund <pool id>                                              Fund the bundlr wallet for a pool
 help                                                        Display help text
 init <pool id>                                              Initialize pools.json
 mine <pool id>                                              Mine artifacts for a given pool
+topics <pool id>                                            Set the pool topics in pool state
 ```
 
 
@@ -455,4 +456,13 @@ npm install --global pm2
 
 ```sh
 pm2 logs
+```
+
+
+## Updating pool topics for site filter
+
+**When you initially create the pool you will set topics into the tags. However you can set more topics into the state for the site filter to use by running the topics command. Feed in a comma seperated list of topics that match the following values, History, Philosophy, International, Culture, Art, Music, Faith, Spirituality, Sports, Business, Technology, Politics, Other**
+
+```sh
+arcpool topics POOL_NAME --topic-values History,Politics,Other
 ```

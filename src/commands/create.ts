@@ -24,6 +24,7 @@ import {
     POOL_FILE,
     FALLBACK_IMAGE
 } from "../helpers/config";
+import { ArweaveSigner } from "warp-contracts-plugin-deploy";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.create,
@@ -69,7 +70,7 @@ const command: CommandInterface = {
 
         const arClient = new ArweaveClient();
 
-        let controlWallet: any;
+        let controlWalletJwk: any;
         let nftSrc: any;
         let nftInitState: any;
         let poolSrc: any;
@@ -77,8 +78,8 @@ const command: CommandInterface = {
         let controlWalletAddress: string;
 
         try {
-            controlWallet = JSON.parse(fs.readFileSync(controlWalletPath).toString());
-            controlWalletAddress = await arClient.arweavePost.wallets.jwkToAddress(controlWallet);
+            controlWalletJwk = JSON.parse(fs.readFileSync(controlWalletPath).toString());
+            controlWalletAddress = await arClient.arweavePost.wallets.jwkToAddress(controlWalletJwk);
             POOLS_JSON[poolArg].state.controller.pubkey = controlWalletAddress;
             
             let controlWalletBalance  = await arClient.arweavePost.wallets.getBalance(controlWalletAddress);
@@ -101,7 +102,7 @@ const command: CommandInterface = {
                     data: image
                 });
                 tx.addTag(TAGS.keys.contentType, type);
-                await arClient.arweavePost.transactions.sign(tx, controlWallet);
+                await arClient.arweavePost.transactions.sign(tx, controlWalletJwk);
                 await arClient.arweavePost.transactions.post(tx);
                 console.log(`Pool image posted, Arweave Tx Id - [`, clc.green(`'${tx.id}'`), `]`);
                 POOLS_JSON[poolArg].state.image = tx.id;
@@ -122,7 +123,7 @@ const command: CommandInterface = {
             nftDeployment = await arClient.warp.createContract.deploy({
                 src: nftSrc,
                 initState: JSON.stringify(nftInitState),
-                wallet: controlWallet
+                wallet: new ArweaveSigner(controlWalletJwk)
             });
         } catch (e: any) {
             console.log(e);
@@ -138,7 +139,7 @@ const command: CommandInterface = {
         const poolSrcDeployment = await arClient.warp.createContract.deploy({
             src: poolSrc,
             initState: JSON.stringify({}),
-            wallet: controlWallet
+            wallet: new ArweaveSigner(controlWalletJwk)
         });
 
         POOLS_JSON[poolArg].contracts.pool.src = poolSrcDeployment.srcTxId;
@@ -172,7 +173,7 @@ const command: CommandInterface = {
             { "name": TAGS.keys.poolName, "value": poolConfig.state.title },
             // ANS 110 tags
             { "name": TAGS.keys.title, "value": poolConfig.state.title },
-            { "name": TAGS.keys.type, "value": 'token' },
+            { "name": TAGS.keys.type, "value": TAGS.values.ansTypes.collection },
             { "name": TAGS.keys.description, "value": poolConfig.state.briefDescription }
         ];
 
@@ -189,7 +190,7 @@ const command: CommandInterface = {
         console.log(`Deploying Pool from Source Tx ...`);
         const poolInitState = JSON.stringify(poolInitJson, null, 2);
         const poolDeployment = await arClient.warp.createContract.deployFromSourceTx({
-            wallet: controlWallet,
+            wallet: new ArweaveSigner(controlWalletJwk),
             initState: poolInitState,
             srcTxId: poolSrcDeployment.srcTxId,
             tags: tags
@@ -208,12 +209,12 @@ const command: CommandInterface = {
 
         rl.question('Would you like to contribute to your pool from your control wallet to begin mining sooner? (y/n) ', async (answer: string) => {
             if (answer.toLowerCase() === 'y') {
-                const controlWalletAddress = await arClient.arweavePost.wallets.jwkToAddress(controlWallet);
+                const controlWalletAddress = await arClient.arweavePost.wallets.jwkToAddress(controlWalletJwk);
                 let controlWalletBalance  = await arClient.arweavePost.wallets.getBalance(controlWalletAddress);
 
                 let arBalance = arClient.arweavePost.ar.winstonToAr(controlWalletBalance);
 
-                askForBalance(arBalance, arClient, poolDeployment, walletInfo, rl, controlWallet, poolConfig); 
+                askForBalance(arBalance, arClient, poolDeployment, walletInfo, rl, controlWalletJwk, poolConfig); 
             } else {
                 finishOut(poolDeployment, rl);
             }
@@ -230,7 +231,7 @@ function askForBalance(
         address: any;
     },
     rl: any,
-    controlWallet: any,
+    controlWalletJwk: any,
     poolConfig: PoolConfigType
 ) {
     
@@ -238,10 +239,10 @@ function askForBalance(
         const am = parseFloat(amount);
         if (isNaN(am) || (am <= 0) || (am > arBalance) || (am < 0.01)) {
             console.log('Invalid input. Please enter a valid positive number greater than 0.01');
-            askForBalance(arBalance, arClient, poolDeployment, walletInfo, rl, controlWallet, poolConfig); 
+            askForBalance(arBalance, arClient, poolDeployment, walletInfo, rl, controlWalletJwk, poolConfig); 
         } else {
             const warpContract = arClient.warp.contract(poolDeployment.contractTxId).connect(
-                controlWallet
+                controlWalletJwk
             ).setEvaluationOptions({
                 waitForConfirmation: false,
             });

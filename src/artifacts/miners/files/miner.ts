@@ -137,15 +137,27 @@ async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string
     };
 
     let ansType: string;
-    switch (ARTIFACT_TYPES_BY_FILE[fileType]){
+    let alexType = ARTIFACT_TYPES_BY_FILE[fileType] ? ARTIFACT_TYPES_BY_FILE[fileType] : ArtifactEnum.File;
+    switch (alexType){
         case ArtifactEnum.Video:
             ansType = TAGS.values.ansTypes.video;
             break;
         case ArtifactEnum.Audio:
             ansType = TAGS.values.ansTypes.music;
             break;
-        default:
+        case ArtifactEnum.Image:
             ansType = TAGS.values.ansTypes.image;
+            break;
+        case ArtifactEnum.Document:
+            ansType = TAGS.values.ansTypes.document;
+            break;
+        case ArtifactEnum.Ebook:
+            ansType = TAGS.values.ansTypes.document;
+            break;
+        // file is a default
+        case ArtifactEnum.File:
+            ansType = TAGS.values.ansTypes.file;
+            break;
     }
 
     let asset = await createAsset(poolClient, {
@@ -153,7 +165,7 @@ async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string
         paths: (assetId: string) => ({ "file.json": { id: assetId } }),
         content: fileJson,
         contentType: CONTENT_TYPES.json,
-        artifactType: ARTIFACT_TYPES_BY_FILE[fileType],
+        artifactType: alexType,
         name: name,
         description: name,
         type: ansType,
@@ -168,8 +180,10 @@ async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string
     });
 
     if(asset) {
-        sentFiles.push(fileName);
-        fs.writeFileSync(sentFilesFilepath, JSON.stringify(sentFiles));
+        if(fs.statSync(path).isDirectory()) {
+            sentFiles.push(fileName);
+            fs.writeFileSync(sentFilesFilepath, JSON.stringify(sentFiles));
+        }
     }
 }
 

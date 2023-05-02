@@ -1,5 +1,6 @@
 import Arweave from "arweave";
 import { WarpFactory, defaultCacheOptions } from "warp-contracts";
+import { DeployPlugin } from 'warp-contracts-plugin-deploy';
 
 import { GQLResponseType } from "../../helpers/types";
 import { getGQLData } from "../../gql";
@@ -31,7 +32,7 @@ export default class ArweaveClient {
         logging: LOGGING
     });
 
-    warp: any = WarpFactory.forMainnet({ ...defaultCacheOptions, inMemory: true });
+    warp: any = WarpFactory.forMainnet({ ...defaultCacheOptions, inMemory: true }).use(new DeployPlugin());
 
     async isDuplicate(args: {
         artifactName: string,
