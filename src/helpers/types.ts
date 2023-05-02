@@ -68,7 +68,6 @@ export interface PoolStateType {
     image: string
     briefDescription: string
     description: string
-    link: string
     owner: string
     ownerInfo: string
     timestamp: string
@@ -93,10 +92,6 @@ export type PoolConfigType = {
             id: NStringType
             src: NStringType
         },
-        poolSearchIndex: {
-            id: NStringType
-            src: NStringType
-        }
     },
     state: {
         owner: {
@@ -110,8 +105,6 @@ export type PoolConfigType = {
         title: string
         description: string
         briefDescription: string
-        link: string
-        rewards: string
         image: NStringType
         timestamp: NStringType
     },

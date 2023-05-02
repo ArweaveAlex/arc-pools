@@ -128,10 +128,6 @@ Below is the ```pools.json``` file that has been initiated that now needs to be 
             "pool": {
                 "id": "",
                 "src": ""
-            },
-            "poolSearchIndex": {
-                "id": "",
-                "src": ""
             }
         },
         "state": {
@@ -146,16 +142,11 @@ Below is the ```pools.json``` file that has been initiated that now needs to be 
             "title": "Pool Title",
             "description": "Paragraph/html markup for long pool description",
             "briefDescription": "Text for short pool description",
-            "link": "",
-            "rewards": "",
             "image": "",
             "timestamp": ""
         },
         "walletPath": "",
         "bundlrNode": "https://node2.bundlr.network",
-        "twitter": {
-            "userIds": []
-        },
         "keywords": [
             "keyword1"
         ],

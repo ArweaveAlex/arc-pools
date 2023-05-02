@@ -154,7 +154,6 @@ const command: CommandInterface = {
             image: POOLS_JSON[poolArg].state.image,
             briefDescription: poolConfig.state.briefDescription,
             description: poolConfig.state.description,
-            link: "",
             owner: POOLS_JSON[poolArg].state.owner.pubkey,
             ownerInfo: poolConfig.state.owner.info,
             timestamp: timestamp,

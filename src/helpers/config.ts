@@ -327,10 +327,6 @@ export const DEFAULT_POOLS_JSON =
                 "id": "",
                 "src": ""
             },
-            "poolSearchIndex": {
-                "id": "",
-                "src": ""
-            }
         },
         "state": {
             "owner": {
@@ -344,19 +340,12 @@ export const DEFAULT_POOLS_JSON =
             "title": "Pool Title such as Russia Ukraine War",
             "description": "Paragraph/html markup for long pool description on site",
             "briefDescription": "Text for short pool description on site",
-            "link": "",
-            "rewards": "",
             "image": "",
             "timestamp": "",
             "ownerMaintained": false
         },
         "walletPath": "",
         "bundlrNode": "https://node2.bundlr.network",
-        "twitter": {
-            "userIds": [
-                
-            ]
-        },
         "keywords": [
             "keyword1",
         ],
@@ -378,10 +367,6 @@ export const DEFAULT_POOLS_JSON =
             "appSecret": ""
         },
         "nostr": {
-            "keys": {
-                "public": "",
-                "private": "" 
-            },
             "relays": DEFAULT_NOSTR_RELAYS
         }
 };
