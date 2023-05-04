@@ -84,7 +84,7 @@ export const CLI_ARGS = {
     }
 }
 
-export const RENDER_WITH_VALUE = ["alex-renderers", "5A-B2_KnvkoMOxM51ulfSzppmLGJ-UBQ317sMri1vpY", "1AqTXu6JyPWMZnRYJozf184bw1ph0mwlka67EgQLTa8"];
+export const RENDER_WITH_VALUE = ["alex-renderers"];
 
 export const TAGS = {
     keys: {
