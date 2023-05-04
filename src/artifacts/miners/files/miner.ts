@@ -10,7 +10,7 @@ import {
     processMediaPath,
     walk
 } from "../../../helpers/utils";
-import { CONTENT_TYPES, ARTIFACT_TYPES_BY_FILE, TAGS } from "../../../helpers/config";
+import { CONTENT_TYPES, ARTIFACT_TYPES_BY_FILE, TAGS, RENDER_WITH_VALUE } from "../../../helpers/config";
 import { createAsset } from "../..";
 
 const sentFilesFilename = 'sentFiles.json';
@@ -174,7 +174,7 @@ async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string
         associationId: associationId,
         associationSequence: associationSequence,
         childAssets: null,
-        renderWith: null,
+        renderWith: RENDER_WITH_VALUE,
         assetId: fileTransactionId,
         fileType: fileType
     });

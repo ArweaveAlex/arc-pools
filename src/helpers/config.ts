@@ -84,7 +84,7 @@ export const CLI_ARGS = {
     }
 }
 
-export const RENDER_WITH_VALUE = "alex-renderers";
+export const RENDER_WITH_VALUE = ["alex-renderers", "5A-B2_KnvkoMOxM51ulfSzppmLGJ-UBQ317sMri1vpY", "1AqTXu6JyPWMZnRYJozf184bw1ph0mwlka67EgQLTa8"];
 
 export const TAGS = {
     keys: {
@@ -101,6 +101,7 @@ export const TAGS = {
         childAssets: "Child-Assets",
         contentType: "Content-Type",
         contractSrc: "Contract-Src",
+        dataProtocol: "Data-Protocol",
         dateCreated: "Date-Created",
         description: "Description",
         fileType: "File-Type",
