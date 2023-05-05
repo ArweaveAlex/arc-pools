@@ -1,3 +1,4 @@
+<base target="_blank">
 # Alex. CLI
 
 [Alex](https://alex.arweave.dev). is a decentralized archival platform that leverages the immutable and permanent data storage of Arweave and includes a mechanism that encourages end user participation.
