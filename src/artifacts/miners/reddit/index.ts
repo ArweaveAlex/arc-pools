@@ -14,7 +14,7 @@ import {
     traverse,
     uploadFile
 } from "../../../helpers/utils";
-import { CONTENT_TYPES, TAGS } from "../../../helpers/config";
+import { CONTENT_TYPES, RENDER_WITH_VALUE, TAGS } from "../../../helpers/config";
 import { createAsset } from "../..";
 import { shouldUploadContent } from "../moderator";
 
@@ -77,7 +77,7 @@ async function processPost(poolClient: IPoolClient, args: {
         associationId: null,
         associationSequence: null,
         childAssets: null,
-        renderWith: null,
+        renderWith: RENDER_WITH_VALUE,
         assetId: args.post[0].data.id
     });
 

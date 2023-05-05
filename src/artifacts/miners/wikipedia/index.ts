@@ -4,7 +4,7 @@ import WikiJS from "wikijs";
 import { createAsset } from "../..";
 import { ArtifactEnum, IPoolClient } from "../../../helpers/types";
 import { wikiApiEndpoint } from "../../../helpers/endpoints";
-import { CONTENT_TYPES, TAGS } from "../../../helpers/config";
+import { CONTENT_TYPES, RENDER_WITH_VALUE, TAGS } from "../../../helpers/config";
 
 let currentArticleURL = "";
 
@@ -116,7 +116,7 @@ const scrapePage = async (poolClient: IPoolClient, query: string) => {
             associationId: null,
             associationSequence: null,
             childAssets: null,
-            renderWith: null,
+            renderWith: RENDER_WITH_VALUE,
             assetId: content.title
         });
     }
