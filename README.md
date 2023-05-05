@@ -8,5 +8,5 @@ This repository is the client tool for creating the pools and mining artifacts. 
 
 ## Documentation
 
-https://alex.arweave.dev/#/docs/introduction
+[link](https://alex.arweave.dev/#/docs/introduction){:target="_blank"}
 
