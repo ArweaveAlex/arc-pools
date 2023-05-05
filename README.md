@@ -1,4 +1,3 @@
-<base target="_blank">
 # Alex. CLI
 
 [Alex](https://alex.arweave.dev). is a decentralized archival platform that leverages the immutable and permanent data storage of Arweave and includes a mechanism that encourages end user participation.
@@ -9,5 +8,6 @@ This repository is the client tool for creating the pools and mining artifacts. 
 
 ## Documentation
 
-<a href="https://alex.arweave.dev/#/docs/introduction" target="_blank">Link to Documentation</a>
+https://alex.arweave.dev/#/docs/introduction
+
 
