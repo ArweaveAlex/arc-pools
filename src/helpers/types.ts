@@ -3,6 +3,24 @@ import * as tApiV2 from "twitter-api-v2";
 import Bundlr from "@bundlr-network/client";
 import { Contract } from "warp-contracts";
 
+export enum ANSTopicEnum {
+	History = 'History',
+	Philosophy = 'Philosophy',
+	International = 'International',
+	Culture = 'Culture',
+	Art = 'Art',
+	Music = 'Music',
+    News = 'News',
+	Faith = 'Faith',
+    Science = 'Science',
+	Spirituality = 'Spirituality',
+	Sports = 'Sports',
+	Business = 'Business',
+	Technology = 'Technology',
+	Politics = 'Politics',
+	Other = 'Other',
+}
+
 export enum ArtifactEnum {
     Messaging = "Alex-Messaging",
     Webpage = "Alex-Webpage",
@@ -10,8 +28,10 @@ export enum ArtifactEnum {
     Nostr = "Alex-Nostr-Event",
     Image = "Alex-Image",
     Document = "Alex-Document",
+    Ebook = "Alex-Ebook",
     Video = "Alex-Video",
-    Audio = "Alex-Audio"
+    Audio = "Alex-Audio",
+    File = "Alex-File"
 }
 
 export type GQLResponseType = {
@@ -48,7 +68,6 @@ export interface PoolStateType {
     image: string
     briefDescription: string
     description: string
-    link: string
     owner: string
     ownerInfo: string
     timestamp: string
@@ -73,10 +92,6 @@ export type PoolConfigType = {
             id: NStringType
             src: NStringType
         },
-        poolSearchIndex: {
-            id: NStringType
-            src: NStringType
-        }
     },
     state: {
         owner: {
@@ -90,8 +105,6 @@ export type PoolConfigType = {
         title: string
         description: string
         briefDescription: string
-        link: string
-        rewards: string
         image: NStringType
         timestamp: NStringType
     },

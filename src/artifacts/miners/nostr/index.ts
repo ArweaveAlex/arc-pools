@@ -3,7 +3,7 @@ import tmp from "tmp-promise";
 import { mkdir } from "fs/promises";
 import path from "path";
 
-import { CONTENT_TYPES, DEFAULT_NOSTR_RELAYS, TAGS } from '../../../helpers/config';
+import { CONTENT_TYPES, DEFAULT_NOSTR_RELAYS, RENDER_WITH_VALUE, TAGS } from '../../../helpers/config';
 import { ArtifactEnum, IPoolClient } from '../../../helpers/types';
 import { generateNostrAssetDescription, generateNostrAssetName, log, saveConfig } from '../../../helpers/utils';
 import { 
@@ -86,7 +86,7 @@ export async function processEvent(poolClient: IPoolClient, args: {
         associationSequence: args.associationSequence,
         childAssets: null,
         assetId: sha256Object(args.event.post),
-        renderWith: null
+        renderWith: RENDER_WITH_VALUE
     });
 
     if (contractId) {

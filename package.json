@@ -1,6 +1,6 @@
 {
     "name": "arcpool",
-    "version": "1.5.4",
+    "version": "1.5.6",
     "main": "./bin/index.js",
     "repository": "https://github.com/ArweaveAlex/arc-pools.git",
     "author": "NickJ202",
@@ -38,7 +38,8 @@
         "reddit": "^1.2.1",
         "ts-node": "^10.9.1",
         "twitter-api-v2": "^1.12.0",
-        "warp-contracts": "1.2.51",
+        "warp-contracts": "^1.4.4",
+        "warp-contracts-plugin-deploy": "^1.0.7",
         "websocket-polyfill": "^0.0.3",
         "wikijs": "^6.3.3"
     },

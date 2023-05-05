@@ -28,9 +28,10 @@ export async function createAsset(poolClient: PoolClient, args: {
   associationId: string | null,
   associationSequence: string | null,
   childAssets: string[] | null,
-  renderWith: string | null,
+  renderWith: string[] | null,
   assetId: string,
-  fileType?: string
+  fileType?: string,
+  dataProtocol?: string,
 }) {
   const contractTags = await createContractTags(poolClient, {
     index: args.index,
@@ -47,7 +48,8 @@ export async function createAsset(poolClient: PoolClient, args: {
     childAssets: args.childAssets,
     renderWith: args.renderWith,
     assetId: args.assetId,
-    fileType: args.fileType
+    fileType: args.fileType,
+    dataProtocol: args.dataProtocol
   });
 
   const assetId: string = await deployToBundlr(poolClient, {
@@ -79,9 +81,10 @@ async function createContractTags(poolClient: IPoolClient, args: {
   associationId: string | null,
   associationSequence: string | null,
   childAssets: string[],
-  renderWith: string | null,
+  renderWith: string[] | null,
   assetId: string,
-  fileType?: string | null | undefined
+  fileType?: string | null | undefined,
+  dataProtocol?: string | null | undefined
 }) {
   const dateTime = new Date().getTime().toString();
   const tokenHolder = await getRandomContributor(poolClient);
@@ -130,7 +133,11 @@ async function createContractTags(poolClient: IPoolClient, args: {
   ];
 
   if (args.renderWith) {
-    tagList.push({ name: TAGS.keys.renderWith, value: args.renderWith })
+    tagList.push({ name: TAGS.keys.renderWith, value: JSON.stringify(args.renderWith) })
+  }
+
+  if (args.dataProtocol) {
+    tagList.push({ name: TAGS.keys.dataProtocol, value: args.dataProtocol })
   }
 
   if(args.fileType) {

@@ -31,7 +31,9 @@ export const CLI_ARGS = {
         fund: "fund",
         balance: "balance",
         fetch: "fetch",
-        sindex: "sindex"
+        sindex: "sindex",
+        evolve: "evolve",
+        topics: "topics"
     },
     options: {
         source: "source",
@@ -46,7 +48,8 @@ export const CLI_ARGS = {
         subreddit: "subreddit",
         searchTerm: "search-term",
         path: "path",
-        metaFile: "meta-file"
+        metaFile: "meta-file",
+        topicValues: "topic-values"
     },
     sources: {
         twitter: {
@@ -81,7 +84,7 @@ export const CLI_ARGS = {
     }
 }
 
-export const RENDER_WITH_VALUE = "alex-renderers";
+export const RENDER_WITH_VALUE = ["alex-renderers"];
 
 export const TAGS = {
     keys: {
@@ -98,6 +101,7 @@ export const TAGS = {
         childAssets: "Child-Assets",
         contentType: "Content-Type",
         contractSrc: "Contract-Src",
+        dataProtocol: "Data-Protocol",
         dateCreated: "Date-Created",
         description: "Description",
         fileType: "File-Type",
@@ -126,7 +130,10 @@ export const TAGS = {
             webPage: "web-page",
             image: "image",
             video: "video",
-            music: "music"
+            music: "music",
+            document: "document",
+            file: "file",
+            collection: "collection"
         },
         appName: "SmartWeaveContract",
         appVersion: "0.3.0",
@@ -321,10 +328,6 @@ export const DEFAULT_POOLS_JSON =
                 "id": "",
                 "src": ""
             },
-            "poolSearchIndex": {
-                "id": "",
-                "src": ""
-            }
         },
         "state": {
             "owner": {
@@ -338,19 +341,12 @@ export const DEFAULT_POOLS_JSON =
             "title": "Pool Title such as Russia Ukraine War",
             "description": "Paragraph/html markup for long pool description on site",
             "briefDescription": "Text for short pool description on site",
-            "link": "",
-            "rewards": "",
             "image": "",
             "timestamp": "",
             "ownerMaintained": false
         },
         "walletPath": "",
         "bundlrNode": "https://node2.bundlr.network",
-        "twitter": {
-            "userIds": [
-                
-            ]
-        },
         "keywords": [
             "keyword1",
         ],
@@ -363,7 +359,7 @@ export const DEFAULT_POOLS_JSON =
         },
         "clarifaiApiKey": "",
         "topics": [
-            "history"
+            "History"
         ],
         "redditApiKeys": {
             "username": "",
@@ -372,10 +368,6 @@ export const DEFAULT_POOLS_JSON =
             "appSecret": ""
         },
         "nostr": {
-            "keys": {
-                "public": "",
-                "private": "" 
-            },
             "relays": DEFAULT_NOSTR_RELAYS
         }
 };
@@ -394,17 +386,14 @@ export const ARTIFACT_TYPES_BY_FILE: { [ext: string]: ArtifactEnum } = {
     // Documents
     'pdf': ArtifactEnum.Document,
     'txt': ArtifactEnum.Document,
+    'csv': ArtifactEnum.Document, 
     'doc': ArtifactEnum.Document,
     'docx': ArtifactEnum.Document,
     'xls': ArtifactEnum.Document,
     'xlsx': ArtifactEnum.Document,
     'ppt': ArtifactEnum.Document,
     'pptx': ArtifactEnum.Document,
-    'csv': ArtifactEnum.Document,
-    'rtf': ArtifactEnum.Document,
-    'html': ArtifactEnum.Document,
-    'htm': ArtifactEnum.Document,
-    'xml': ArtifactEnum.Document,
+    'rtf': ArtifactEnum.Document, 
     // Audio
     'mp3': ArtifactEnum.Audio,
     'm4a': ArtifactEnum.Audio,
@@ -413,9 +402,11 @@ export const ARTIFACT_TYPES_BY_FILE: { [ext: string]: ArtifactEnum } = {
     'flac': ArtifactEnum.Audio,
     // Video
     'mp4': ArtifactEnum.Video,
-    'mpeg': ArtifactEnum.Video,
+    'mpg': ArtifactEnum.Video,
     'avi': ArtifactEnum.Video,
     'wmv': ArtifactEnum.Video,
     'mov': ArtifactEnum.Video,
     'mkv': ArtifactEnum.Video,
+    // Ebooks
+    'epub': ArtifactEnum.Ebook,
 };
