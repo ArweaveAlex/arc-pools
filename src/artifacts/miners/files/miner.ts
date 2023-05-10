@@ -4,6 +4,7 @@ import * as pathI from 'path';
 
 import { ArtifactEnum, PoolConfigType } from "../../../helpers/types";
 import { PoolClient } from "../../../clients/pool";
+
 import { 
     exitProcess, 
     log, 
@@ -54,7 +55,7 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
     if (fs.existsSync(path)) {
         if(fs.statSync(path).isFile()){
             log('Archiving file', 0);
-            await archiveFile(poolClient, metaConfig, path);
+            await archiveFile(poolClient, metaConfig, path, null);
         } else if (fs.statSync(path).isDirectory()){
             log('Archiving directory', 0);
             genSentFiles(path, clear);
@@ -90,7 +91,7 @@ async function archiveDirectory(poolClient: PoolClient, metaConfig: any, path: s
     for await (const f of walk(path)) {
         if (pathI.basename(f) !== sentFilesFilename) {
             if(!sentFiles.includes(pathI.basename(f))) {
-                await archiveFile(poolClient, metaConfig, f);
+                await archiveFile(poolClient, metaConfig, f, path);
             } else {
                 log(
                     `Skipping ${pathI.basename(f)}, 
@@ -102,7 +103,7 @@ async function archiveDirectory(poolClient: PoolClient, metaConfig: any, path: s
     }
 }
 
-async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string) {
+async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string, dir: string | null) {
     let fileName = pathI.basename(path);
     let fileConfig = findFileConfig(fileName, metaConfig);
 
@@ -180,7 +181,7 @@ async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string
     });
 
     if(asset) {
-        if(fs.statSync(path).isDirectory()) {
+        if(dir) {
             sentFiles.push(fileName);
             fs.writeFileSync(sentFilesFilepath, JSON.stringify(sentFiles));
         }
