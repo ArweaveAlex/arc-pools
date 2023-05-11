@@ -84,7 +84,11 @@ function genSentFiles(path: string, clear: boolean) {
 }
 
 function findFileConfig(fileName: string, metaConfig: any) {
-    return metaConfig.find((obj: any) => obj["FileName"] === fileName);
+    if(metaConfig){
+        return metaConfig.find((obj: any) => obj["FileName"] === fileName); 
+    } else {
+        return null;
+    }
 }
 
 async function archiveDirectory(poolClient: PoolClient, metaConfig: any, path: string) {
