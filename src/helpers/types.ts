@@ -50,12 +50,9 @@ export interface IPoolClient {
     arClient: any;
     poolConfig: PoolConfigType;
     walletKey: string | null;
-    twitterV2: tApiV2.TwitterApi;
-    twitterV2Bearer: tApiV2.TwitterApi;
     bundlr: Bundlr;
     contract: Contract;
     warp: any;
-    reddit: any;
 }
 
 export interface PoolType {

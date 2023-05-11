@@ -1,8 +1,9 @@
 import fs from "fs";
 import WikiJS from "wikijs";
 
+import { ArtifactEnum, IPoolClient } from "arcframework";
+
 import { createAsset } from "../..";
-import { ArtifactEnum, IPoolClient } from "../../../helpers/types";
 import { wikiApiEndpoint } from "../../../helpers/endpoints";
 import { CONTENT_TYPES, RENDER_WITH_VALUE, TAGS } from "../../../helpers/config";
 

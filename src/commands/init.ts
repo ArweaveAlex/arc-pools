@@ -1,7 +1,9 @@
 import fs from "fs";
 
+import { initNewPoolConfig } from 'arcframework';
+
 import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
-import { CLI_ARGS, DEFAULT_POOLS_JSON, POOL_FILE } from "../helpers/config";
+import { CLI_ARGS, POOL_FILE } from "../helpers/config";
 import { exitProcess } from "../helpers/utils";
 
 const command: CommandInterface = {
@@ -25,7 +27,7 @@ const command: CommandInterface = {
             exitProcess(`Pool id already exists`, 1);
         }
 
-        poolJsonFile[poolArg] = DEFAULT_POOLS_JSON;
+        poolJsonFile[poolArg] = initNewPoolConfig();
 
         fs.writeFileSync(POOL_FILE, JSON.stringify(poolJsonFile, null, 4));
 

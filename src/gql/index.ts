@@ -1,4 +1,4 @@
-import { ArweaveClient } from "../clients/arweave";
+import { ArweaveClient } from "arcframework";
 import { unquoteJsonKeys } from "../helpers/utils";
 import { PAGINATOR } from "../helpers/config";
 import { GQLResponseType, TagFilterType } from "../helpers/types";

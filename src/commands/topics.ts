@@ -1,10 +1,10 @@
 import fs from "fs";
 
-import { PoolConfigType, ANSTopicEnum } from "../helpers/types";
+import { PoolConfigType, ANSTopicEnum, ArweaveClient } from "arcframework";
+
 import { validatePoolConfig } from "../helpers/validations";
 import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
 import { CLI_ARGS } from "../helpers/config";
-import { ArweaveClient } from "../clients/arweave";
 import { exitProcess, saveConfig } from "../helpers/utils";
 import { log } from "../helpers/utils";
 

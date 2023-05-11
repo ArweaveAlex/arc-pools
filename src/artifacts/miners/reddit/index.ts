@@ -3,7 +3,8 @@ import { mkdir } from "fs/promises";
 import path from "path";
 import tmp from "tmp-promise";
 
-import { ArtifactEnum, IPoolClient } from "../../../helpers/types";
+import { ArtifactEnum, IPoolClient } from "arcframework";
+
 import { 
     checkPath, 
     exitProcess, 
@@ -17,9 +18,10 @@ import {
 import { CONTENT_TYPES, RENDER_WITH_VALUE, TAGS } from "../../../helpers/config";
 import { createAsset } from "../..";
 import { shouldUploadContent } from "../moderator";
+import { ServiceClient } from "../../../clients/service";
 
 
-export async function processPosts(poolClient: IPoolClient, args: {
+export async function processPosts(poolClient: IPoolClient, serviceClient: ServiceClient, args: {
     posts: any[],
     contentModeration: boolean
 }) {
@@ -32,7 +34,7 @@ export async function processPosts(poolClient: IPoolClient, args: {
     for(let i = 0; i < iterPosts.length; i++){
         let url = `/comments/${iterPosts[i].data.id}?depth=50`;
         
-        let postWithComments = await poolClient.reddit.get(url);
+        let postWithComments = await serviceClient.reddit.get(url);
         
         const isDup = await poolClient.arClient.isDuplicate({
             artifactName: generateRedditAssetName(postWithComments),

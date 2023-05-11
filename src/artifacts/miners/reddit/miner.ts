@@ -1,9 +1,14 @@
 import minimist from "minimist";
 
-import { PoolClient } from "../../../clients/pool";
+
+import { 
+  PoolConfigType, 
+  IPoolClient, 
+  PoolClient 
+} from "arcframework";
 
 import { log, exitProcess } from "../../../helpers/utils";
-import { PoolConfigType, IPoolClient } from "../../../helpers/types";
+import { ServiceClient } from "../../../clients/service";
 import { CLI_ARGS} from "../../../helpers/config";
 import { parseError } from "../../../helpers/errors";
 
@@ -13,8 +18,9 @@ import { initCounter } from "../..";
 
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
     const poolClient = new PoolClient(poolConfig);
+    const serviceClient = new ServiceClient(poolConfig);
   
-    if (!poolClient.walletKey) {
+    if (!poolConfig.walletKey) {
       exitProcess(`Invalid Pool Wallet Configuration`, 1);
     }
 
@@ -32,50 +38,50 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
           if (!subreddit) {
             exitProcess(`Subreddit not provided`, 1);
           }
-          minePostsBySubreddit(poolClient, { subreddit: subreddit });
+          minePostsBySubreddit(poolClient, serviceClient, { subreddit: subreddit });
           return;
         case CLI_ARGS.sources.reddit.methods.user:
           if (!username) {
             exitProcess(`Username not provided`, 1);
           }
-          minePostsByUser(poolClient, { username: username });
+          minePostsByUser(poolClient, serviceClient, { username: username });
           return;
         case CLI_ARGS.sources.reddit.methods.search:
           if (!searchTerm) {
             exitProcess(`Search term not provided`, 1);
           }
-          minePostsBySearch(poolClient, { searchTerm: searchTerm });
+          minePostsBySearch(poolClient, serviceClient, { searchTerm: searchTerm });
           return;
         default:
           exitProcess(`Invalid method provided`, 1);
     }
 }
 
-async function minePostsBySearch(poolClient: IPoolClient, args: { searchTerm: string }) {
+async function minePostsBySearch(poolClient: IPoolClient, serviceClient: ServiceClient, args: { searchTerm: string }) {
   let url = `/r/all/search`;
   let additionalParams = {q: args.searchTerm};
-  await minePosts(poolClient, additionalParams, url);
+  await minePosts(poolClient, serviceClient, additionalParams, url);
 }
 
-async function minePostsBySubreddit(poolClient: IPoolClient, args: { subreddit: string }) {
+async function minePostsBySubreddit(poolClient: IPoolClient, serviceClient: ServiceClient, args: { subreddit: string }) {
   let url = `/r/${args.subreddit}/new.json`;
   console.log(url);
-  await minePosts(poolClient, {}, url);
+  await minePosts(poolClient, serviceClient, {}, url);
 }
 
-async function minePostsByUser(poolClient: IPoolClient, args: { username: string }) {
+async function minePostsByUser(poolClient: IPoolClient, serviceClient: ServiceClient, args: { username: string }) {
   let url = `/user/${args.username}/submitted.json`;
-  await minePosts(poolClient, {}, url);
+  await minePosts(poolClient, serviceClient, {}, url);
 }
 
 
-async function minePosts(poolClient: IPoolClient, additionalParams: any, url: string) {
+async function minePosts(poolClient: IPoolClient, serviceClient: ServiceClient, additionalParams: any, url: string) {
   try {
     let cursor = null;
     do {
         await new Promise(r => setTimeout(r, 2000));
 
-        let posts = await poolClient.reddit.get(
+        let posts = await serviceClient.reddit.get(
             url,
             {
               ...additionalParams, 
@@ -91,6 +97,7 @@ async function minePosts(poolClient: IPoolClient, additionalParams: any, url: st
 
         await processPosts(
           poolClient, 
+          serviceClient,
           {posts: posts.data.children, contentModeration: false}
         );
     } while(cursor != null);

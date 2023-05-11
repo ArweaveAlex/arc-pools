@@ -1,7 +1,6 @@
 import { TWEET_FIELDS } from "./config";
 
 export const contractEndpoint = (txId: string) => `https://gateway.redstone.finance/gateway/contract?txId=${txId}`;
-export const sonarLink = (contractId: string) => `https://sonar.warp.cc/#/app/contract/${contractId}`;
 export const conversationEndpoint = (conversationId: string, paginationToken: string | null) => {
     let paginationString: string;
     if (paginationToken) {

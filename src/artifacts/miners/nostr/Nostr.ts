@@ -4,7 +4,7 @@ import 'websocket-polyfill';
 import { debounce, throttle } from 'lodash';
 const bech32 = require('bech32-buffer');
 
-import { DEFAULT_NOSTR_RELAYS } from "../../../helpers/config";
+import { DEFAULT_NOSTR_RELAYS } from "arcframework";
 import { SortedLimitedEventSet } from "./event-set";
 
 // shortened version of iris-messenger Nostr.ts

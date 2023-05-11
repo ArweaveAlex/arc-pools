@@ -4,8 +4,8 @@ import minimist from "minimist";
 import 'websocket-polyfill';
 import { throttle } from 'lodash';
 
-import { PoolClient } from "../../../clients/pool";
-import { IPoolClient, PoolConfigType } from "../../../helpers/types";
+import { PoolClient, IPoolClient, PoolConfigType } from "arcframework";
+
 import { exitProcess, log } from "../../../helpers/utils";
 
 import { processEvent } from ".";
@@ -15,13 +15,11 @@ import { Nostr } from "./Nostr"
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
   const poolClient = new PoolClient(poolConfig);
 
-  if (!poolClient.walletKey) {
+  if (!poolConfig.walletKey) {
     exitProcess(`Invalid Pool Wallet Configuration`, 1);
   }
 
   log("Mining nostr", 0);
-
-  // await genKeys(poolClient, argv._[1]);
 
   initCounter();
 

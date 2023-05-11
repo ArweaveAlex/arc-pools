@@ -1,10 +1,9 @@
 import minimist from "minimist";
 
-import { PoolClient } from "../../../clients/pool";
+import { PoolClient, PoolConfigType } from "arcframework";
 
 
 import { exitProcess } from "../../../helpers/utils";
-import { PoolConfigType } from "../../../helpers/types";
 
 
 
@@ -12,7 +11,7 @@ import { PoolConfigType } from "../../../helpers/types";
 export async function run(poolConfig: PoolConfigType, _argv: minimist.ParsedArgs) {
     const poolClient = new PoolClient(poolConfig);
   
-    if (!poolClient.walletKey) {
+    if (!poolConfig.walletKey) {
       exitProcess(`Invalid Pool Wallet Configuration`, 1);
     }
 

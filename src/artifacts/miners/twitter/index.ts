@@ -3,7 +3,7 @@ import tmp from "tmp-promise";
 import * as path from "path";
 import { mkdir } from "fs/promises";
 
-import { PoolClient } from "../../../clients/pool";
+import { ArtifactEnum, IPoolClient } from "arcframework";
 
 import {
   log,
@@ -17,18 +17,18 @@ import {
 } from "../../../helpers/utils";
 import { createAsset } from "../..";
 import { TAGS, LOOKUP_PARAMS, CONTENT_TYPES, RENDER_WITH_VALUE } from "../../../helpers/config";
-import { ArtifactEnum, IPoolClient } from "../../../helpers/types";
 import { shouldUploadContent } from "../moderator";
 import { conversationEndpoint } from "../../../helpers/endpoints";
+import { ServiceClient } from "../../../clients/service";
 
 let totalCount: number = 0;
 
-export async function processIdsV2(poolClient: IPoolClient, args: {
+export async function processIdsV2(poolClient: IPoolClient, serviceClient: ServiceClient, args: {
   ids: string[],
   contentModeration: boolean
 }) {
   logValue(`Parent Id Count`, args.ids.length.toString(), 0);
-  const tweets: any[] = await getTweetsfromIds(poolClient, { ids: args.ids });
+  const tweets: any[] = await getTweetsfromIds(poolClient, serviceClient, { ids: args.ids });
 
   for (let i = 0; i < tweets.length; i++) {
     const isDup = await poolClient.arClient.isDuplicate({
@@ -37,7 +37,7 @@ export async function processIdsV2(poolClient: IPoolClient, args: {
     });
 
     if (!isDup) {
-      await processThreadV2(poolClient, {
+      await processThreadV2(poolClient, serviceClient, {
         tweet: tweets[i],
         contentModeration: args.contentModeration
       })
@@ -54,7 +54,7 @@ export async function processIdsV2(poolClient: IPoolClient, args: {
  * Get thread tweets and run processTweetV2 with associationId - conversationId
  * If tweet is not part of a thread, run processTweetV2 with associationId - null
 **/
-export async function processThreadV2(poolClient: IPoolClient, args: {
+export async function processThreadV2(poolClient: IPoolClient, serviceClient: ServiceClient, args: {
   tweet: any,
   contentModeration: boolean,
 }) {
@@ -70,11 +70,11 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
     let associationId: string | null = null;
     let associationSequence: string | null = "0";
 
-    const threadTweets = await getTweetsfromIds(poolClient, { ids: thread.map((tweet: any) => tweet.id) });
+    const threadTweets = await getTweetsfromIds(poolClient, serviceClient, { ids: thread.map((tweet: any) => tweet.id) });
 
     associationId = args.tweet.conversation_id;
 
-    await processTweetV2(poolClient, {
+    await processTweetV2(poolClient, serviceClient, {
       tweet: args.tweet,
       contentModeration: args.contentModeration,
       associationId: associationId,
@@ -82,7 +82,7 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
     });
 
     for (let i = 0; i < threadTweets.length; i++) {
-      await processTweetV2(poolClient, {
+      await processTweetV2(poolClient, serviceClient, {
         tweet: threadTweets[i],
         contentModeration: args.contentModeration,
         associationId: associationId,
@@ -91,7 +91,7 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
     }
   }
   else {
-    await processTweetV2(poolClient, {
+    await processTweetV2(poolClient, serviceClient, {
       tweet: args.tweet,
       contentModeration: args.contentModeration,
       associationId: null,
@@ -100,7 +100,7 @@ export async function processThreadV2(poolClient: IPoolClient, args: {
   }
 }
 
-export async function processTweetV2(poolClient: IPoolClient, args: {
+export async function processTweetV2(poolClient: IPoolClient, serviceClient: ServiceClient, args: {
   tweet: any,
   contentModeration: boolean,
   associationId: string | null,
@@ -109,7 +109,7 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
 
   const tmpdir = await tmp.dir({ unsafeCleanup: true });
 
-  const referencedTweets = await processReferences(poolClient, {
+  const referencedTweets = await processReferences(poolClient, serviceClient, {
     tweet: args.tweet,
     contentModeration: args.contentModeration,
     tmpdir: tmpdir
@@ -171,7 +171,7 @@ export async function processTweetV2(poolClient: IPoolClient, args: {
   }
 }
 
-async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }) {
+async function getTweetsfromIds(poolClient: IPoolClient, serviceClient: ServiceClient, args: { ids: string[] }) {
   const allTweets: any[] = [];
 
   for (let i = 0; i < args.ids.length; i += 100) {
@@ -179,7 +179,7 @@ async function getTweetsfromIds(poolClient: IPoolClient, args: { ids: string[] }
 
     try {
       logValue(`Fetching from API`, splitIds.length, 0);
-      const tweets = await poolClient.twitterV2.v2.tweets(splitIds, LOOKUP_PARAMS);
+      const tweets = await serviceClient.twitterV2.v2.tweets(splitIds, LOOKUP_PARAMS);
       if (tweets.data && tweets.data.length > 0) {
         for (let j = 0; j < tweets.data.length; j++) {
           allTweets.push({
@@ -242,7 +242,7 @@ async function getThread(poolClient: IPoolClient, args: {
   return allTweets;
 }
 
-async function processReferences(poolClient: IPoolClient, args: {
+async function processReferences(poolClient: IPoolClient, serviceClient: ServiceClient, args: {
   tweet: any,
   contentModeration: boolean,
   tmpdir: any
@@ -252,10 +252,10 @@ async function processReferences(poolClient: IPoolClient, args: {
     for (let i = 0; i < args.tweet.referenced_tweets.length; i++) {
       if (args.tweet.referenced_tweets[i].type && args.tweet.referenced_tweets[i].type === "quoted") {
         logValue(`Reference`, args.tweet.referenced_tweets[i].id, 0);
-        const fetchedTweets: any[] = await getTweetsfromIds(poolClient, { ids: [args.tweet.referenced_tweets[i].id] });
+        const fetchedTweets: any[] = await getTweetsfromIds(poolClient, serviceClient, { ids: [args.tweet.referenced_tweets[i].id] });
 
         for (let j = 0; j < fetchedTweets.length; j++) {
-          const contractId = await processTweetV2(poolClient, {
+          const contractId = await processTweetV2(poolClient, serviceClient, {
             tweet: fetchedTweets[j],
             contentModeration: args.contentModeration,
             associationId: null,
@@ -291,7 +291,7 @@ async function processProfileImage(args: {
   }
 }
 
-async function processMedia(poolClient: PoolClient, args: {
+async function processMedia(poolClient: IPoolClient, args: {
   tweet: any,
   tmpdir: any,
   contentModeration: boolean
@@ -339,11 +339,11 @@ async function processMedia(poolClient: PoolClient, args: {
  * Delete the stream rules before and after this run
  * Before to clear out any previous leftovers from failed runs 
 **/
-export async function deleteStreamRules(poolClient: IPoolClient) {
-  const rules = await poolClient.twitterV2Bearer.v2.streamRules();
+export async function deleteStreamRules(poolClient: IPoolClient, serviceClient: ServiceClient) {
+  const rules = await serviceClient.twitterV2Bearer.v2.streamRules();
 
   if (rules.data?.length) {
-    await poolClient.twitterV2Bearer.v2.updateStreamRules({
+    await serviceClient.twitterV2Bearer.v2.updateStreamRules({
       delete: { ids: rules.data.map(rule => rule.id) },
     });
   }

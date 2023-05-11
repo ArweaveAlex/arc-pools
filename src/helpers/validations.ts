@@ -2,7 +2,7 @@ import fs from "fs";
 
 import { exitProcess } from "./utils";
 import { POOL_FILE } from "./config";
-import { PoolConfigType } from "./types";
+import { PoolConfigType } from "arcframework";
 import { ArgumentsInterface } from "./interfaces";
 
 export function validatePoolConfig(args: ArgumentsInterface): PoolConfigType {
@@ -21,7 +21,17 @@ export function validatePoolConfig(args: ArgumentsInterface): PoolConfigType {
         exitProcess(`Pool Not Found`, 1);
     }
 
-    return POOLS_JSON[poolArg];
+    let poolConfig = POOLS_JSON[poolArg];
+
+    try {
+        poolConfig.walletKey = JSON.parse(fs.readFileSync(poolConfig.walletPath).toString());
+    } catch (e: any) {
+        // console.log(e)
+    }
+
+    console.log(poolConfig)
+
+    return poolConfig;
 }
 
 export function validateControlWalletPath(path: string): string {

@@ -1,10 +1,9 @@
 import fs from "fs";
 
-import { PoolConfigType } from "../helpers/types";
 import { validatePoolConfig } from "../helpers/validations";
 import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
 import { CLI_ARGS, POOL_CONTRACT_PATH } from "../helpers/config";
-import { ArweaveClient } from "../clients/arweave";
+import { ArweaveClient, PoolConfigType } from "arcframework";
 import { ArweaveSigner } from "warp-contracts-plugin-deploy";
 import { log } from "../helpers/utils";
 

@@ -1,7 +1,7 @@
 const {ClarifaiStub, grpc} = require("clarifai-nodejs-grpc");
 
 import { MODERATION_THRESHOLDS } from "../../helpers/config";
-import { PoolConfigType } from "../../helpers/types";
+import { PoolConfigType } from "arcframework";
 import { log } from "../../helpers/utils";
 
 const stub = ClarifaiStub.grpc();

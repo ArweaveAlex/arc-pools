@@ -1,4 +1,4 @@
-import { ArweaveClient } from "../clients/arweave";
+import { ArweaveClient } from "arcframework";
 import {
     GQLResponseType,
     PoolType

@@ -303,75 +303,8 @@ export const FINAL_INDEX_FILE_NAME = "/finalindex";
 
 export const REDSTONE_PAGE_LIMIT = 5000;
 
-export const DEFAULT_NOSTR_RELAYS = [
-   {socket: "wss://relay.damus.io"},
-   {socket: "wss://nos.lol"},
-   {socket: "wss://nostr.relayer.se"},
-   {socket: "wss://relay.current.fyi"},
-   {socket: "wss://nostr.bitcoiner.social"},
-   {socket: "wss://relay.nostr.info"},
-   {socket: "wss://nostr.fmt.wiz.biz"}
-];
-
 export const RELAY_OVERHEAD_LIMIT = 1000;
 export const RELAY_QUEUE_PROC_SIZE = 10;
-
-export const DEFAULT_POOLS_JSON = 
-     {
-        "appType": TAGS.values.poolVersions["1.5"], 
-        "contracts": {
-            "nft": {
-                "id": "",
-                "src": ""
-            },
-            "pool": {
-                "id": "",
-                "src": ""
-            },
-        },
-        "state": {
-            "owner": {
-                "pubkey": "",
-                "info": ""
-            },
-            "controller": {
-                "pubkey": "",
-                "contribPercent": 0
-            },
-            "title": "Pool Title such as Russia Ukraine War",
-            "description": "Paragraph/html markup for long pool description on site",
-            "briefDescription": "Text for short pool description on site",
-            "image": "",
-            "timestamp": "",
-            "ownerMaintained": false
-        },
-        "walletPath": "",
-        "bundlrNode": "https://node2.bundlr.network",
-        "keywords": [
-            "keyword1",
-        ],
-        "twitterApiKeys": {
-            "consumer_key": "",
-            "consumer_secret": "",
-            "token": "",
-            "token_secret": "",
-            "bearer_token": ""
-        },
-        "clarifaiApiKey": "",
-        "topics": [
-            "History"
-        ],
-        "redditApiKeys": {
-            "username": "",
-            "password": "",
-            "appId": "",
-            "appSecret": ""
-        },
-        "nostr": {
-            "relays": DEFAULT_NOSTR_RELAYS
-        }
-};
-
 
 export const ARTIFACT_TYPES_BY_FILE: { [ext: string]: ArtifactEnum } = {
     // Images

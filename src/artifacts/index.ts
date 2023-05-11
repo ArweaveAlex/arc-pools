@@ -1,6 +1,5 @@
-import { ArtifactEnum, IPoolClient } from "../helpers/types";
+import { ArtifactEnum, IPoolClient } from "arcframework";
 import { TAGS, CONTENT_TYPES } from "../helpers/config";
-import { PoolClient } from "../clients/pool";
 import { contentType } from "mime-types";
 import { log, logValue, exitProcess } from "../helpers/utils";
 
@@ -14,7 +13,7 @@ export function initCounter() {
   }, 1000);
 }
 
-export async function createAsset(poolClient: PoolClient, args: {
+export async function createAsset(poolClient: IPoolClient, args: {
   index: any,
   paths: any,
   content: any,

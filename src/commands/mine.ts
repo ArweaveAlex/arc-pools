@@ -9,7 +9,7 @@ import source from "../options/source";
 import method from "../options/method";
 
 import { exitProcess } from "../helpers/utils";
-import { PoolConfigType } from "../helpers/types";
+import { PoolConfigType } from "arcframework";
 import { validatePoolConfig } from "../helpers/validations";
 import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
 import { CLI_ARGS } from "../helpers/config";

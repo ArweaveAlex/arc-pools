@@ -1,7 +1,7 @@
 import minimist from "minimist";
 import * as tApiV2 from "twitter-api-v2";
 
-import { PoolClient } from "../../../clients/pool";
+import { PoolClient, PoolConfigType, IPoolClient } from "arcframework";
 
 import {
   processIdsV2,
@@ -10,22 +10,23 @@ import {
   deleteStreamRules
 } from ".";
 import { log, logValue, exitProcess } from "../../../helpers/utils";
-import { PoolConfigType, IPoolClient } from "../../../helpers/types";
 import { CLI_ARGS, STREAM_PARAMS } from "../../../helpers/config";
 import { parseError } from "../../../helpers/errors";
 
 import { initCounter } from "../..";
+import { ServiceClient } from "../../../clients/service";
 
 let contentModeration: boolean;
 
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
   const poolClient = new PoolClient(poolConfig);
+  const serviceClient: ServiceClient = new ServiceClient(poolConfig);
 
-  if(!poolClient.twitterV2 || !poolClient.twitterV2Bearer) {
+  if(!serviceClient.twitterV2 || !serviceClient.twitterV2Bearer) {
     exitProcess(`Invalid twitter keys, configure twitter keys`, 1);
   }
 
-  if (!poolClient.walletKey) {
+  if (!poolConfig.walletKey) {
     exitProcess(`Invalid Pool Wallet Configuration`, 1);
   }
 
@@ -46,32 +47,32 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
       if (!method) {
         log(`Defaulting to stream method ...`, null);
       }
-      mineTweetsByStream(poolClient);
+      mineTweetsByStream(poolClient, serviceClient);
       return;
     case CLI_ARGS.sources.twitter.methods.mention:
       if (!mentionTag) {
         exitProcess(`Mention tag not provided`, 1);
       }
-      mineTweetsByMention(poolClient, { mentionTag: mentionTag });
+      mineTweetsByMention(poolClient, serviceClient, { mentionTag: mentionTag });
       return;
     case CLI_ARGS.sources.twitter.methods.user:
       if (!username) {
         exitProcess(`Username not provided`, 1);
       }
-      mineTweetsByUser(poolClient, { username: username });
+      mineTweetsByUser(poolClient, serviceClient, { username: username });
       return;
     default:
       exitProcess(`Invalid method provided`, 1);
   }
 }
 
-async function mineTweetsByStream(poolClient: IPoolClient) {
+async function mineTweetsByStream(poolClient: IPoolClient, serviceClient: ServiceClient) {
   log(`Mining tweets by stream ...`, null);
   let stream: tApiV2.TweetStream;
 
   try {
-    await deleteStreamRules(poolClient);
-    stream = poolClient.twitterV2Bearer.v2.searchStream({ ...STREAM_PARAMS, autoConnect: false });
+    await deleteStreamRules(poolClient, serviceClient);
+    stream = serviceClient.twitterV2Bearer.v2.searchStream({ ...STREAM_PARAMS, autoConnect: false });
 
     const rules = poolClient.poolConfig.keywords.map((keyword: string) => {
       return {
@@ -80,14 +81,14 @@ async function mineTweetsByStream(poolClient: IPoolClient) {
       }
     });
 
-    await poolClient.twitterV2Bearer.v2.updateStreamRules({
+    await serviceClient.twitterV2Bearer.v2.updateStreamRules({
       add: rules,
     });
 
     await stream.connect({ autoReconnect: false });
 
     for await (const tweet of stream) {
-      await processThreadV2(poolClient, {
+      await processThreadV2(poolClient, serviceClient, {
         tweet: modifyStreamTweet(tweet),
         contentModeration: contentModeration
       });
@@ -105,7 +106,7 @@ async function mineTweetsByStream(poolClient: IPoolClient) {
 /*
  * @param mentionTag: string
 */
-async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: string }) {
+async function mineTweetsByMention(poolClient: IPoolClient, serviceClient: ServiceClient, args: { mentionTag: string }) {
   log(`Mining Tweets by mention ...`, null); 
   logValue(`Mention Tag`, args.mentionTag, 0);
 
@@ -121,7 +122,7 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
       };
       if (resultSet) params.next_token = resultSet.meta.next_token;
       await new Promise(resolve => setTimeout(resolve, 1000));
-      resultSet = await poolClient.twitterV2.v2.search(query, params);
+      resultSet = await serviceClient.twitterV2.v2.search(query, params);
 
       if (resultSet.data.data) allTweets = allTweets.concat(resultSet.data.data);
       logValue(`Fetching Ids`, allTweets.length.toString(), 0);
@@ -144,7 +145,7 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
       const batchEnd = (i + 1) * batchSize;
       const batchIds = ids.slice(batchStart, batchEnd);
 
-      await processIdsV2(poolClient, {
+      await processIdsV2(poolClient, serviceClient, {
         ids: batchIds,
         contentModeration: contentModeration
       });
@@ -163,12 +164,12 @@ async function mineTweetsByMention(poolClient: IPoolClient, args: { mentionTag: 
 /*
  * @param username: string 
 */
-async function mineTweetsByUser(poolClient: IPoolClient, args: { username: string }) {
+async function mineTweetsByUser(poolClient: IPoolClient, serviceClient: ServiceClient, args: { username: string }) {
   log(`Mining Tweets by user ...`, null); logValue(`User`, args.username, 0);
   let user: any;
 
   try {
-    user = await poolClient.twitterV2.v2.userByUsername(
+    user = await serviceClient.twitterV2.v2.userByUsername(
       args.username.includes("@") ? args.username.replace("@", "") : args.username);
     logValue(`User Id`, user.data.id, 0);
   
@@ -184,7 +185,7 @@ async function mineTweetsByUser(poolClient: IPoolClient, args: { username: strin
         };
         if (userTimeline) params.pagination_token = userTimeline.meta.next_token;
 
-        userTimeline = await poolClient.twitterV2.v2.userTimeline(uid, params);
+        userTimeline = await serviceClient.twitterV2.v2.userTimeline(uid, params);
         if (userTimeline.data.data) allTweets = allTweets.concat(userTimeline.data.data);
         logValue(`Fetching Ids`, allTweets.length.toString(), 0);
       }
@@ -194,7 +195,7 @@ async function mineTweetsByUser(poolClient: IPoolClient, args: { username: strin
         return tweet.id
       });
 
-      await processIdsV2(poolClient, {
+      await processIdsV2(poolClient, serviceClient, {
         ids: ids,
         contentModeration: contentModeration
       });

@@ -3,8 +3,8 @@ import tmp from "tmp-promise";
 import { mkdir } from "fs/promises";
 import path from "path";
 
-import { CONTENT_TYPES, DEFAULT_NOSTR_RELAYS, RENDER_WITH_VALUE, TAGS } from '../../../helpers/config';
-import { ArtifactEnum, IPoolClient } from '../../../helpers/types';
+import { CONTENT_TYPES, RENDER_WITH_VALUE, TAGS } from '../../../helpers/config';
+import { ArtifactEnum, IPoolClient } from 'arcframework';
 import { generateNostrAssetDescription, generateNostrAssetName, log, saveConfig } from '../../../helpers/utils';
 import { 
     checkPath, 
@@ -13,32 +13,6 @@ import {
 } from "../../../helpers/utils";
 
 import { createAsset } from "../..";
-
-export async function genKeys(poolClient: IPoolClient, poolLabel: string) {
-    let nostrConfig = poolClient.poolConfig.nostr;
-    if(nostrConfig && nostrConfig.keys){
-        if(nostrConfig.keys.public && nostrConfig.keys.private){
-            if((nostrConfig.keys.public !== "") && (nostrConfig.keys.private !== "")){
-                return;
-            }
-        }
-    }
-
-    let sk = generatePrivateKey();
-    let pk = getPublicKey(sk);
-
-    nostrConfig = {
-        keys: {
-            public: pk.toString(),
-            private: sk.toString() 
-        },
-        relays: DEFAULT_NOSTR_RELAYS
-    };
-
-    poolClient.poolConfig.nostr = nostrConfig;
-
-    saveConfig(poolClient.poolConfig, poolLabel);
-}
 
 
 export async function processEvent(poolClient: IPoolClient, args: {

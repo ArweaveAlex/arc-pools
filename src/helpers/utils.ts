@@ -7,8 +7,9 @@ import { mkdir } from "fs/promises";
 
 var crypto = require("crypto");
 
+import { IPoolClient, KeyValueType, PoolConfigType } from "arcframework";
+
 import { STORAGE, CONTENT_TYPES, TAGS, POOL_FILE } from "./config";
-import { IPoolClient, KeyValueType, PoolConfigType } from "./types";
 
 export function getTagValue(list: KeyValueType[], name: string): string {
   for (let i = 0; i < list.length; i++) {
