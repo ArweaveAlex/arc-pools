@@ -14,11 +14,11 @@ import {
     logValue, 
     traverse,
     uploadFile
-} from "../../../helpers/utils";
-import { CONTENT_TYPES, RENDER_WITH_VALUE, TAGS } from "../../../helpers/config";
-import { createAsset } from "../..";
+} from "../../helpers/utils";
+import { CONTENT_TYPES, RENDER_WITH_VALUES, TAGS } from "arcframework";
+import { createAsset } from "arcframework";
 import { shouldUploadContent } from "../moderator";
-import { ServiceClient } from "../../../clients/service";
+import { ServiceClient } from "../../clients/service";
 
 
 export async function processPosts(poolClient: IPoolClient, serviceClient: ServiceClient, args: {
@@ -79,7 +79,7 @@ async function processPost(poolClient: IPoolClient, args: {
         associationId: null,
         associationSequence: null,
         childAssets: null,
-        renderWith: RENDER_WITH_VALUE,
+        renderWith: RENDER_WITH_VALUES,
         assetId: args.post[0].data.id
     });
 

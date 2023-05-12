@@ -14,12 +14,12 @@ import {
   generateAssetName,
   generateAssetDescription,
   processMediaPaths
-} from "../../../helpers/utils";
-import { createAsset } from "../..";
-import { TAGS, LOOKUP_PARAMS, CONTENT_TYPES, RENDER_WITH_VALUE } from "../../../helpers/config";
+} from "../../helpers/utils";
+import { createAsset, TAGS, CONTENT_TYPES, RENDER_WITH_VALUES  } from "arcframework";
+import { LOOKUP_PARAMS} from "../../helpers/config";
 import { shouldUploadContent } from "../moderator";
-import { conversationEndpoint } from "../../../helpers/endpoints";
-import { ServiceClient } from "../../../clients/service";
+import { conversationEndpoint } from "../../helpers/endpoints";
+import { ServiceClient } from "../../clients/service";
 
 let totalCount: number = 0;
 
@@ -161,7 +161,7 @@ export async function processTweetV2(poolClient: IPoolClient, serviceClient: Ser
     associationId: args.associationId,
     associationSequence: args.associationSequence,
     childAssets: referencedTweets,
-    renderWith: RENDER_WITH_VALUE,
+    renderWith: RENDER_WITH_VALUES,
     assetId: args.tweet.id
   });
 

@@ -6,10 +6,10 @@ import { throttle } from 'lodash';
 
 import { PoolClient, IPoolClient, PoolConfigType } from "arcframework";
 
-import { exitProcess, log } from "../../../helpers/utils";
+import { exitProcess, log } from "../../helpers/utils";
 
 import { processEvent } from ".";
-import { initCounter } from "../..";
+import { initCounter } from "arcframework";
 import { Nostr } from "./Nostr"
 
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {

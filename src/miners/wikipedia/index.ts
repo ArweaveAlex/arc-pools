@@ -3,9 +3,9 @@ import WikiJS from "wikijs";
 
 import { ArtifactEnum, IPoolClient } from "arcframework";
 
-import { createAsset } from "../..";
-import { wikiApiEndpoint } from "../../../helpers/endpoints";
-import { CONTENT_TYPES, RENDER_WITH_VALUE, TAGS } from "../../../helpers/config";
+import { createAsset } from "arcframework";
+import { wikiApiEndpoint } from "../../helpers/endpoints";
+import { CONTENT_TYPES, RENDER_WITH_VALUES, TAGS } from "arcframework";
 
 let currentArticleURL = "";
 
@@ -117,7 +117,7 @@ const scrapePage = async (poolClient: IPoolClient, query: string) => {
             associationId: null,
             associationSequence: null,
             childAssets: null,
-            renderWith: RENDER_WITH_VALUE,
+            renderWith: RENDER_WITH_VALUES,
             assetId: content.title
         });
     }

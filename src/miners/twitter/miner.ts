@@ -9,12 +9,12 @@ import {
   modifyStreamTweet,
   deleteStreamRules
 } from ".";
-import { log, logValue, exitProcess } from "../../../helpers/utils";
-import { CLI_ARGS, STREAM_PARAMS } from "../../../helpers/config";
-import { parseError } from "../../../helpers/errors";
+import { log, logValue, exitProcess } from "../../helpers/utils";
+import { CLI_ARGS, STREAM_PARAMS } from "../../helpers/config";
+import { parseError } from "../../helpers/errors";
 
-import { initCounter } from "../..";
-import { ServiceClient } from "../../../clients/service";
+import { initCounter } from "arcframework";
+import { ServiceClient } from "../../clients/service";
 
 let contentModeration: boolean;
 

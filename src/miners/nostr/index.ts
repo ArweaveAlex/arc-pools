@@ -1,18 +1,17 @@
-import { generatePrivateKey, getPublicKey } from './nostr-tools';
 import tmp from "tmp-promise";
 import { mkdir } from "fs/promises";
 import path from "path";
 
-import { CONTENT_TYPES, RENDER_WITH_VALUE, TAGS } from '../../../helpers/config';
+import { CONTENT_TYPES, RENDER_WITH_VALUES, TAGS } from 'arcframework';
 import { ArtifactEnum, IPoolClient } from 'arcframework';
-import { generateNostrAssetDescription, generateNostrAssetName, log, saveConfig } from '../../../helpers/utils';
+import { generateNostrAssetDescription, generateNostrAssetName, log } from '../../helpers/utils';
 import { 
     checkPath, 
     uploadFile,
     sha256Object
-} from "../../../helpers/utils";
+} from "../../helpers/utils";
 
-import { createAsset } from "../..";
+import { createAsset } from "arcframework";
 
 
 export async function processEvent(poolClient: IPoolClient, args: {
@@ -60,7 +59,7 @@ export async function processEvent(poolClient: IPoolClient, args: {
         associationSequence: args.associationSequence,
         childAssets: null,
         assetId: sha256Object(args.event.post),
-        renderWith: RENDER_WITH_VALUE
+        renderWith: RENDER_WITH_VALUES
     });
 
     if (contractId) {

@@ -9,9 +9,9 @@ import {
     log, 
     processMediaPath,
     walk
-} from "../../../helpers/utils";
-import { CONTENT_TYPES, ARTIFACT_TYPES_BY_FILE, TAGS, RENDER_WITH_VALUE } from "../../../helpers/config";
-import { createAsset } from "../..";
+} from "../../helpers/utils";
+import { CONTENT_TYPES, ARTIFACT_TYPES_BY_FILE, TAGS, RENDER_WITH_VALUES } from "arcframework";
+import { createAsset } from "arcframework";
 
 const sentFilesFilename = 'sentFiles.json';
 let sentFiles = [];
@@ -178,7 +178,7 @@ async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string
         associationId: associationId,
         associationSequence: associationSequence,
         childAssets: null,
-        renderWith: RENDER_WITH_VALUE,
+        renderWith: RENDER_WITH_VALUES,
         assetId: fileTransactionId,
         fileType: fileType
     });

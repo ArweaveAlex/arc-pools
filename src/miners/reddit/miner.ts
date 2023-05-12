@@ -7,13 +7,13 @@ import {
   PoolClient 
 } from "arcframework";
 
-import { log, exitProcess } from "../../../helpers/utils";
-import { ServiceClient } from "../../../clients/service";
-import { CLI_ARGS} from "../../../helpers/config";
-import { parseError } from "../../../helpers/errors";
+import { log, exitProcess } from "../../helpers/utils";
+import { ServiceClient } from "../../clients/service";
+import { CLI_ARGS} from "../../helpers/config";
+import { parseError } from "../../helpers/errors";
 
 import { processPosts } from ".";
-import { initCounter } from "../..";
+import { initCounter } from "arcframework";
 
 
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {

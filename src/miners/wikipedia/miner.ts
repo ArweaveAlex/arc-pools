@@ -1,9 +1,9 @@
 import { PoolClient, PoolConfigType } from "arcframework";
 
-import { exitProcess } from "../../../helpers/utils";
+import { exitProcess } from "../../helpers/utils";
 import { processWikipedia } from ".";
 
-import { initCounter } from "../..";
+import { initCounter } from "arcframework";
 
 export async function run(poolConfig: PoolConfigType) {
     const poolClient = new PoolClient(poolConfig);

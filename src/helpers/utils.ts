@@ -7,24 +7,15 @@ import { mkdir } from "fs/promises";
 
 var crypto = require("crypto");
 
-import { IPoolClient, KeyValueType, PoolConfigType } from "arcframework";
+import { 
+  IPoolClient, 
+  PoolConfigType, 
+  CONTENT_TYPES, 
+  TAGS
+} from "arcframework";
 
-import { STORAGE, CONTENT_TYPES, TAGS, POOL_FILE } from "./config";
+import { POOL_FILE } from "./config";
 
-export function getTagValue(list: KeyValueType[], name: string): string {
-  for (let i = 0; i < list.length; i++) {
-    if (list[i]) {
-      if (list[i]!.name === name) {
-        return list[i]!.value as string;
-      }
-    }
-  }
-  return STORAGE.none;
-}
-
-export function unquoteJsonKeys(json: Object): string {
-  return JSON.stringify(json).replace(/"([^"]+)":/g, '$1:')
-}
 
 export function checkProcessEnv(processArg: string): string {
   return processArg.indexOf("ts-node") > -1 ? '.ts' : '.js'

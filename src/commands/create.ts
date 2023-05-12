@@ -6,9 +6,7 @@ import path from "path";
 const readline = require('readline');
 
 import { 
-    PoolStateType, 
     PoolConfigType, 
-    ANSTopicEnum, 
     PoolClient,
     PoolCreateClient,
     sonarLink,
@@ -36,7 +34,6 @@ const command: CommandInterface = {
         const pConfig: PoolConfigType = POOLS_JSON[poolArg];
         const walletInfo = await createWallet(poolArg);
         let controlWalletJwk: any;
-        let controlWalletAddress: string;
         let image: Buffer = null;
         let imageType: string = null;
         let poolCreateClient: PoolCreateClient;
@@ -45,7 +42,6 @@ const command: CommandInterface = {
             await poolClient.validatePoolConfigs();
 
             controlWalletJwk = JSON.parse(fs.readFileSync(controlWalletPath).toString());
-            controlWalletAddress = await poolClient.arweavePost.wallets.jwkToAddress(controlWalletJwk);
   
             if (args.argv["image"]) {
                 if (!fs.existsSync(args.argv["image"])) {
@@ -90,7 +86,15 @@ const command: CommandInterface = {
                     console.log("You do not have enough funds to contribute now");
                     finishOut(poolCreateClient.poolConfig.contracts.pool.id, rl);
                 } else {
-                    askForBalance(arBalance, poolClient, poolCreateClient.poolConfig.contracts.pool.id, walletInfo, rl, controlWalletJwk, poolConfig);
+                    askForBalance(
+                        arBalance, 
+                        poolClient, 
+                        poolCreateClient.poolConfig.contracts.pool.id, 
+                        walletInfo, 
+                        rl, 
+                        controlWalletJwk, 
+                        poolConfig
+                    );
                 }
             } else {
                 finishOut(poolCreateClient.poolConfig.contracts.pool.id, rl);
@@ -117,12 +121,6 @@ function askForBalance(
             console.log('Invalid input. Please enter a valid positive number greater than 0.01');
             askForBalance(arBalance, poolClient, contractTxId, walletInfo, rl, controlWalletJwk, poolConfig); 
         } else {
-            const warpContract = poolClient.warp.contract(contractTxId).connect(
-                controlWalletJwk
-            ).setEvaluationOptions({
-                waitForConfirmation: false,
-            });
-
             let r = await poolClient.handlePoolContribute(contractTxId, am, arBalance);
             
             if(!r.status) {

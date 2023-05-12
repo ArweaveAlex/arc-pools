@@ -3,7 +3,7 @@ import minimist from "minimist";
 import { PoolClient, PoolConfigType } from "arcframework";
 
 
-import { exitProcess } from "../../../helpers/utils";
+import { exitProcess } from "../../helpers/utils";
 
 
 
