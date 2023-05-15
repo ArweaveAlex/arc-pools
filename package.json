@@ -12,12 +12,11 @@
         "arcpool": "./bin/helpers/pm2.js"
     },
     "dependencies": {
-        "@bundlr-network/client": "0.9.6",
         "@noble/hashes": "^1.1.5",
         "@scure/bip32": "^1.1.5",
+        "@scure/bip39": "^1.2.0",
         "@types/fs-extra": "^8.1.0",
         "arcframework": "file:../arc-framework",
-        "arweave": "1.12.4",
         "axios": "^0.26.1",
         "bech32-buffer": "^0.2.1",
         "bip39-web-crypto": "^4.0.1",
@@ -37,10 +36,9 @@
         "node-tweet-stream": "^2.1.0",
         "pm2": "^5.2.2",
         "reddit": "^1.2.1",
+        "tmp-promise": "^3.0.3",
         "ts-node": "^10.9.1",
         "twitter-api-v2": "^1.12.0",
-        "warp-contracts": "^1.4.4",
-        "warp-contracts-plugin-deploy": "^1.0.7",
         "websocket-polyfill": "^0.0.3",
         "wikijs": "^6.3.3"
     },

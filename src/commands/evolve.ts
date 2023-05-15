@@ -1,8 +1,6 @@
 import fs from "fs";
-import { ArweaveSigner } from "warp-contracts-plugin-deploy";
 
 import { 
-    ArweaveClient, 
     PoolConfigType,
     PoolClient
 } from "arcframework";
