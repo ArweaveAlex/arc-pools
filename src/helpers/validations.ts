@@ -29,8 +29,6 @@ export function validatePoolConfig(args: ArgumentsInterface): PoolConfigType {
         // console.log(e)
     }
 
-    console.log(poolConfig)
-
     return poolConfig;
 }
 

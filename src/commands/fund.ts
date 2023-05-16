@@ -1,11 +1,11 @@
 import fs from "fs";
 
-import { ArweaveClient, PoolClient, PoolConfigType} from "arcframework";
+import { PoolClient, PoolConfigType} from "arcframework";
 
 import { validatePoolConfig } from "../helpers/validations";
 import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
 import { CLI_ARGS } from "../helpers/config";
-import { exitProcess, log } from "../helpers/utils";
+import { log } from "../helpers/utils";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.fund,
