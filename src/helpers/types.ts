@@ -79,6 +79,8 @@ export interface PoolStateType {
     canEvolve: boolean
     controlPubkey: NStringType
     contribPercent: number | null
+    artifactContractSrc?: string
+    keywords?: string[]
 }
 
 export type PoolConfigType = {

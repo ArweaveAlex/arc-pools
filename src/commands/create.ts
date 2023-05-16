@@ -164,7 +164,9 @@ const command: CommandInterface = {
             balance: "0",
             canEvolve: true,
             controlPubkey: controlWalletAddress,
-            contribPercent: POOLS_JSON[poolArg].state.controller.contribPercent
+            contribPercent: POOLS_JSON[poolArg].state.controller.contribPercent,
+            artifactContractSrc: nftDeployment.srcTxId,
+            keywords: POOLS_JSON[poolArg].keywords
         };
 
         const tags = [
