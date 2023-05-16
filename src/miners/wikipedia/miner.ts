@@ -6,7 +6,7 @@ import { processWikipedia } from ".";
 import { initCounter } from "arcframework";
 
 export async function run(poolConfig: PoolConfigType) {
-    const poolClient = new PoolClient(poolConfig);
+    const poolClient = new PoolClient({poolConfig});
 
     if (!poolConfig.walletKey) {
         exitProcess(`Invalid Pool Wallet Configuration`, 1);

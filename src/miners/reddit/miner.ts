@@ -17,7 +17,7 @@ import { initCounter } from "arcframework";
 
 
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
-    const poolClient = new PoolClient(poolConfig);
+    const poolClient = new PoolClient({poolConfig});
     const serviceClient = new ServiceClient(poolConfig);
   
     if (!poolConfig.walletKey) {

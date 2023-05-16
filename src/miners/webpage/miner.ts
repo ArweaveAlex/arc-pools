@@ -9,7 +9,7 @@ import { exitProcess } from "../../helpers/utils";
 
 
 export async function run(poolConfig: PoolConfigType, _argv: minimist.ParsedArgs) {
-    const poolClient = new PoolClient(poolConfig);
+    const poolClient = new PoolClient({poolConfig});
   
     if (!poolConfig.walletKey) {
       exitProcess(`Invalid Pool Wallet Configuration`, 1);

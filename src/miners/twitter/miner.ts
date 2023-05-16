@@ -19,7 +19,7 @@ import { ServiceClient } from "../../clients/service";
 let contentModeration: boolean;
 
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
-  const poolClient = new PoolClient(poolConfig);
+  const poolClient = new PoolClient({poolConfig});
   const serviceClient: ServiceClient = new ServiceClient(poolConfig);
 
   if(!serviceClient.twitterV2 || !serviceClient.twitterV2Bearer) {

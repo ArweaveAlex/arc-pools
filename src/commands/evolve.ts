@@ -2,7 +2,8 @@ import fs from "fs";
 
 import { 
     PoolConfigType,
-    PoolClient
+    PoolClient,
+    ArweaveClient
 } from "arcframework";
 
 import { validatePoolConfig } from "../helpers/validations";
@@ -17,7 +18,8 @@ const command: CommandInterface = {
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
         poolConfig.walletKey = JSON.parse(fs.readFileSync(poolConfig.walletPath).toString());
-        await (new PoolClient(poolConfig)).evolve();
+        let signedWallet = (new ArweaveClient()).warpPluginArweaveSigner(poolConfig.walletKey);
+        await (new PoolClient({poolConfig: poolConfig, signedPoolWallet: signedWallet})).evolve();
         log('Contract evolved', 0);
     }
 }

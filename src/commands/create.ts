@@ -26,7 +26,7 @@ const command: CommandInterface = {
     args: ["pool id"],
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
-        const poolClient: PoolClient = new PoolClient(poolConfig);
+        const poolClient: PoolClient = new PoolClient({ poolConfig: poolConfig });
         const controlWalletPath: string = validateControlWalletPath(args.argv["control-wallet"]);
         const poolPath: string = POOL_FILE;
         const POOLS_JSON = JSON.parse(fs.readFileSync(poolPath).toString());
@@ -37,11 +37,13 @@ const command: CommandInterface = {
         let image: Buffer = null;
         let imageType: string = null;
         let poolCreateClient: PoolCreateClient;
+        let controlWalletAddress;
         
         try {
             await poolClient.validatePoolConfigs();
 
             controlWalletJwk = JSON.parse(fs.readFileSync(controlWalletPath).toString());
+            controlWalletAddress = await poolClient.arweavePost.wallets.jwkToAddress(controlWalletJwk);
   
             if (args.argv["image"]) {
                 if (!fs.existsSync(args.argv["image"])) {
@@ -51,13 +53,20 @@ const command: CommandInterface = {
                 imageType = mime.getType(args.argv["image"]);
             } 
 
+            let signedWallet = (new ArweaveClient()).warpPluginArweaveSigner(controlWalletJwk);
+
+            pConfig.state.owner.pubkey = walletInfo.address;
+
             poolCreateClient = new PoolCreateClient(
-                pConfig,
-                controlWalletJwk,
-                walletInfo.keys,
-                walletInfo.file,
-                image,
-                imageType
+                {
+                    poolConfig: pConfig,
+                    controlWalletJwk: controlWalletJwk,
+                    controlWalletAddress: controlWalletAddress,
+                    signedControlWallet: signedWallet,
+                    poolWalletPath: walletInfo.file,
+                    img: image,
+                    imgFileType: imageType,
+                }
             )
 
             await poolCreateClient.createPool();
@@ -77,7 +86,6 @@ const command: CommandInterface = {
 
         rl.question('Would you like to contribute to your pool from your control wallet to begin mining sooner? (y/n) ', async (answer: string) => {
             if (answer.toLowerCase() === 'y') {
-                const controlWalletAddress = await poolClient.arweavePost.wallets.jwkToAddress(controlWalletJwk);
                 let controlWalletBalance  = await poolClient.arweavePost.wallets.getBalance(controlWalletAddress);
 
                 let arBalance = poolClient.arweavePost.ar.winstonToAr(controlWalletBalance);
