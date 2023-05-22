@@ -93,20 +93,20 @@ export async function processMediaPath(poolClient: IPoolClient, f: string, args:
   keepFile?: boolean
 }) {
   const mimeType = mime.contentType(mime.lookup(f) || CONTENT_TYPES.octetStream) as string;
-  const tx = poolClient.bundlr.createTransaction(
+  const tx = poolClient.arClient.bundlr.createTransaction(
     await fs.promises.readFile(path.resolve(f)),
     { tags: [...args.subTags, { name: TAGS.keys.contentType, value: mimeType }] }
   )
   await tx.sign();
   const id = tx.id;
-  const cost = await poolClient.bundlr.getPrice(tx.size);
+  const cost = await poolClient.arClient.bundlr.getPrice(tx.size);
 
   if(!args.keepFile) fs.rmSync(path.resolve(f));
   
   let balance  = await poolClient.arClient.arweavePost.wallets.getBalance(poolClient.poolConfig.state.owner.pubkey);
   if(balance > 0) {
     try {
-      await poolClient.bundlr.fund(balance >= cost.integerValue() ? cost.integerValue() : balance);
+      await poolClient.arClient.bundlr.fund(balance >= cost.integerValue() ? cost.integerValue() : balance);
     }
     catch (e: any) {
       // log(`Error funding bundlr ...\n ${e}`, 1);

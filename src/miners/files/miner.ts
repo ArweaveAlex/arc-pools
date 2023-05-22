@@ -124,7 +124,7 @@ async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string
 
     let fileTransactionId = await processFile(poolClient, path);
 
-    let metadataTx = poolClient.bundlr.createTransaction(
+    let metadataTx = poolClient.arClient.bundlr.createTransaction(
         metaData,
         { tags: subTags }
     );

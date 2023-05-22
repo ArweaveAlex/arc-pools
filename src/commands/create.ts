@@ -20,6 +20,20 @@ import { createWallet } from "../helpers/wallet";
 
 import { CLI_ARGS, POOL_FILE } from "../helpers/config";
 
+function askQuestion(question: string): Promise<string> {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+  
+    return new Promise((resolve) => {
+      rl.question(question, (answer: string) => {
+        rl.close();
+        resolve(answer);
+      });
+    });
+}
+
 const command: CommandInterface = {
     name: CLI_ARGS.commands.create,
     description: `Create a pool using ${POOL_FILE}`,
@@ -32,18 +46,38 @@ const command: CommandInterface = {
         const POOLS_JSON = JSON.parse(fs.readFileSync(poolPath).toString());
         const poolArg = args.commandValues[0];
         const pConfig: PoolConfigType = POOLS_JSON[poolArg];
-        const walletInfo = await createWallet(poolArg);
         let controlWalletJwk: any;
         let image: Buffer = null;
         let imageType: string = null;
         let poolCreateClient: PoolCreateClient;
-        let controlWalletAddress;
-        
+        let controlWalletAddress: string;
+        let walletInfo: any;
+
         try {
             await poolClient.validatePoolConfigs();
 
             controlWalletJwk = JSON.parse(fs.readFileSync(controlWalletPath).toString());
-            controlWalletAddress = await poolClient.arweavePost.wallets.jwkToAddress(controlWalletJwk);
+            controlWalletAddress = await poolClient.arClient.arweavePost.wallets.jwkToAddress(controlWalletJwk);
+
+            while(true) {
+                const answer1 = await askQuestion('Would you like to use your control wallet as the wallet which will receive pool contributions? If you answer no this program will generate another wallet for the pool. (y/n) ');
+
+                log(answer1, 0);
+
+                if (answer1.toLowerCase() === 'y') {
+                    walletInfo = {
+                        file: controlWalletPath,
+                        address: controlWalletAddress,
+                        keys: controlWalletJwk
+                    };
+                    break;
+                } else if(answer1.toLowerCase() === 'n') {
+                    walletInfo = await createWallet(poolArg);
+                    break;
+                } else {
+                    log('Please enter y or n', 0);
+                }
+            }
   
             if (args.argv["image"]) {
                 if (!fs.existsSync(args.argv["image"])) {
@@ -86,9 +120,9 @@ const command: CommandInterface = {
 
         rl.question('Would you like to contribute to your pool from your control wallet to begin mining sooner? (y/n) ', async (answer: string) => {
             if (answer.toLowerCase() === 'y') {
-                let controlWalletBalance  = await poolClient.arweavePost.wallets.getBalance(controlWalletAddress);
+                let controlWalletBalance  = await poolClient.arClient.arweavePost.wallets.getBalance(controlWalletAddress);
 
-                let arBalance = poolClient.arweavePost.ar.winstonToAr(controlWalletBalance);
+                let arBalance = poolClient.arClient.arweavePost.ar.winstonToAr(controlWalletBalance);
 
                 if(arBalance < 0.01) {
                     console.log("You do not have enough funds to contribute now");
@@ -139,7 +173,7 @@ function askForBalance(
             
             log("Waiting for contribution funds to come through to send them to Bundlr, this will take a while...", 0);
             do {
-                let poolBalance  = await poolClient.arweavePost.wallets.getBalance(walletInfo.address);
+                let poolBalance  = await poolClient.arClient.arweavePost.wallets.getBalance(walletInfo.address);
                 if(poolBalance > 0) {
                     await new Promise(resolve => setTimeout(resolve, 60000));
                     let keys = JSON.parse(fs.readFileSync(walletInfo.file).toString());
