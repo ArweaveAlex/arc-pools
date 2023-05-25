@@ -6,11 +6,12 @@ import path from "path";
 const readline = require('readline');
 
 import { 
+    ArweaveClient,
     PoolConfigType, 
     PoolClient,
+    PoolConfigClient,
     PoolCreateClient,
-    sonarLink,
-    ArweaveClient
+    sonarLink
 } from "arcframework";
 
 import { exitProcess, log } from "../helpers/utils";
@@ -40,7 +41,8 @@ const command: CommandInterface = {
     args: ["pool id"],
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
-        const poolClient: PoolClient = new PoolClient({ poolConfig: poolConfig });
+        const poolConfigClient: PoolConfigClient = new PoolConfigClient({testMode: true});
+        const arClient = new ArweaveClient();
         const controlWalletPath: string = validateControlWalletPath(args.argv["control-wallet"]);
         const poolPath: string = POOL_FILE;
         const POOLS_JSON = JSON.parse(fs.readFileSync(poolPath).toString());
@@ -52,12 +54,13 @@ const command: CommandInterface = {
         let poolCreateClient: PoolCreateClient;
         let controlWalletAddress: string;
         let walletInfo: any;
+        let newConfig: any;
 
         try {
-            await poolClient.validatePoolConfigs();
+            await poolConfigClient.validateNewPoolConfig({poolConfig});
 
             controlWalletJwk = JSON.parse(fs.readFileSync(controlWalletPath).toString());
-            controlWalletAddress = await poolClient.arClient.arweavePost.wallets.jwkToAddress(controlWalletJwk);
+            controlWalletAddress = await arClient.arweavePost.wallets.jwkToAddress(controlWalletJwk);
 
             while(true) {
                 const answer1 = await askQuestion('Would you like to use your control wallet as the wallet which will receive pool contributions? If you answer no this program will generate another wallet for the pool. (y/n) ');
@@ -103,9 +106,9 @@ const command: CommandInterface = {
                 }
             )
 
-            await poolCreateClient.createPool();
+            newConfig = await poolCreateClient.createPool();
 
-            POOLS_JSON[poolArg] = poolCreateClient.poolConfig;
+            POOLS_JSON[poolArg] = newConfig;
             fs.writeFileSync(poolPath, JSON.stringify(POOLS_JSON, null, 4));
             console.log(`Pool File Updated`);
         }
@@ -120,26 +123,27 @@ const command: CommandInterface = {
 
         rl.question('Would you like to contribute to your pool from your control wallet to begin mining sooner? (y/n) ', async (answer: string) => {
             if (answer.toLowerCase() === 'y') {
-                let controlWalletBalance  = await poolClient.arClient.arweavePost.wallets.getBalance(controlWalletAddress);
+                let controlWalletBalance  = await arClient.arweavePost.wallets.getBalance(controlWalletAddress);
 
-                let arBalance = poolClient.arClient.arweavePost.ar.winstonToAr(controlWalletBalance);
+                let arBalance = arClient.arweavePost.ar.winstonToAr(controlWalletBalance);
 
                 if(arBalance < 0.01) {
                     console.log("You do not have enough funds to contribute now");
-                    finishOut(poolCreateClient.poolConfig.contracts.pool.id, rl);
+                    finishOut(newConfig.contracts.pool.id, rl);
                 } else {
+                    let poolClient: PoolClient = new PoolClient({poolId: newConfig.contracts.pool.id});
+
                     askForBalance(
                         arBalance, 
                         poolClient, 
-                        poolCreateClient.poolConfig.contracts.pool.id, 
                         walletInfo, 
                         rl, 
                         controlWalletJwk, 
-                        poolConfig
+                        newConfig
                     );
                 }
             } else {
-                finishOut(poolCreateClient.poolConfig.contracts.pool.id, rl);
+                finishOut(newConfig.contracts.pool.id, rl);
             }
         });
     }
@@ -148,7 +152,6 @@ const command: CommandInterface = {
 function askForBalance(
     arBalance: number, 
     poolClient: PoolClient, 
-    contractTxId: string, 
     walletInfo: {
         file: string;
         address: any;
@@ -161,13 +164,13 @@ function askForBalance(
         const am = parseFloat(amount);
         if (isNaN(am) || (am <= 0) || (am > arBalance) || (am < 0.01)) {
             console.log('Invalid input. Please enter a valid positive number greater than 0.01');
-            askForBalance(arBalance, poolClient, contractTxId, walletInfo, rl, controlWalletJwk, poolConfig); 
+            askForBalance(arBalance, poolClient, walletInfo, rl, controlWalletJwk, poolConfig); 
         } else {
-            let r = await poolClient.handlePoolContribute(contractTxId, am, arBalance);
+            let r = await poolClient.handlePoolContribute(am, arBalance);
             
             if(!r.status) {
                 log("Contribution failed, please contribute via the Alex site ...", 0);
-                finishOut(contractTxId, rl);
+                finishOut(poolConfig.contracts.pool.id, rl);
                 return;
             }
             
@@ -192,7 +195,7 @@ function askForBalance(
             } while(true);
 
             log("Your funds have been contributed...", 0);
-            finishOut(contractTxId, rl);
+            finishOut(poolConfig.contracts.pool.id, rl);
         }
     });
 }
