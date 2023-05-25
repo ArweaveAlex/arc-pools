@@ -1,15 +1,14 @@
-import * as twitter from "../artifacts/miners/twitter/miner";
-import * as wikipedia from "../artifacts/miners/wikipedia/miner";
-import * as reddit from "../artifacts/miners/reddit/miner";
-// import * as webpage from "../artifacts/miners/webpage/miner";
-import * as nostr from "../artifacts/miners/nostr/miner";
-import * as files from "../artifacts/miners/files/miner";
+import * as twitter from "../miners/twitter/miner";
+import * as wikipedia from "../miners/wikipedia/miner";
+import * as reddit from "../miners/reddit/miner";
+import * as nostr from "../miners/nostr/miner";
+import * as files from "../miners/files/miner";
 
 import source from "../options/source";
 import method from "../options/method";
 
 import { exitProcess } from "../helpers/utils";
-import { PoolConfigType } from "../helpers/types";
+import { PoolConfigType } from "arcframework";
 import { validatePoolConfig } from "../helpers/validations";
 import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
 import { CLI_ARGS } from "../helpers/config";
@@ -37,9 +36,6 @@ const command: CommandInterface = {
             case CLI_ARGS.sources.reddit.name:
                 await reddit.run(poolConfig, args.argv);
                 return;
-            // case CLI_ARGS.sources.webpage.name:
-            //     await webpage.run(poolConfig, args.argv);
-            //     return;
             case CLI_ARGS.sources.nostr.name:
                 await nostr.run(poolConfig, args.argv);
                 return;

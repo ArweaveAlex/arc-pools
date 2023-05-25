@@ -7,23 +7,15 @@ import { mkdir } from "fs/promises";
 
 var crypto = require("crypto");
 
-import { STORAGE, CONTENT_TYPES, TAGS, POOL_FILE } from "./config";
-import { IPoolClient, KeyValueType, PoolConfigType } from "./types";
+import { 
+  IPoolClient, 
+  PoolConfigType, 
+  CONTENT_TYPES, 
+  TAGS
+} from "arcframework";
 
-export function getTagValue(list: KeyValueType[], name: string): string {
-  for (let i = 0; i < list.length; i++) {
-    if (list[i]) {
-      if (list[i]!.name === name) {
-        return list[i]!.value as string;
-      }
-    }
-  }
-  return STORAGE.none;
-}
+import { POOL_FILE } from "./config";
 
-export function unquoteJsonKeys(json: Object): string {
-  return JSON.stringify(json).replace(/"([^"]+)":/g, '$1:')
-}
 
 export function checkProcessEnv(processArg: string): string {
   return processArg.indexOf("ts-node") > -1 ? '.ts' : '.js'
@@ -101,20 +93,20 @@ export async function processMediaPath(poolClient: IPoolClient, f: string, args:
   keepFile?: boolean
 }) {
   const mimeType = mime.contentType(mime.lookup(f) || CONTENT_TYPES.octetStream) as string;
-  const tx = poolClient.bundlr.createTransaction(
+  const tx = poolClient.arClient.bundlr.createTransaction(
     await fs.promises.readFile(path.resolve(f)),
     { tags: [...args.subTags, { name: TAGS.keys.contentType, value: mimeType }] }
   )
   await tx.sign();
   const id = tx.id;
-  const cost = await poolClient.bundlr.getPrice(tx.size);
+  const cost = await poolClient.arClient.bundlr.getPrice(tx.size);
 
   if(!args.keepFile) fs.rmSync(path.resolve(f));
   
   let balance  = await poolClient.arClient.arweavePost.wallets.getBalance(poolClient.poolConfig.state.owner.pubkey);
   if(balance > 0) {
     try {
-      await poolClient.bundlr.fund(balance >= cost.integerValue() ? cost.integerValue() : balance);
+      await poolClient.arClient.bundlr.fund(balance >= cost.integerValue() ? cost.integerValue() : balance);
     }
     catch (e: any) {
       // log(`Error funding bundlr ...\n ${e}`, 1);
