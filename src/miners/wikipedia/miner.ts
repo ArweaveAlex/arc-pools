@@ -3,8 +3,6 @@ import { PoolClient, PoolConfigType } from "arcframework";
 import { exitProcess } from "../../helpers/utils";
 import { processWikipedia } from ".";
 
-import { initCounter } from "arcframework";
-
 export async function run(poolConfig: PoolConfigType) {
     const poolClient = new PoolClient({poolConfig});
 
@@ -15,8 +13,6 @@ export async function run(poolConfig: PoolConfigType) {
     if (!poolClient.poolConfig.topics) {
         exitProcess(`Configure topics in pools.json`, 1);
     }
-
-    initCounter();
 
     await processWikipedia(poolClient);
 

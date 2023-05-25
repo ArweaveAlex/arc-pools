@@ -3,7 +3,7 @@ import fs from "fs";
 import { PoolConfigClient } from 'arcframework';
 
 import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
-import { CLI_ARGS, POOL_FILE } from "../helpers/config";
+import { CLI_ARGS, POOL_FILE, POOL_TEST_MODE } from "../helpers/config";
 import { exitProcess } from "../helpers/utils";
 
 const command: CommandInterface = {
@@ -27,7 +27,7 @@ const command: CommandInterface = {
             exitProcess(`Pool id already exists`, 1);
         }
 
-        let poolConfigClient = new PoolConfigClient();
+        let poolConfigClient = new PoolConfigClient({testMode: POOL_TEST_MODE});
 
         poolJsonFile[poolArg] = poolConfigClient.initNew();
 

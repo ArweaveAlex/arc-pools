@@ -19,7 +19,7 @@ import { validatePoolConfig, validateControlWalletPath } from "../helpers/valida
 import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
 import { createWallet } from "../helpers/wallet";
 
-import { CLI_ARGS, POOL_FILE } from "../helpers/config";
+import { CLI_ARGS, POOL_FILE, POOL_TEST_MODE } from "../helpers/config";
 
 function askQuestion(question: string): Promise<string> {
     const rl = readline.createInterface({
@@ -41,7 +41,7 @@ const command: CommandInterface = {
     args: ["pool id"],
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
-        const poolConfigClient: PoolConfigClient = new PoolConfigClient({testMode: true});
+        const poolConfigClient: PoolConfigClient = new PoolConfigClient({testMode: POOL_TEST_MODE});
         const arClient = new ArweaveClient();
         const controlWalletPath: string = validateControlWalletPath(args.argv["control-wallet"]);
         const poolPath: string = POOL_FILE;
@@ -131,14 +131,14 @@ const command: CommandInterface = {
                     console.log("You do not have enough funds to contribute now");
                     finishOut(newConfig.contracts.pool.id, rl);
                 } else {
-                    let poolClient: PoolClient = new PoolClient({poolId: newConfig.contracts.pool.id});
+                    newConfig.walletKey = controlWalletJwk;
+                    let poolClient: PoolClient = new PoolClient({poolConfig: newConfig});
 
                     askForBalance(
                         arBalance, 
                         poolClient, 
                         walletInfo, 
                         rl, 
-                        controlWalletJwk, 
                         newConfig
                     );
                 }
@@ -157,16 +157,15 @@ function askForBalance(
         address: any;
     },
     rl: any,
-    controlWalletJwk: any,
     poolConfig: PoolConfigType
 ) {
     rl.question(`How much would you like to contribute. You have ${arBalance} ar to contribute, enter a decimal amount greater than 0.01: `, async (amount: string) => {
         const am = parseFloat(amount);
         if (isNaN(am) || (am <= 0) || (am > arBalance) || (am < 0.01)) {
             console.log('Invalid input. Please enter a valid positive number greater than 0.01');
-            askForBalance(arBalance, poolClient, walletInfo, rl, controlWalletJwk, poolConfig); 
+            askForBalance(arBalance, poolClient, walletInfo, rl, poolConfig); 
         } else {
-            let r = await poolClient.handlePoolContribute(am, arBalance);
+            let r = await poolClient.handlePoolContribute({ amount: am, availableBalance: arBalance });
             
             if(!r.status) {
                 log("Contribution failed, please contribute via the Alex site ...", 0);

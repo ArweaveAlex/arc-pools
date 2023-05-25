@@ -13,7 +13,6 @@ import { log, logValue, exitProcess } from "../../helpers/utils";
 import { CLI_ARGS, STREAM_PARAMS } from "../../helpers/config";
 import { parseError } from "../../helpers/errors";
 
-import { initCounter } from "arcframework";
 import { ServiceClient } from "../../clients/service";
 
 let contentModeration: boolean;
@@ -39,8 +38,6 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
   const username = argv["username"];
 
   contentModeration = argv["content-moderation"];
-
-  initCounter();
 
   switch (method) {
     case undefined: case CLI_ARGS.sources.twitter.methods.stream:

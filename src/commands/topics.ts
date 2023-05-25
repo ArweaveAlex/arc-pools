@@ -22,7 +22,7 @@ const command: CommandInterface = {
         let topicValues = topics.split(" ");
         poolConfig.walletKey = JSON.parse(fs.readFileSync(poolConfig.walletPath).toString());
         let poolClient = new PoolClient({poolConfig});
-        await poolClient.setTopics(topicValues);
+        await poolClient.setTopics({topicValues});
         saveConfig(poolClient.poolConfig, poolArg);
         log('Topics saved', 0);
     }

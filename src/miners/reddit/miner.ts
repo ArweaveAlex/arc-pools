@@ -13,7 +13,6 @@ import { CLI_ARGS} from "../../helpers/config";
 import { parseError } from "../../helpers/errors";
 
 import { processPosts } from ".";
-import { initCounter } from "arcframework";
 
 
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
@@ -25,8 +24,6 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
     }
 
     log(`Mining reddit ...`, 0);
-
-    initCounter();
 
     const method = argv["method"];
     const subreddit = argv["subreddit"];
