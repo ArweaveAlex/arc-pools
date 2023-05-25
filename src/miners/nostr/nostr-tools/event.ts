@@ -21,6 +21,7 @@ export enum Kind {
   BlockList = 16462,
   FlagList = 16463,
   ReplaceableByTag = 30000,
+  Blank = 255
 }
 
 export type Event = {
@@ -35,7 +36,7 @@ export type Event = {
 
 export function getBlankEvent(): Event {
   return {
-    kind: 255,
+    kind: Kind.Blank,
     pubkey: '',
     content: '',
     tags: [],
