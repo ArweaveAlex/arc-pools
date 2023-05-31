@@ -14,8 +14,17 @@ const command: CommandInterface = {
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
         poolConfig.walletKey = JSON.parse(fs.readFileSync(poolConfig.walletPath).toString());
-        await (new PoolClient({poolConfig})).fundBundlr();
-        log('Bundlr funded', 0);
+        let poolClient = new PoolClient({ poolConfig });
+        console.log(poolClient)
+        await poolClient.arClient.bundlr.ready();
+        let balances = await poolClient.balances();
+        console.log(balances.poolBalance)
+        if(balances.poolBalance > 0) {
+            await poolClient.fundBundlr(balances.poolBalance.toString());
+            log('Bundlr funded', 0);
+        } else {
+            log('No funds to send to Bundlr', 0);
+        }
     }
 }
 

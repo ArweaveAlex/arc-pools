@@ -99,19 +99,19 @@ export async function processMediaPath(poolClient: IPoolClient, f: string, args:
   )
   await tx.sign();
   const id = tx.id;
-  const cost = await poolClient.arClient.bundlr.getPrice(tx.size);
+  // const cost = await poolClient.arClient.bundlr.getPrice(tx.size);
 
   if(!args.keepFile) fs.rmSync(path.resolve(f));
   
-  let balance  = await poolClient.arClient.arweavePost.wallets.getBalance(poolClient.poolConfig.state.owner.pubkey);
-  if(balance > 0) {
-    try {
-      await poolClient.arClient.bundlr.fund(balance >= cost.integerValue() ? cost.integerValue() : balance);
-    }
-    catch (e: any) {
-      // log(`Error funding bundlr ...\n ${e}`, 1);
-    }
-  }
+  // let balance  = await poolClient.arClient.arweavePost.wallets.getBalance(poolClient.poolConfig.state.owner.pubkey);
+  // if(balance > 0) {
+  //   try {
+  //     await poolClient.arClient.bundlr.fund(balance >= cost.integerValue() ? cost.integerValue() : balance);
+  //   }
+  //   catch (e: any) {
+  //     // log(`Error funding bundlr ...\n ${e}`, 1);
+  //   }
+  // }
 
   await tx.upload();
   if (!id) exitProcess(`Upload Error`, 1);
