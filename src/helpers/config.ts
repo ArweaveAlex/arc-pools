@@ -191,4 +191,4 @@ export const LOOKUP_PARAMS = {
 export const RELAY_OVERHEAD_LIMIT = 1000;
 export const RELAY_QUEUE_PROC_SIZE = 10;
 
-export const POOL_TEST_MODE = true;
+export const POOL_TEST_MODE = false;

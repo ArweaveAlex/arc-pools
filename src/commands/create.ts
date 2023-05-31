@@ -117,104 +117,11 @@ const command: CommandInterface = {
             exitProcess(`${e}`, 1);
         }
 
-        if(answer1.toLowerCase() === 'y') {
-            log(`Your pool has been deployed, please wait for the pool to display correctly from the below link before proceeding...`, 0);
-            log(clc.magenta(sonarLink(newConfig.contracts.pool.id)), 0);
-        } else {
-            const rl = readline.createInterface({
-                input: process.stdin,
-                output: process.stdout
-            });
-    
-            rl.question('Would you like to contribute to your pool from your control wallet to begin mining sooner? (y/n) ', async (answer: string) => {
-                if (answer.toLowerCase() === 'y') {
-                    let controlWalletBalance  = await arClient.arweavePost.wallets.getBalance(controlWalletAddress);
-    
-                    let arBalance = arClient.arweavePost.ar.winstonToAr(controlWalletBalance);
-    
-                    if(arBalance < 0.01) {
-                        console.log("You do not have enough funds to contribute now");
-                        finishOut(newConfig.contracts.pool.id, rl);
-                    } else {
-                        newConfig.walletKey = walletInfo.keys;
-                        let poolClient: PoolClient = new PoolClient({poolConfig: newConfig});
-    
-                        askForBalance(
-                            arBalance, 
-                            poolClient, 
-                            walletInfo, 
-                            rl, 
-                            newConfig,
-                            controlWalletJwk
-                        );
-                    }
-                } else {
-                    finishOut(newConfig.contracts.pool.id, rl);
-                }
-            });
-        }
+        log(`Your pool has been deployed, please wait for the pool to display correctly from the below link before proceeding...`, 0);
+        log(clc.magenta(sonarLink(newConfig.contracts.pool.id)), 0);
 
         
     }
-}
-
-function askForBalance(
-    arBalance: number, 
-    poolClient: PoolClient, 
-    walletInfo: {
-        file: string;
-        address: any;
-    },
-    rl: any,
-    poolConfig: PoolConfigType,
-    controlWalletJwk: any
-) {
-    rl.question(`How much would you like to contribute. You have ${arBalance} ar to contribute, enter a decimal amount greater than 0.01: `, async (amount: string) => {
-        const am = parseFloat(amount);
-        if (isNaN(am) || (am <= 0) || (am > arBalance) || (am < 0.01)) {
-            console.log('Invalid input. Please enter a valid positive number greater than 0.01');
-            askForBalance(arBalance, poolClient, walletInfo, rl, poolConfig, controlWalletJwk); 
-        } else {
-            let newConfig = {...poolConfig};
-            newConfig.walletKey = controlWalletJwk;
-            let newPoolClient: PoolClient = new PoolClient({poolConfig: newConfig});
-            let r = await newPoolClient.handlePoolContribute({ amount: am, availableBalance: arBalance });
-            
-            if(!r.status) {
-                log("Contribution failed, please contribute via the Alex site ...", 0);
-                finishOut(poolConfig.contracts.pool.id, rl);
-                return;
-            }
-            
-            log("Waiting for contribution funds to come through to send them to Bundlr, this will take a while...", 0);
-            do {
-                let poolBalance  = await poolClient.arClient.arweavePost.wallets.getBalance(walletInfo.address);
-                if(poolBalance > 0) {
-                    await new Promise(resolve => setTimeout(resolve, 60000));
-                    try {
-                        log("Attempting Bundlr fund...", 0);
-                        await poolClient.fundBundlr(Math.floor(poolBalance/2).toString());  
-                        console.log("Bundlr funded...");
-                        break;
-                    } catch(e: any) {
-                        console.log(e);
-                        break;
-                    }
-                } else {
-                    await new Promise(resolve => setTimeout(resolve, 60000)); 
-                }
-            } while(true);
-
-            log("Your funds have been contributed...", 0);
-            finishOut(poolConfig.contracts.pool.id, rl);
-        }
-    });
-}
-
-function finishOut(contractTxId: string, rl: any) {
-    log(`Your pool has been deployed, please wait for the pool to display correctly from the below link before proceeding...`, 0);
-    log(clc.magenta(sonarLink(contractTxId)), 0);
-    rl.close();
 }
 
 export default command;
