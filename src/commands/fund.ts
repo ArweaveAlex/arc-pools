@@ -1,12 +1,11 @@
 import fs from "fs";
-import Bundlr from "@bundlr-network/client";
 
-import { PoolConfigType } from "../helpers/types";
+import { PoolClient, PoolConfigType} from "arcframework";
+
 import { validatePoolConfig } from "../helpers/validations";
 import { ArgumentsInterface, CommandInterface } from "../helpers/interfaces";
 import { CLI_ARGS } from "../helpers/config";
-import { ArweaveClient } from "../clients/arweave";
-import { exitProcess } from "../helpers/utils";
+import { log } from "../helpers/utils";
 
 const command: CommandInterface = {
     name: CLI_ARGS.commands.fund,
@@ -14,17 +13,17 @@ const command: CommandInterface = {
     args: ["pool id"],
     execute: async (args: ArgumentsInterface): Promise<void> => {
         const poolConfig: PoolConfigType = validatePoolConfig(args);
-        let keys = JSON.parse(fs.readFileSync(poolConfig.walletPath).toString());
-        let bundlr = new Bundlr(poolConfig.bundlrNode, "arweave", keys);
-
-        const arClient = new ArweaveClient();
-        let balance  = await arClient.arweavePost.wallets.getBalance(poolConfig.state.owner.pubkey);
-
-        try{
-            await bundlr.fund(Math.floor(balance/2));
-            console.log("Bundlr funded ...")
-        } catch (e: any){
-            exitProcess(`Error funding bundlr, check funds in arweave wallet ...\n ${e}`, 1);
+        poolConfig.walletKey = JSON.parse(fs.readFileSync(poolConfig.walletPath).toString());
+        let poolClient = new PoolClient({ poolConfig });
+        console.log(poolClient)
+        await poolClient.arClient.bundlr.ready();
+        let balances = await poolClient.balances();
+        console.log(balances.poolBalance)
+        if(balances.poolBalance > 0) {
+            await poolClient.fundBundlr(balances.poolBalance.toString());
+            log('Bundlr funded', 0);
+        } else {
+            log('No funds to send to Bundlr', 0);
         }
     }
 }

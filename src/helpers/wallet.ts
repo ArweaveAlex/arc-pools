@@ -5,7 +5,7 @@ import { webcrypto } from "crypto"
 
 const bip39 = require("bip39-web-crypto");
 
-import { ArweaveClient } from "../clients/arweave";
+import { ArweaveClient } from "arcframework";
 import { log, logValue } from "./utils";
 
 const arClient = new ArweaveClient();
@@ -76,6 +76,7 @@ export async function createWallet(poolArg: string) {
 
     return {
         file: walletFile,
-        address: address
+        address: address,
+        keys: keyfile
     };
 }
