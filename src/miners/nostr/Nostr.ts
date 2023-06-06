@@ -87,7 +87,6 @@ export const Nostr = {
         for (const relay of this.relays.values()) {
           const subId = this.getSubscriptionIdForName(id);
           const sub = relay.sub(filters, { id: subId });
-          // TODO update relay lastSeen
           sub.on('event', (event: any) => this.handleEvent(event));
           if (once) {
             sub.on('eose', () => sub.unsub());
@@ -371,7 +370,6 @@ export const Nostr = {
     
         return new Promise((resolve) => {
           this.subscribe([{ ids: [id] }], () => {
-            // TODO turn off subscription
             const msg = this.eventsById.get(id);
             msg && resolve(msg);
           });

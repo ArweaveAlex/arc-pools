@@ -155,7 +155,6 @@ export async function mineGlobalMessages(poolClient: IPoolClient) {
   }
 }
 
-// TODO: fetch profile not working
 async function getProfile(event: any, nostr: any) {
   let profile = await new Promise((resolve, _reject) => {
     // if(nostr.profileEventByUser.has(event.pubkey)){

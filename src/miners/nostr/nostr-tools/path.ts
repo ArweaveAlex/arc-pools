@@ -7,7 +7,6 @@ path.set('reactions/[noteID]', '😎')
 path.get('reactions/[noteID]', (value, path, event) => console.log(event.pubkey, 'reacted with', value))
 ```
 
-TODO:
 ```
 path.list('reactions', (value, path, event) => {
     console.log(
@@ -118,7 +117,6 @@ export class Path {
   async publishSetEvent(path: string, value: any): Promise<Event> {
     let content: string
     if (this.encrypt) {
-      // TODO: path should be deterministically encrypted hash(path + secret) but NIP07 provides no way for that
       const contentStr = JSON.stringify(value)
       content = await this.encrypt(contentStr)
       if (contentStr === content) {
