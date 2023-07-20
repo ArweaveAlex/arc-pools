@@ -136,7 +136,7 @@ async function processMedia(poolClient: IPoolClient, args: {
         
     }
     catch (e: any) {
-        exitProcess(`Error while archiving media: ${e}`, 1);
+        console.log(`Error while archiving media: ${e}`, 1);
     }
     return modifyPost;
 }
@@ -163,14 +163,20 @@ async function processMediaMetadata(
         let contentModeratorType = null;
 
         if(fileType === "AnimatedImage") {
-            url = postTopLevelFile.mp4.replace(/&amp;/g, "&");
-            contentModeratorType = "video";
+            if (postTopLevelFile.mp4) {
+                url = postTopLevelFile.mp4.replace(/&amp;/g, "&");
+                contentModeratorType = "video";
+            }
         } else if (fileType === "Image"){
-            url = postTopLevelFile.u.replace(/&amp;/g, "&");
-            contentModeratorType = "image";
+            if (postTopLevelFile.u) {
+                url = postTopLevelFile.u.replace(/&amp;/g, "&");
+                contentModeratorType = "image";
+            }
         } else if (fileType === "Video"){
-            url = postTopLevelFile.mp4.replace(/&amp;/g, "&");
-            contentModeratorType = "video";
+            if (postTopLevelFile.mp4) {
+                url = postTopLevelFile.mp4.replace(/&amp;/g, "&");
+                contentModeratorType = "video";
+            }
         }
         
         if(url) {
