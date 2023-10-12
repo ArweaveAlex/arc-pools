@@ -1,4 +1,5 @@
 import * as secp256k1 from '@noble/secp256k1'
+import {HDKey} from '@scure/bip32'
 // import {wordlist} from '@scure/bip39/wordlists/english.js'
 // import { wordlist } from '@scure/bip39';
 import {
@@ -6,7 +7,6 @@ import {
   mnemonicToSeedSync,
   validateMnemonic
 } from '@scure/bip39'
-import {HDKey} from '@scure/bip32'
 
 const wordlist = `abandon
 ability

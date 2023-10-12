@@ -23,8 +23,8 @@ specify new event kinds all the time and implement them in all applications and 
 
 NIP33: https://github.com/nostr-protocol/nips/blob/master/33.md
  */
-import {Filter, matchFilter} from './filter'
 import {Event} from './event'
+import {Filter, matchFilter} from './filter'
 
 const EVENT_KIND = 30000
 

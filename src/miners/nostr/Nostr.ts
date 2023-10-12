@@ -1,10 +1,12 @@
-import { Relay, relayInit, Event, Sub, Filter,  } from "./nostr-tools";
-import { sha256 } from '@noble/hashes/sha256';
 import 'websocket-polyfill';
+import { sha256 } from '@noble/hashes/sha256';
 import { debounce, throttle } from 'lodash';
+
+import { Event, Filter,Relay, relayInit, Sub,   } from "./nostr-tools";
 const bech32 = require('bech32-buffer');
 
 import { DEFAULT_NOSTR_RELAYS } from "arcframework";
+
 import { SortedLimitedEventSet } from "./event-set";
 
 // shortened version of iris-messenger Nostr.ts

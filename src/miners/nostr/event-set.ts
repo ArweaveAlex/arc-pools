@@ -1,5 +1,5 @@
 
-import { Relay, relayInit, Event, Sub, Filter,  } from "./nostr-tools";
+import { Event, Filter,Relay, relayInit, Sub,   } from "./nostr-tools";
 
 export class SortedLimitedEventSet {
     private events: { id: string; created_at: number }[];

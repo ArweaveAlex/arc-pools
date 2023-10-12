@@ -1,1 +1,1 @@
-export { default as ServiceClient } from "./service";
+export { default as ServiceClient } from './service';

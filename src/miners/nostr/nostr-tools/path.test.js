@@ -35,7 +35,6 @@ test('first set, then get', (done) => {
   const path = new Path(publish, subscribe, unsubscribe, { authors: [pubkey] })
   path.set('hello', 'world')
   path.get('hello', createCallback(done))
-
 })
 
 test('first get, then set', (done) => {

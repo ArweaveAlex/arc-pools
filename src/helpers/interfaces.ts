@@ -1,22 +1,22 @@
-import minimist from "minimist";
+import minimist from 'minimist';
 
 export interface ArgumentsInterface {
-  argv: minimist.ParsedArgs;
-  commandValues: string[];
-  options: Map<string, OptionInterface>;
-  commands: Map<string, CommandInterface>
+	argv: minimist.ParsedArgs;
+	commandValues: string[];
+	options: Map<string, OptionInterface>;
+	commands: Map<string, CommandInterface>;
 }
 
 export interface OptionInterface {
-  name: string;
-  description: string;
-  arg: string
+	name: string;
+	description: string;
+	arg: string;
 }
 
 export interface CommandInterface {
-    name: string;
-    options?: any[];
-    args?: string[];
-    description: string;
-    execute: (args: any) => Promise<void>;
+	name: string;
+	options?: any[];
+	args?: string[];
+	description: string;
+	execute: (args: any) => Promise<void>;
 }

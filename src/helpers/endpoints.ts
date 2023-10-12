@@ -1,16 +1,15 @@
-import { TWEET_FIELDS } from "./config";
+import { TWEET_FIELDS } from './config';
 
 export const conversationEndpoint = (conversationId: string, paginationToken: string | null) => {
-    let paginationString: string;
-    if (paginationToken) {
-        paginationString = `&next_token=${paginationToken}`;
-    }
-    else {
-        paginationString = "";
-    }
-    return (
-        `https://api.twitter.com/2/tweets/search/recent?query=conversation_id:${conversationId}&tweet.fields=${TWEET_FIELDS.map((field: any) => field)}&max_results=100${paginationString}`
-    )
+	let paginationString: string;
+	if (paginationToken) {
+		paginationString = `&next_token=${paginationToken}`;
+	} else {
+		paginationString = '';
+	}
+	return `https://api.twitter.com/2/tweets/search/recent?query=conversation_id:${conversationId}&tweet.fields=${TWEET_FIELDS.map(
+		(field: any) => field
+	)}&max_results=100${paginationString}`;
 };
 
 export const wikiApiEndpoint = `https://wikipedia.org/w/api.php`;

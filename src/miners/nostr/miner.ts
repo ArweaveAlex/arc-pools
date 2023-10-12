@@ -1,15 +1,13 @@
-import * as async from 'async';
-
-import minimist from "minimist";
 import 'websocket-polyfill';
+import { IPoolClient, PoolClient, PoolConfigType } from "arcframework";
+import * as async from 'async';
 import { throttle } from 'lodash';
-
-import { PoolClient, IPoolClient, PoolConfigType } from "arcframework";
+import minimist from "minimist";
 
 import { exitProcess, log } from "../../helpers/utils";
 
-import { processEvent } from ".";
 import { Nostr } from "./Nostr"
+import { processEvent } from ".";
 
 export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
   const poolClient = new PoolClient({poolConfig});

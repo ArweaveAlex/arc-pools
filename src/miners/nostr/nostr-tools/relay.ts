@@ -1,6 +1,6 @@
 /* global WebSocket */
 
-import {Event, verifySignature, validateEvent} from './event'
+import {Event, validateEvent,verifySignature} from './event'
 import {Filter, matchFilters} from './filter'
 
 type RelayEvent = 'connect' | 'disconnect' | 'error' | 'notice'

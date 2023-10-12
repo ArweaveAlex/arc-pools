@@ -1,9 +1,9 @@
-import * as secp256k1 from '@noble/secp256k1'
 import {sha256} from '@noble/hashes/sha256'
+import * as secp256k1 from '@noble/secp256k1'
 
 import {Event} from './event'
-import {utf8Encoder} from './utils'
 import {getPublicKey} from './keys'
+import {utf8Encoder} from './utils'
 
 export type Parameters = {
   pubkey: string // the key to whom the delegation will be given
