@@ -80,6 +80,9 @@ export const CLI_ARGS = {
 		files: {
 			name: 'files',
 		},
+		newsApi: {
+			name: 'news-api'
+		},
 		all: {
 			name: 'all',
 		},
@@ -187,5 +190,7 @@ export const LOOKUP_PARAMS = {
 
 export const RELAY_OVERHEAD_LIMIT = 1000;
 export const RELAY_QUEUE_PROC_SIZE = 10;
+
+export const NEWS_API_PAGINATOR = 100;
 
 export const POOL_TEST_MODE = false;

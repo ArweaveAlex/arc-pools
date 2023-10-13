@@ -35,29 +35,56 @@ export function getExtFromURL(url: string) {
 	return ext;
 }
 
+// export async function processMediaURL(url: string, dir: string, i: number) {
+// 	return new Promise(async (resolve, reject) => {
+// 		const ext = getExtFromURL(url);
+// 		const wstream = fs.createWriteStream(p.join(dir, `${i}.${ext}`));
+// 		const res = await axios
+// 			.get(url, {
+// 				responseType: 'stream',
+// 			})
+// 			.catch((e) => {
+// 				log(`Error getting ${url} - ${e.message}`, 1);
+// 			});
+// 		if (!res) {
+// 			return;
+// 		}
+// 		await res.data.pipe(wstream);
+// 		wstream.on('finish', () => {
+// 			resolve('Done');
+// 		});
+// 		wstream.on('error', (e) => {
+// 			reject(e);
+// 		});
+// 	});
+// }
+
 export async function processMediaURL(url: string, dir: string, i: number) {
-	return new Promise(async (resolve, reject) => {
-		const ext = getExtFromURL(url);
-		const wstream = fs.createWriteStream(p.join(dir, `${i}.${ext}`));
-		const res = await axios
-			.get(url, {
-				responseType: 'stream',
-			})
-			.catch((e) => {
-				log(`Getting ${url} - ${e.message}`, 1);
-			});
-		if (!res) {
-			return;
-		}
-		await res.data.pipe(wstream);
-		wstream.on('finish', () => {
-			resolve('Done');
-		});
-		wstream.on('error', (e) => {
-			reject(e);
-		});
-	});
+    try {
+        const ext = getExtFromURL(url);
+        const wstream = fs.createWriteStream(p.join(dir, `${i}.${ext}`));
+
+        const res = await axios.get(url, {
+            responseType: 'stream',
+        });
+
+        if (!res || !res.data) {
+            throw (`Error getting ${url} - No response data`);
+        }
+
+        await new Promise((resolve, reject) => {
+            res.data.pipe(wstream)
+                .on('finish', resolve)
+                .on('error', reject);
+        });
+        
+        return 'Done';
+
+    } catch (error) {
+        throw (`Error processing ${url} - ${error.message}`);
+    }
 }
+
 
 export async function processMediaPaths(
 	poolClient: IPoolClient,
@@ -102,20 +129,7 @@ export async function processMediaPath(
 	});
 	await tx.sign();
 	const id = tx.id;
-	// const cost = await poolClient.arClient.bundlr.getPrice(tx.size);
-
 	if (!args.keepFile) fs.rmSync(path.resolve(f));
-
-	// let balance  = await poolClient.arClient.arweavePost.wallets.getBalance(poolClient.poolConfig.state.owner.pubkey);
-	// if(balance > 0) {
-	//   try {
-	//     await poolClient.arClient.bundlr.fund(balance >= cost.integerValue() ? cost.integerValue() : balance);
-	//   }
-	//   catch (e: any) {
-	//     // log(`Error funding bundlr ...\n ${e}`, 1);
-	//   }
-	// }
-
 	await tx.upload();
 	if (!id) exitProcess(`Upload Error`, 1);
 	return id;

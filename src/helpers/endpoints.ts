@@ -13,3 +13,7 @@ export const conversationEndpoint = (conversationId: string, paginationToken: st
 };
 
 export const wikiApiEndpoint = `https://wikipedia.org/w/api.php`;
+
+export const newsApiEndpoint = (query: string, apiKey: string, page: number) => {
+	return `https://newsapi.org/v2/everything?q=${query}&apiKey=${apiKey}&page=${page}`;
+}
