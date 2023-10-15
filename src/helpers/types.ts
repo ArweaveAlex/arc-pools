@@ -1,4 +1,4 @@
-export type ValidatedMinerType = { source: string; status: boolean; message: string };
+export type ValidatedMinerType = { source: string; status: boolean; run: any };
 
 export type NewsApiArticleType = {
     source: {

@@ -59,7 +59,7 @@ const command: CommandInterface = {
 				await newsApi.run(poolConfig);
 				return;
 			case CLI_ARGS.sources.all.name:
-				await all.run(poolConfig, args.argv);
+				await all.run(poolConfig);
 				return;
 			default:
 				exitProcess(`Source Not Found`, 1);

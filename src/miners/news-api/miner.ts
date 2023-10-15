@@ -1,8 +1,8 @@
-import { log, logValue, PoolClient, PoolConfigType } from 'arcframework';
+import { logValue, PoolClient, PoolConfigType } from 'arcframework';
 
 import { NEWS_API_PAGINATOR } from '../../helpers/config';
 import { newsApiEndpoint } from '../../helpers/endpoints';
-import { exitProcess } from '../../helpers/utils';
+import { exitProcess, log, shuffleArray } from '../../helpers/utils';
 
 import { processArticles } from '.';
 
@@ -13,9 +13,10 @@ export async function run(poolConfig: PoolConfigType) {
         exitProcess(`Configure News API Key`, 1);
     }
 
-    log(`Mining News API ...`, null);
+    log(`Mining News API...`, 0);
     
-    for (const keyword of poolConfig.keywords) {
+    const keywords = shuffleArray(poolConfig.keywords);
+    for (const keyword of keywords) {
         let endpoint = newsApiEndpoint(encodeURIComponent(keyword), poolConfig.newsApiKey, 1);
         const initialResponse = await fetch(endpoint);
 
@@ -40,8 +41,12 @@ export async function run(poolConfig: PoolConfigType) {
             }
         } else {
             console.error('Failed to fetch:', initialResponse.status, initialResponse.statusText);
+            if (initialResponse.status === 429) {
+                console.log('News API request limit reached')
+                return;
+            }
         }
     }
 
-    exitProcess(`Mining complete`, 0);
+    log(`News API Mining Complete`, 0);
 }

@@ -3,7 +3,6 @@ import minimist from 'minimist';
 
 import { ServiceClient } from '../../clients/service';
 import { CLI_ARGS } from '../../helpers/config';
-import { parseError } from '../../helpers/errors';
 import { exitProcess, log } from '../../helpers/utils';
 
 import { processPosts } from '.';
@@ -12,7 +11,7 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
 	const poolClient = new PoolClient({ poolConfig });
 	const serviceClient = new ServiceClient(poolConfig);
 
-	log(`Mining reddit ...`, 0);
+	log(`Mining Reddit...`, 0);
 
 	const method = argv['method'];
 	const subreddit = argv['subreddit'];
@@ -24,23 +23,25 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
 			if (!subreddit) {
 				exitProcess(`Subreddit not provided`, 1);
 			}
-			minePostsBySubreddit(poolClient, serviceClient, { subreddit: subreddit });
-			return;
+			await minePostsBySubreddit(poolClient, serviceClient, { subreddit: subreddit });
+			break;
 		case CLI_ARGS.sources.reddit.methods.user:
 			if (!username) {
 				exitProcess(`Username not provided`, 1);
 			}
-			minePostsByUser(poolClient, serviceClient, { username: username });
-			return;
+			await minePostsByUser(poolClient, serviceClient, { username: username });
+			break;
 		case CLI_ARGS.sources.reddit.methods.search:
 			if (!searchTerm) {
 				exitProcess(`Search term not provided`, 1);
 			}
-			minePostsBySearch(poolClient, serviceClient, { searchTerm: searchTerm });
-			return;
+			await minePostsBySearch(poolClient, serviceClient, { searchTerm: searchTerm });
+			break;
 		default:
 			exitProcess(`Invalid method provided`, 1);
 	}
+
+	log(`Reddit Mining Complete`, 0);
 }
 
 async function minePostsBySearch(poolClient: IPoolClient, serviceClient: ServiceClient, args: { searchTerm: string }) {
@@ -84,7 +85,6 @@ async function minePosts(poolClient: IPoolClient, serviceClient: ServiceClient, 
 			await processPosts(poolClient, serviceClient, { posts: posts.data.children, contentModeration: false });
 		} while (cursor != null);
 	} catch (e: any) {
-		console.log(e);
-		exitProcess(parseError(e, 'reddit'), 1);
+		console.error(e.message);
 	}
 }

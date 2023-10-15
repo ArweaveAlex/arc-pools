@@ -1,8 +1,9 @@
-import { ArtifactEnum, CONTENT_TYPES, createAsset, IPoolClient, RENDER_WITH_VALUES, TAGS } from 'arcframework';
+import { ArtifactEnum, CONTENT_TYPES, createAsset, IPoolClient, logValue, RENDER_WITH_VALUES, TAGS } from 'arcframework';
 import fs from 'fs';
 import WikiJS from 'wikijs';
 
 import { wikiApiEndpoint } from '../../helpers/endpoints';
+import { log } from '../../helpers/utils';
 
 let currentArticleURL = '';
 
@@ -30,12 +31,11 @@ export async function processWikipedia(poolClient: IPoolClient) {
 
 	sentList = fs.readFileSync('data/wikiarticlessent.txt').toString().split('\n');
 
-	// Loop through the api response until we find a non duplicate
+	logValue(`Wikipedia Page Count`, articles.length.toString(), 0);
 	for (let i = 0; i < articles.length; i++) {
 		if (!sentList.includes(articles[i])) {
-			await scrapePage(poolClient, articles[i]);
+			await processPage(poolClient, articles[i]);
 			fs.appendFileSync('data/wikiarticlessent.txt', articles[i] + '\n');
-			break;
 		}
 	}
 }
@@ -90,31 +90,47 @@ export const parseHTML = (content: any, title: any) => {
 	return finalHtml;
 };
 
-const scrapePage = async (poolClient: IPoolClient, query: string) => {
+const processPage = async (poolClient: IPoolClient, query: string) => {
 	try {
 		const content = await getPage(query);
 		currentArticleURL = content.url();
 		const html = parseHTML(await content.html(), content.title);
 		await content.categories();
 
-		await createAsset(poolClient, {
-			index: { path: 'index.html' },
-			paths: (assetId: string) => ({ 'index.html': { id: assetId } }),
-			content: html,
-			contentType: CONTENT_TYPES.textHtml,
-			artifactType: ArtifactEnum.Webpage,
-			name: `${content.title} Wikipedia Page`,
-			description: `${content.title} Wikipedia Page`,
-			type: TAGS.values.ansTypes.webPage,
-			additionalMediaPaths: null,
-			profileImagePath: null,
-			associationId: null,
-			associationSequence: null,
-			childAssets: null,
-			renderWith: RENDER_WITH_VALUES,
-			assetId: content.title,
+		const isDup = await poolClient.arClient.isDuplicate({
+			artifactName: `${content.title} Wikipedia Page`,
+			poolId: poolClient.poolConfig.contracts.pool.id,
 		});
-	} catch (err) {
-		console.error(err);
+		
+
+        if (!isDup) {
+            try {
+				log('Processing Wikipedia Page...', 0);
+                await createAsset(poolClient, {
+					index: { path: 'index.html' },
+					paths: (assetId: string) => ({ 'index.html': { id: assetId } }),
+					content: html,
+					contentType: CONTENT_TYPES.textHtml,
+					artifactType: ArtifactEnum.Webpage,
+					name: `${content.title} Wikipedia Page`,
+					description: `${content.title} Wikipedia Page`,
+					type: TAGS.values.ansTypes.webPage,
+					additionalMediaPaths: null,
+					profileImagePath: null,
+					associationId: null,
+					associationSequence: null,
+					childAssets: null,
+					renderWith: RENDER_WITH_VALUES,
+					assetId: content.title,
+				});
+            }
+            catch (e: any) {
+                console.error(e.message);
+            }
+        } else {
+            log(`Skipping duplicate artifact...`, null);
+        }
+	} catch (e: any) {
+		console.error(e.message);
 	}
 };

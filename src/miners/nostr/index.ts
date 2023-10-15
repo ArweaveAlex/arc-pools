@@ -21,7 +21,7 @@ export async function processEvent(poolClient: IPoolClient, args: {
     });
 
     if(isDup){
-        log("Duplicate artifact skipping...", 0);
+        log("Skipping duplicate artifact...", 0);
         return;
     } 
     

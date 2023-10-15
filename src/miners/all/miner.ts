@@ -1,42 +1,52 @@
 import { IPoolClient, PoolClient, PoolConfigType } from 'arcframework';
-import minimist from 'minimist';
 
-import { ServiceClient } from '../../clients/service';
 import { CLI_ARGS } from '../../helpers/config';
 import { ValidatedMinerType } from '../../helpers/types';
-import { exitProcess, log } from '../../helpers/utils';
-import { checkTwitterAccess } from '../twitter/miner';
+import { exitProcess, log, shuffleArray } from '../../helpers/utils';
+import * as newsApi from '../news-api/miner';
+import * as reddit from '../reddit/miner';
+import * as wikipedia from '../wikipedia/miner';
 
-export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs) {
+export async function run(poolConfig: PoolConfigType) {
 	const poolClient = new PoolClient({ poolConfig });
-	const serviceClient: ServiceClient = new ServiceClient(poolConfig);
 
-	log(`Mining all sources ...`, 0);
-	log(`Checking configurations ...`, null);
-	const validatedMiners: ValidatedMinerType[] = await getValidatedMiners(poolClient, poolConfig, serviceClient);
+	log(`Mining all sources...`, 0);
+	log(`Checking configurations...`, null);
+	const validatedMiners: ValidatedMinerType[] = await getValidatedMiners(poolClient, poolConfig);
 	if (!validatedMiners.length) exitProcess('No valid mining sources', 1);
-	// validatedMiners.forEach((miner: ValidatedMinerType) => {
-	// 	log(`Miner: ${JSON.stringify(miner, null, 2)}`, null);
-	// });
+
+	const runMiners = async (validatedMiners: ValidatedMinerType[]) => {
+		await Promise.all(validatedMiners.map(async (miner: ValidatedMinerType) => {
+			await miner.run();
+		}));
+	}
+
+	runMiners(validatedMiners);
 }
 
 async function getValidatedMiners(
 	poolClient: IPoolClient,
 	poolConfig: PoolConfigType,
-	serviceClient: ServiceClient
 ): Promise<ValidatedMinerType[]> {
 	const validatedMiners: ValidatedMinerType[] = [];
 
 	if (!poolConfig.topics || !poolConfig.topics.length) return validatedMiners;
 
-	const successMessage = 'success';
-	const failedMessage = 'failed';
-
 	validatedMiners.push({
 		source: CLI_ARGS.sources.wikipedia.name,
 		status: true,
-		message: successMessage,
+		run: () => wikipedia.run(poolConfig)
 	});
+
+	if (
+		poolConfig.newsApiKey
+	) {
+		validatedMiners.push({
+			source: CLI_ARGS.sources.newsApi.name,
+			status: true,
+			run: () => newsApi.run(poolConfig)
+		});
+	}
 
 	if (
 		poolConfig.redditApiKeys &&
@@ -45,28 +55,17 @@ async function getValidatedMiners(
 		poolConfig.redditApiKeys.appId &&
 		poolConfig.redditApiKeys.appSecret
 	) {
+		const keywords = shuffleArray(poolClient.poolConfig.keywords);
 		validatedMiners.push({
 			source: CLI_ARGS.sources.reddit.name,
 			status: true,
-			message: successMessage,
+			run: () => reddit.run(poolConfig, {
+				_: ['mine', ''],
+				source: 'reddit',
+				method: 'search',
+				'search-term': keywords
+			})
 		});
 	}
-
-	if (
-		poolConfig.twitterApiKeys &&
-		poolConfig.twitterApiKeys.consumer_key &&
-		poolConfig.twitterApiKeys.consumer_secret &&
-		poolConfig.twitterApiKeys.token &&
-		poolConfig.twitterApiKeys.token_secret &&
-		poolConfig.twitterApiKeys.bearer_token
-	) {
-		const twitterCheck = await checkTwitterAccess(poolClient, serviceClient);
-		validatedMiners.push({
-			source: CLI_ARGS.sources.twitter.name,
-			status: twitterCheck,
-			message: twitterCheck ? successMessage : failedMessage,
-		});
-	}
-
 	return validatedMiners;
 }

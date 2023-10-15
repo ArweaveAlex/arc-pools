@@ -6,7 +6,6 @@ import tmp from 'tmp-promise';
 import { ServiceClient } from '../../clients/service';
 import {
 	checkPath,
-	exitProcess,
 	generateRedditAssetDescription,
 	generateRedditAssetName,
 	log,
@@ -26,7 +25,7 @@ export async function processPosts(
 ) {
 	let parentPosts = args.posts;
 
-	logValue(`Parent Count`, parentPosts.length.toString(), 0);
+	logValue(`Reddit Parent Thread Count`, parentPosts.length.toString(), 0);
 
 	let iterPosts = parentPosts;
 
@@ -43,7 +42,7 @@ export async function processPosts(
 		if (!isDup) {
 			await processPost(poolClient, { post: postWithComments, contentModeration: args.contentModeration });
 		} else {
-			log(`Duplicate artifact skipping...`, null);
+			log(`Skipping duplicate artifact...`, null);
 		}
 	}
 }
@@ -57,13 +56,13 @@ async function processPost(
 ) {
 	const tmpdir = await tmp.dir({ unsafeCleanup: true });
 
-	// processMedia will modify the args.post object
 	await processMedia(poolClient, {
 		post: args.post,
 		tmpdir: tmpdir,
 		contentModeration: args.contentModeration,
 	});
 
+	log('Processing Reddit Post...', 0);
 	const contractId = await createAsset(poolClient, {
 		index: { path: 'post.json' },
 		paths: (assetId: string) => ({ 'post.json': { id: assetId } }),
@@ -87,8 +86,6 @@ async function processPost(
 	}
 }
 
-// beware the following 2 functions modify
-// the post object that you pass in
 async function processMedia(
 	poolClient: IPoolClient,
 	args: {
@@ -134,9 +131,6 @@ async function processMedia(
 	return modifyPost;
 }
 
-/**
- * Process the media_metadata object from a Reddit reploy
- */
 async function processMediaMetadata(
 	poolClient: IPoolClient,
 	args: {
@@ -204,9 +198,6 @@ async function processMediaMetadata(
 	}
 }
 
-/**
- * Process the media_metadata object from a Reddit reploy
- */
 async function processPreview(
 	poolClient: IPoolClient,
 	args: {
