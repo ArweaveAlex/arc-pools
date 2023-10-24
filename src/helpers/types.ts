@@ -1,6 +1,6 @@
 export type ValidatedMinerType = { source: string; status: boolean; run: any };
 
-export type NewsApiArticleType = {
+export type NewsArticleType = {
     source: {
         id: string,
         name: string

@@ -85,6 +85,6 @@ async function minePosts(poolClient: IPoolClient, serviceClient: ServiceClient, 
 			await processPosts(poolClient, serviceClient, { posts: posts.data.children, contentModeration: false });
 		} while (cursor != null);
 	} catch (e: any) {
-		console.error(e.message);
+		log(e.message ? e.message : 'Error occurred', 1);
 	}
 }

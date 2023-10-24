@@ -5,13 +5,13 @@ import { JSDOM, VirtualConsole } from 'jsdom';
 import * as path from 'path';
 import tmp from 'tmp-promise';
 
-import { NewsApiArticleType } from '../../helpers/types';
+import { NewsArticleType } from '../../helpers/types';
 import { checkPath, log, processMediaPaths, processMediaURL } from '../../helpers/utils';
 
 export async function processArticles(
     poolClient: IPoolClient,
     args: {
-        articles: NewsApiArticleType[]
+        articles: NewsArticleType[]
     }
 ) {
     for (let i = 0; i < args.articles.length; i++) {
@@ -25,7 +25,7 @@ export async function processArticles(
                 await processArticle(poolClient, { article: args.articles[i] });
             }
             catch (e: any) {
-                console.error(e.message);
+                log(e.message ? e.message : 'Error occurred', 1);
             }
         } else {
             log(`Skipping duplicate artifact...`, null);
@@ -36,7 +36,7 @@ export async function processArticles(
 async function processArticle(
     poolClient: IPoolClient,
     args: {
-        article: NewsApiArticleType
+        article: NewsArticleType
     }
 ) {
     let finalArticle = { ...args.article };
@@ -62,9 +62,17 @@ async function processArticle(
             virtualConsole: virtualConsole,
         });
 
-        const rawHtml = new Readability(dom.window.document).parse();
-        if (rawHtml && rawHtml.textContent) {
-            finalArticle.content = formatArticleContent(rawHtml.textContent)
+        const readableHtml = new Readability(dom.window.document).parse();
+        if (readableHtml && readableHtml.textContent) {
+            finalArticle.content = readableHtml.content;
+
+            const readableDom = new JSDOM(readableHtml.content);
+            const images = readableDom.window.document.querySelectorAll('img');
+
+            const imgSrcs = [];
+            images.forEach(img => {
+                imgSrcs.push(img.src);
+            });
         }
     }
     catch (e: any) {
@@ -93,11 +101,11 @@ async function processArticle(
             }
         }
         catch (e: any) {
-            console.error(e.message);
+            log(e.message ? e.message : 'Error occurred', 1);
         }
     }
 
-    log('Processing News API Article...', 0);
+    log('Processing News Article...', 0);
     const contractId = await createAsset(poolClient, {
         index: { path: 'article.json' },
         paths: (assetId: string) => ({ 'article.json': { id: assetId } }),
@@ -119,11 +127,4 @@ async function processArticle(
     if (contractId) {
         return contractId;
     }
-}
-
-function formatArticleContent(content: string) {
-    return content
-        .replace(/\n|\t/g, '')
-        .replace(/\s{2,}/g, ' ')
-        .replace(/\.(?=\w)/g, '.<br>');
 }

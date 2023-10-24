@@ -14,7 +14,7 @@ export async function run(poolConfig: PoolConfigType) {
 	log(`Checking configurations...`, null);
 	const validatedMiners: ValidatedMinerType[] = await getValidatedMiners(poolClient, poolConfig);
 	if (!validatedMiners.length) exitProcess('No valid mining sources', 1);
-
+	
 	const runMiners = async (validatedMiners: ValidatedMinerType[]) => {
 		await Promise.all(validatedMiners.map(async (miner: ValidatedMinerType) => {
 			await miner.run();

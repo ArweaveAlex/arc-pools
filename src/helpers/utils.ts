@@ -35,30 +35,6 @@ export function getExtFromURL(url: string) {
 	return ext;
 }
 
-// export async function processMediaURL(url: string, dir: string, i: number) {
-// 	return new Promise(async (resolve, reject) => {
-// 		const ext = getExtFromURL(url);
-// 		const wstream = fs.createWriteStream(p.join(dir, `${i}.${ext}`));
-// 		const res = await axios
-// 			.get(url, {
-// 				responseType: 'stream',
-// 			})
-// 			.catch((e) => {
-// 				log(`Error getting ${url} - ${e.message}`, 1);
-// 			});
-// 		if (!res) {
-// 			return;
-// 		}
-// 		await res.data.pipe(wstream);
-// 		wstream.on('finish', () => {
-// 			resolve('Done');
-// 		});
-// 		wstream.on('error', (e) => {
-// 			reject(e);
-// 		});
-// 	});
-// }
-
 export async function processMediaURL(url: string, dir: string, i: number) {
     try {
         const ext = getExtFromURL(url);
@@ -69,7 +45,7 @@ export async function processMediaURL(url: string, dir: string, i: number) {
         });
 
         if (!res || !res.data) {
-            throw (`Error getting ${url} - No response data`);
+            throw (`Error Getting URL - No response data`);
         }
 
         await new Promise((resolve, reject) => {
@@ -81,7 +57,7 @@ export async function processMediaURL(url: string, dir: string, i: number) {
         return 'Done';
 
     } catch (error) {
-        throw (`Error processing ${url} - ${error.message}`);
+        throw (`Error Processing Media URL`);
     }
 }
 

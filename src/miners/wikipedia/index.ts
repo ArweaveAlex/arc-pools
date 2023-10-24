@@ -1,9 +1,9 @@
-import { ArtifactEnum, CONTENT_TYPES, createAsset, IPoolClient, logValue, RENDER_WITH_VALUES, TAGS } from 'arcframework';
+import { ArtifactEnum, CONTENT_TYPES, createAsset, IPoolClient, RENDER_WITH_VALUES, TAGS } from 'arcframework';
 import fs from 'fs';
 import WikiJS from 'wikijs';
 
 import { wikiApiEndpoint } from '../../helpers/endpoints';
-import { log } from '../../helpers/utils';
+import { log, logValue } from '../../helpers/utils';
 
 let currentArticleURL = '';
 
@@ -19,25 +19,23 @@ export async function processWikipedia(poolClient: IPoolClient) {
 
 	articles = articles.filter(onlyUnique);
 
-	let sentList = [];
-
-	if (!fs.existsSync('data')) {
-		fs.mkdirSync('data');
-	}
-
-	if (!fs.existsSync('data/wikiarticlessent.txt')) {
-		fs.writeFileSync('data/wikiarticlessent.txt', '');
-	}
-
-	sentList = fs.readFileSync('data/wikiarticlessent.txt').toString().split('\n');
+	// let sentList = [];
+	// if (!fs.existsSync('data')) {
+	// 	fs.mkdirSync('data');
+	// }
+	// if (!fs.existsSync('data/wikiarticlessent.txt')) {
+	// 	fs.writeFileSync('data/wikiarticlessent.txt', '');
+	// }
+	// sentList = fs.readFileSync('data/wikiarticlessent.txt').toString().split('\n');
 
 	logValue(`Wikipedia Page Count`, articles.length.toString(), 0);
 	for (let i = 0; i < articles.length; i++) {
-		if (!sentList.includes(articles[i])) {
+		// if (!sentList.includes(articles[i])) {
 			await processPage(poolClient, articles[i]);
-			fs.appendFileSync('data/wikiarticlessent.txt', articles[i] + '\n');
-		}
+			// fs.appendFileSync('data/wikiarticlessent.txt', articles[i] + '\n');
+		// }
 	}
+	log(`Wikipedia Mining Complete`, 0);
 }
 
 function onlyUnique(value: any, index: any, self: any) {

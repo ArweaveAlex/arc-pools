@@ -71,9 +71,6 @@ export const CLI_ARGS = {
 				search: 'search',
 			},
 		},
-		webpage: {
-			name: 'webpage',
-		},
 		nostr: {
 			name: 'nostr',
 		},

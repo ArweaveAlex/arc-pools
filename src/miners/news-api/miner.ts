@@ -1,10 +1,9 @@
-import { logValue, PoolClient, PoolConfigType } from 'arcframework';
+import { PoolClient, PoolConfigType } from 'arcframework';
 
 import { NEWS_API_PAGINATOR } from '../../helpers/config';
 import { newsApiEndpoint } from '../../helpers/endpoints';
-import { exitProcess, log, shuffleArray } from '../../helpers/utils';
-
-import { processArticles } from '.';
+import { exitProcess, log, logValue, shuffleArray } from '../../helpers/utils';
+import { processArticles } from '../news';
 
 export async function run(poolConfig: PoolConfigType) {
     const poolClient = new PoolClient({ poolConfig });
@@ -37,7 +36,7 @@ export async function run(poolConfig: PoolConfigType) {
                 }
             }
             catch (e: any) {
-                console.error(e);
+                log(e.message ? e.message : 'Error occurred', 1);
             }
         } else {
             console.error('Failed to fetch:', initialResponse.status, initialResponse.statusText);
