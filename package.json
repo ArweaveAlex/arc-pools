@@ -1,6 +1,6 @@
 {
 	"name": "arcpool",
-	"version": "1.6.70",
+	"version": "1.6.71",
 	"main": "./bin/index.js",
 	"repository": "https://github.com/ArweaveAlex/arc-pools.git",
 	"author": "NickJ202",
@@ -20,7 +20,7 @@
 		"@scure/bip32": "^1.1.5",
 		"@scure/bip39": "^1.2.0",
 		"@types/fs-extra": "^8.1.0",
-		"arcframework": "1.2.21",
+		"arcframework": "1.2.23",
 		"axios": "^0.26.1",
 		"bech32-buffer": "^0.2.1",
 		"bip39-web-crypto": "^4.0.1",

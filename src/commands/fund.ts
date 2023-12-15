@@ -14,10 +14,8 @@ const command: CommandInterface = {
 		const poolConfig: PoolConfigType = validatePoolConfig(args);
 		poolConfig.walletKey = JSON.parse(fs.readFileSync(poolConfig.walletPath).toString());
 		let poolClient = new PoolClient({ poolConfig });
-		console.log(poolClient);
 		await poolClient.arClient.bundlr.ready();
 		let balances = await poolClient.balances();
-		console.log(balances.poolBalance);
 		if (balances.poolBalance > 0) {
 			await poolClient.fundBundlr(balances.poolBalance.toString());
 			log('Bundlr funded', 0);
