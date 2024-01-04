@@ -80,6 +80,9 @@ export const CLI_ARGS = {
 		newsApi: {
 			name: 'news-api'
 		},
+		gnews: {
+			name: 'gnews'
+		},
 		all: {
 			name: 'all',
 		},

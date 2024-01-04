@@ -17,3 +17,7 @@ export const wikiApiEndpoint = `https://wikipedia.org/w/api.php`;
 export const newsApiEndpoint = (query: string, apiKey: string, page: number) => {
 	return `https://newsapi.org/v2/everything?q=${query}&apiKey=${apiKey}&page=${page}`;
 }
+
+export const gnewsEndpoint = (query: string, apiKey: string, page: number) => {
+	return `https://gnews.io/api/v4/search?q=${query}&apikey=${apiKey}&page=${page}`;
+}

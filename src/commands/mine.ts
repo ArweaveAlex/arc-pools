@@ -6,6 +6,7 @@ import { exitProcess } from '../helpers/utils';
 import { validatePoolConfig } from '../helpers/validations';
 import * as all from '../miners/all/miner';
 import * as files from '../miners/files/miner';
+import * as gnews from '../miners/gnews/miner';
 import * as newsApi from '../miners/news-api/miner';
 import * as nostr from '../miners/nostr/miner';
 import * as reddit from '../miners/reddit/miner';
@@ -58,6 +59,9 @@ const command: CommandInterface = {
 			case CLI_ARGS.sources.newsApi.name:
 				await newsApi.run(poolConfig);
 				return;
+            case CLI_ARGS.sources.gnews.name:
+                await gnews.run(poolConfig);
+                return;
 			case CLI_ARGS.sources.all.name:
 				await all.run(poolConfig);
 				return;
