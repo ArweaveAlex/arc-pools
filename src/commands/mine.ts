@@ -11,14 +11,17 @@ import * as nostr from '../miners/nostr/miner';
 import * as reddit from '../miners/reddit/miner';
 import * as twitter from '../miners/twitter/miner';
 import * as wikipedia from '../miners/wikipedia/miner';
-import method from '../options/method';
 import source from '../options/source';
 
 const command: CommandInterface = {
 	name: CLI_ARGS.commands.mine,
 	description: `Mine artifacts for a given pool`,
-	options: [source, method],
-	args: ['pool id'],
+	options: [source, {
+		name: 'd',
+		arg: '',
+		description: 'Run the miner as a daemon process'
+	}],
+	args: ['pool'],
 	execute: async (args: ArgumentsInterface): Promise<void> => {
 		const poolConfig: PoolConfigType = validatePoolConfig(args);
 

@@ -1,5 +1,6 @@
-import { IPoolClient, PoolClient, PoolConfigType } from 'arcframework';
 import minimist from 'minimist';
+
+import { IPoolClient, PoolClient, PoolConfigType } from 'arcframework';
 
 import { ServiceClient } from '../../clients/service';
 import { CLI_ARGS } from '../../helpers/config';

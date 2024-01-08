@@ -5,9 +5,12 @@ import { mkdir } from 'fs/promises';
 import mime from 'mime-types';
 import path, * as p from 'path';
 
-var crypto = require('crypto');
+import Arweave from 'arweave';
+import Irys from '@irys/sdk';
 
-import { CONTENT_TYPES, IPoolClient, PoolConfigType, TAGS } from 'arcframework';
+const crypto = require('crypto');
+
+import { CONTENT_TYPES, IPoolClient, PoolConfigType, TAGS, UPLOAD_CONFIG } from 'arcframework';
 
 import { POOL_FILE } from './config';
 
@@ -36,31 +39,27 @@ export function getExtFromURL(url: string) {
 }
 
 export async function processMediaURL(url: string, dir: string, i: number) {
-    try {
-        const ext = getExtFromURL(url);
-        const wstream = fs.createWriteStream(p.join(dir, `${i}.${ext}`));
+	try {
+		const ext = getExtFromURL(url);
+		const wstream = fs.createWriteStream(p.join(dir, `${i}.${ext}`));
 
-        const res = await axios.get(url, {
-            responseType: 'stream',
-        });
+		const res = await axios.get(url, {
+			responseType: 'stream',
+		});
 
-        if (!res || !res.data) {
-            throw (`Error Getting URL - No response data`);
-        }
+		if (!res || !res.data) {
+			throw `Error Getting URL - No response data`;
+		}
 
-        await new Promise((resolve, reject) => {
-            res.data.pipe(wstream)
-                .on('finish', resolve)
-                .on('error', reject);
-        });
-        
-        return 'Done';
+		await new Promise((resolve, reject) => {
+			res.data.pipe(wstream).on('finish', resolve).on('error', reject);
+		});
 
-    } catch (error) {
-        throw (`Error Processing Media URL`);
-    }
+		return 'Done';
+	} catch (error) {
+		throw `Error Processing Media URL`;
+	}
 }
-
 
 export async function processMediaPaths(
 	poolClient: IPoolClient,
@@ -99,16 +98,22 @@ export async function processMediaPath(
 		keepFile?: boolean;
 	}
 ) {
-	const mimeType = mime.contentType(mime.lookup(f) || CONTENT_TYPES.octetStream) as string;
-	const tx = poolClient.arClient.bundlr.createTransaction(await fs.promises.readFile(path.resolve(f)), {
-		tags: [...args.subTags, { name: TAGS.keys.contentType, value: mimeType }],
-	});
-	await tx.sign();
-	const id = tx.id;
-	if (!args.keepFile) fs.rmSync(path.resolve(f));
-	await tx.upload();
-	if (!id) exitProcess(`Upload Error`, 1);
-	return id;
+	try {
+		const irys = new Irys({ url: UPLOAD_CONFIG.node2, token: 'arweave', key: poolClient.poolConfig.walletKey });
+
+		const mimeType = mime.contentType(mime.lookup(f) || CONTENT_TYPES.octetStream) as string;
+		const fileTags = [...args.subTags, { name: TAGS.keys.contentType, value: mimeType }];
+
+		const buffer = await fileToBuffer(f);
+		const fileTxResponse = await irys.upload(buffer as any, { tags: fileTags } as any);
+
+		const id = fileTxResponse.id;
+		if (!args.keepFile) fs.rmSync(path.resolve(f));
+		if (!id) exitProcess(`Upload Error`, 1);
+		return id;
+	} catch (e: any) {
+		throw new Error(e);
+	}
 }
 
 export function generateAssetName(tweet: any) {
@@ -313,11 +318,27 @@ export function findFileAbsolutePath(directory: string, filename: string): strin
 	return undefined;
 }
 
-
 export function shuffleArray<T>(array: T[]): T[] {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
+	for (let i = array.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[array[i], array[j]] = [array[j], array[i]];
+	}
+	return array;
+}
+
+export function getARAmountFromWinc(amount: number) {
+	const arweave = Arweave.init({});
+	return Math.floor(+arweave.ar.winstonToAr(amount.toString()) * 1e6) / 1e6;
+}
+
+export async function fileToBuffer(filePath: string) {
+	return new Promise((resolve, reject) => {
+		fs.readFile(filePath, (err, buffer) => {
+			if (err) {
+				reject(err);
+			} else {
+				resolve(buffer);
+			}
+		});
+	});
 }

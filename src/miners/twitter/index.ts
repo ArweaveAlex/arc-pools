@@ -1,9 +1,11 @@
-import { ArtifactEnum, CONTENT_TYPES, createAsset, IPoolClient, RENDER_WITH_VALUES, TAGS } from 'arcframework';
 import axios from 'axios';
 import { mkdir } from 'fs/promises';
 import * as path from 'path';
 import tmp from 'tmp-promise';
 
+import { ArtifactEnum, CONTENT_TYPES, IPoolClient, RENDER_WITH_VALUES, TAGS } from 'arcframework';
+
+import { createAsset } from '../../api';
 import { ServiceClient } from '../../clients/service';
 import { LOOKUP_PARAMS } from '../../helpers/config';
 import { conversationEndpoint } from '../../helpers/endpoints';

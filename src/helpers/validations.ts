@@ -1,5 +1,6 @@
-import { PoolConfigType } from 'arcframework';
 import fs from 'fs';
+
+import { PoolConfigType } from 'arcframework';
 
 import { POOL_FILE } from './config';
 import { ArgumentsInterface } from './interfaces';

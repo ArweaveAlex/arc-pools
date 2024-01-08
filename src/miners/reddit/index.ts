@@ -1,8 +1,10 @@
-import { ArtifactEnum, CONTENT_TYPES, createAsset, IPoolClient, RENDER_WITH_VALUES, TAGS } from 'arcframework';
 import { mkdir } from 'fs/promises';
 import path from 'path';
 import tmp from 'tmp-promise';
 
+import { ArtifactEnum, CONTENT_TYPES, IPoolClient, RENDER_WITH_VALUES, TAGS } from 'arcframework';
+
+import { createAsset } from '../../api';
 import { ServiceClient } from '../../clients/service';
 import {
 	checkPath,

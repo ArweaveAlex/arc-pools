@@ -1,5 +1,6 @@
-import { PoolClient, PoolConfigType } from 'arcframework';
 import fs from 'fs';
+
+import { PoolClient, PoolConfigType } from 'arcframework';
 
 import { CLI_ARGS } from '../helpers/config';
 import { ArgumentsInterface, CommandInterface } from '../helpers/interfaces';
@@ -9,7 +10,14 @@ import { validatePoolConfig } from '../helpers/validations';
 const command: CommandInterface = {
 	name: CLI_ARGS.commands.topics,
 	description: `Set the pool topics in pool state`,
-	args: ['pool id'],
+	options: [
+		{
+			name: 'topic-values',
+			description: 'Comma separated list of topics',
+			arg: '<topics>',
+		},
+	],
+	args: ['pool'],
 	execute: async (args: ArgumentsInterface): Promise<void> => {
 		const poolConfig: PoolConfigType = validatePoolConfig(args);
 		const poolArg = args.commandValues[0];

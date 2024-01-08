@@ -1,12 +1,14 @@
-import { ArtifactEnum, CONTENT_TYPES, createAsset, IPoolClient, RENDER_WITH_VALUES, TAGS } from 'arcframework';
 import fs from 'fs';
 import WikiJS from 'wikijs';
+
+import { ArtifactEnum, CONTENT_TYPES, IPoolClient, RENDER_WITH_VALUES, TAGS } from 'arcframework';
 
 import { wikiApiEndpoint } from '../../helpers/endpoints';
 import { log, logValue } from '../../helpers/utils';
 
 let currentArticleURL = '';
 
+import { createAsset } from '../../api';
 export async function processWikipedia(poolClient: IPoolClient) {
 	let articles = [];
 	for (let i = 0; i < poolClient.poolConfig.keywords.length; i++) {
@@ -31,8 +33,8 @@ export async function processWikipedia(poolClient: IPoolClient) {
 	logValue(`Wikipedia Page Count`, articles.length.toString(), 0);
 	for (let i = 0; i < articles.length; i++) {
 		// if (!sentList.includes(articles[i])) {
-			await processPage(poolClient, articles[i]);
-			// fs.appendFileSync('data/wikiarticlessent.txt', articles[i] + '\n');
+		await processPage(poolClient, articles[i]);
+		// fs.appendFileSync('data/wikiarticlessent.txt', articles[i] + '\n');
 		// }
 	}
 	log(`Wikipedia Mining Complete`, 0);
@@ -99,12 +101,11 @@ const processPage = async (poolClient: IPoolClient, query: string) => {
 			artifactName: `${content.title} Wikipedia Page`,
 			poolId: poolClient.poolConfig.contracts.pool.id,
 		});
-		
 
-        if (!isDup) {
-            try {
+		if (!isDup) {
+			try {
 				log('Processing Wikipedia Page...', 0);
-                await createAsset(poolClient, {
+				await createAsset(poolClient, {
 					index: { path: 'index.html' },
 					paths: (assetId: string) => ({ 'index.html': { id: assetId } }),
 					content: html,
@@ -121,13 +122,12 @@ const processPage = async (poolClient: IPoolClient, query: string) => {
 					renderWith: RENDER_WITH_VALUES,
 					assetId: content.title,
 				});
-            }
-            catch (e: any) {
-                console.error(e.message);
-            }
-        } else {
-            log(`Skipping duplicate artifact...`, null);
-        }
+			} catch (e: any) {
+				console.error(e.message);
+			}
+		} else {
+			log(`Skipping duplicate artifact...`, null);
+		}
 	} catch (e: any) {
 		console.error(e.message);
 	}

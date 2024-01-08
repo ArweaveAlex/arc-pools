@@ -78,7 +78,7 @@ export const CLI_ARGS = {
 			name: 'files',
 		},
 		newsApi: {
-			name: 'news-api'
+			name: 'news-api',
 		},
 		all: {
 			name: 'all',

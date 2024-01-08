@@ -11,6 +11,8 @@ export interface OptionInterface {
 	name: string;
 	description: string;
 	arg: string;
+	suboptions?: OptionInterface[];
+	topLevel?: boolean;
 }
 
 export interface CommandInterface {

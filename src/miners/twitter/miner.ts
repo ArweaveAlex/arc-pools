@@ -1,6 +1,7 @@
-import { IPoolClient, PoolClient, PoolConfigType } from 'arcframework';
 import minimist from 'minimist';
 import * as tApiV2 from 'twitter-api-v2';
+
+import { IPoolClient, PoolClient, PoolConfigType } from 'arcframework';
 
 import { ServiceClient } from '../../clients/service';
 import { CLI_ARGS, STREAM_PARAMS } from '../../helpers/config';

@@ -12,7 +12,7 @@ const displayPm2List = (list: string[]) => {
 
 const command: CommandInterface = {
 	name: CLI_ARGS.commands.dlist,
-	description: 'list all daemon mining processes',
+	description: 'List all daemon mining processes',
 	options: [],
 	execute: async (_args: ArgumentsInterface): Promise<void> => {
 		pm2.connect(function (err: any) {

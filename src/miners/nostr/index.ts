@@ -1,12 +1,16 @@
-import { ArtifactEnum, CONTENT_TYPES, createAsset,IPoolClient , RENDER_WITH_VALUES, TAGS  } from 'arcframework';
 import { mkdir } from "fs/promises";
 import path from "path";
 import tmp from "tmp-promise";
 
-import {     checkPath, 
-generateNostrAssetDescription, generateNostrAssetName, log , 
+import { ArtifactEnum, CONTENT_TYPES, IPoolClient, RENDER_WITH_VALUES, TAGS } from 'arcframework';
+
+import { createAsset } from '../../api';
+import {
+    checkPath,
+    generateNostrAssetDescription, generateNostrAssetName, log,
     sha256Object,
-    uploadFile} from '../../helpers/utils';
+    uploadFile
+} from '../../helpers/utils';
 
 
 export async function processEvent(poolClient: IPoolClient, args: {
@@ -14,17 +18,17 @@ export async function processEvent(poolClient: IPoolClient, args: {
     associationId: string,
     associationSequence: string,
     contentModeration: boolean
-  }) {
+}) {
     const isDup = await poolClient.arClient.isDuplicate({
         artifactName: generateNostrAssetName(args.event),
         poolId: poolClient.poolConfig.contracts.pool.id
     });
 
-    if(isDup){
+    if (isDup) {
         log("Skipping duplicate artifact...", 0);
         return;
-    } 
-    
+    }
+
     const tmpdir = await tmp.dir({ unsafeCleanup: true });
 
     let profileImage = await processProfileImage(poolClient, {
@@ -67,8 +71,8 @@ async function processProfileImage(poolClient: IPoolClient, args: {
     contentModeration: boolean,
     tmpdir: any
 }) {
-    if(!args.event.profile) return null;
-    if(args.event.profile.picture){
+    if (!args.event.profile) return null;
+    if (args.event.profile.picture) {
         let r = Math.floor(Math.random() * (100000000 - 0 + 1)) + 0;
         const profileDir = path.join(args.tmpdir.path, "profile-" + r);
         console.log(profileDir)
@@ -84,7 +88,7 @@ async function processProfileImage(poolClient: IPoolClient, args: {
             url: args.event.profile.picture
         });
 
-        if(arweaveUrl) args.event.profile.picture = arweaveUrl;
+        if (arweaveUrl) args.event.profile.picture = arweaveUrl;
 
         console.log(args.event.profile.picture);
 
@@ -105,10 +109,10 @@ async function processMedia(poolClient: IPoolClient, args: {
         await mkdir(mediaDir);
     }
     args.event.post.tags.map(async (tag: string[]) => {
-        if(tag.includes('resource')) {
+        if (tag.includes('resource')) {
             console.log(tag);
-            if(tag[2].includes("mpeg")) {console.log("Skipping audio file"); return;}
-            
+            if (tag[2].includes("mpeg")) { console.log("Skipping audio file"); return; }
+
             let arweaveUrl = await processImage(poolClient, {
                 event: args.event,
                 contentModeration: args.contentModeration,
@@ -116,7 +120,7 @@ async function processMedia(poolClient: IPoolClient, args: {
                 url: tag[1]
             });
 
-            if(arweaveUrl) tag[1] = arweaveUrl;
+            if (arweaveUrl) tag[1] = arweaveUrl;
         }
     });
 }
@@ -138,14 +142,14 @@ async function processImage(poolClient: IPoolClient, args: {
         { name: TAGS.keys.nostrEventId, value: `${nostrEventId ?? "unknown"}` }
     ]
 
-    let txId = await uploadFile (
+    let txId = await uploadFile(
         poolClient,
-        args.mediaDir, 
-        args.url, 
-        {tags: subTags, tmpdir: args.mediaDir}
+        args.mediaDir,
+        args.url,
+        { tags: subTags, tmpdir: args.mediaDir }
     );
 
-    if(txId) {
+    if (txId) {
         return "https://arweave.net/" + txId;
     };
 

@@ -16,7 +16,19 @@ import { createWallet } from '../helpers/wallet';
 const command: CommandInterface = {
 	name: CLI_ARGS.commands.create,
 	description: `Create a pool using ${POOL_FILE}`,
-	args: ['pool id'],
+	options: [
+		{
+			name: 'control-wallet',
+			description: 'Specifies a wallet to use in the pool creation',
+			arg: '<wallet-path>',
+		},
+		{
+			name: 'image',
+			description: 'Specifies an image to use for pool',
+			arg: '<image-path>',
+		},
+	],
+	args: ['pool'],
 	execute: async (args: ArgumentsInterface): Promise<void> => {
 		const poolConfig: PoolConfigType = validatePoolConfig(args);
 		const poolConfigClient: PoolConfigClient = new PoolConfigClient({ testMode: POOL_TEST_MODE });

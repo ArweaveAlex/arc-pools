@@ -44,7 +44,6 @@ import { checkProcessEnv, log } from './helpers/utils';
 		await commands.get(command).execute(args);
 	} else {
 		if (command) log(`Command not found: ${command}`, 1);
-		else log(`No command provided`, 1);
 		commands.get(CLI_ARGS.commands.help).execute(args);
 	}
 })();

@@ -7,30 +7,24 @@ module.exports = {
 		'simple-import-sort/imports': 'error',
 		'simple-import-sort/exports': 'error',
 	},
-	env: {
-		jest: true,
-	},
-	parserOptions: {
-		ecmaVersion: 2020,
-	},
 	overrides: [
 		{
-			files: ['*.js', '*.ts'],
+			files: ['*.js', '*.jsx', '*.ts', '*.tsx'],
 			rules: {
 				'simple-import-sort/imports': [
 					'error',
 					{
 						groups: [
-							['^((?!\\.).)*$'],
+							['^react', '^@?\\w'],
+							['^arweave', 'arbundles', '@irys/sdk', '^warp', '^@permaweb/stampjs', '^@?\\w'],
+							['^(@|arcframework)(/.*|$)'],
 							[
+								'^(@|api)(/.*|$)',
 								'^(@|clients)(/.*|$)',
-								'^(@|collections)(/.*|$)',
-								'^(@|filters)(/.*|$)',
-								'^(@|gql)(/.*|$)',
+								'^(@|commands)(/.*|$)',
 								'^(@|helpers)(/.*|$)',
-								'^(@|search)(/.*|$)',
-								'^(@|tests)(/.*|$)',
-								'^(@|workers)(/.*|$)',
+								'^(@|miners)(/.*|$)',
+								'^(@|options)(/.*|$)',
 							],
 							['^\\u0000'],
 							['^\\.\\.(?!/?$)', '^\\.\\./?$'],

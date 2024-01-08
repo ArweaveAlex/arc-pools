@@ -1,17 +1,18 @@
+import * as fs from 'fs';
+import minimist from 'minimist';
+import * as pathI from 'path';
+
 import {
 	ARTIFACT_TYPES_BY_FILE,
 	ArtifactEnum,
 	CONTENT_TYPES,
-	createAsset,
 	PoolClient,
 	PoolConfigType,
 	RENDER_WITH_VALUES,
 	TAGS,
 } from 'arcframework';
-import * as fs from 'fs';
-import minimist from 'minimist';
-import * as pathI from 'path';
 
+import { createAsset, createTransaction } from '../../api';
 import { exitProcess, log, processMediaPath, walk } from '../../helpers/utils';
 
 const sentFilesFilename = 'sentFiles.json';
@@ -28,39 +29,46 @@ export async function run(poolConfig: PoolConfigType, argv: minimist.ParsedArgs)
 	const clear = argv['clear'];
 
 	if (!path) {
-		log('Please provide a --path', 1);
+		log('Provide a file path (--path)', 1);
 		return;
 	}
 
 	let metaConfig = null;
 
-	// if they send a meta-file option parse it to config
 	if (metaFile) {
 		if (!fs.existsSync(metaFile) || !fs.statSync(metaFile).isFile()) {
-			exitProcess('meta-file not found or is not a file.', 1);
+			exitProcess('Metadata file not found or is not a file', 1);
 		}
 		try {
 			const metaFileData = fs.readFileSync(metaFile, 'utf-8');
 			metaConfig = JSON.parse(metaFileData);
 		} catch (e: any) {
 			log(e, 1);
-			exitProcess('Failed to parse metadata config.', 1);
+			exitProcess('Failed to parse metadata config', 1);
 		}
 	}
 
 	if (fs.existsSync(path)) {
 		if (fs.statSync(path).isFile()) {
-			log('Archiving file', 0);
-			await archiveFile(poolClient, metaConfig, path, null);
+			log('Archiving file...', 0);
+			try {
+				await archiveFile(poolClient, metaConfig, path, null);
+			} catch (e: any) {
+				console.error(e);
+			}
 		} else if (fs.statSync(path).isDirectory()) {
-			log('Archiving directory', 0);
-			genSentFiles(path, clear);
-			await archiveDirectory(poolClient, metaConfig, path);
+			log('Archiving directory...', 0);
+			try {
+				genSentFiles(path, clear);
+				await archiveDirectory(poolClient, metaConfig, path);
+			} catch (e: any) {
+				console.error(e);
+			}
 		} else {
-			exitProcess('path is not a file or directory.', 1);
+			exitProcess('Path is not a file or directory.', 1);
 		}
 	} else {
-		exitProcess('path not found.', 1);
+		exitProcess('Path not found.', 1);
 	}
 
 	log('Completed file list', 0);
@@ -93,11 +101,7 @@ async function archiveDirectory(poolClient: PoolClient, metaConfig: any, path: s
 			if (!sentFiles.includes(pathI.basename(f))) {
 				await archiveFile(poolClient, metaConfig, f, path);
 			} else {
-				log(
-					`Skipping ${pathI.basename(f)}, 
-                    file already sent to this pool, run with --clear option to resend all files from this directory`,
-					0
-				);
+				log(`Skipping ${pathI.basename(f)}: Run with --clear option to resend`, 1);
 			}
 		}
 	}
@@ -108,29 +112,37 @@ async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string
 	let fileConfig = findFileConfig(fileName, metaConfig);
 
 	let name = fileConfig && fileConfig['ArtifactName'] ? fileConfig['ArtifactName'] : fileName;
-	let metaData = fileConfig && fileConfig['MetaData'] ? JSON.stringify(fileConfig['MetaData']) : JSON.stringify({});
+	let metadata = fileConfig && fileConfig['MetaData'] ? fileConfig['MetaData'] : {};
 	let fileType = pathI.extname(path).slice(1);
 	let grouped = fileConfig && fileConfig['ArtifactGroup'] && fileConfig['ArtifactGroupSequence'];
 	let associationId = grouped ? fileConfig['ArtifactGroup'] : null;
 	let associationSequence = associationId ? fileConfig['ArtifactGroupSequence'] : null;
 
-	const subTags = [
-		{ name: TAGS.keys.application, value: TAGS.values.application },
-		{ name: TAGS.keys.contentType, value: CONTENT_TYPES.json },
-	];
+	let fileTxId: string | null = null;
+	let metadataTxId: string | null = null;
 
-	let fileTransactionId = await processFile(poolClient, path);
+	try {
+		fileTxId = await processFile(poolClient, path);
+	} catch (e: any) {
+		throw new Error(e);
+	}
 
-	let metadataTx = poolClient.arClient.bundlr.createTransaction(metaData, { tags: subTags });
-	await metadataTx.sign();
-	const metadataTxId = metadataTx.id;
-
-	await metadataTx.upload();
-
-	if (!metadataTxId) exitProcess(`Upload Error`, 1);
+	try {
+		const metadataTxTags = [
+			{ name: TAGS.keys.application, value: TAGS.values.application },
+			{ name: TAGS.keys.contentType, value: CONTENT_TYPES.json },
+		];
+		metadataTxId = await createTransaction(poolClient, {
+			content: metadata,
+			contentType: CONTENT_TYPES.json,
+			tags: metadataTxTags,
+		});
+	} catch (e: any) {
+		throw new Error(e);
+	}
 
 	let fileJson = {
-		fileTxId: fileTransactionId,
+		fileTxId: fileTxId,
 		metadataTxId: metadataTxId,
 	};
 
@@ -152,7 +164,6 @@ async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string
 		case ArtifactEnum.Ebook:
 			ansType = TAGS.values.ansTypes.document;
 			break;
-		// file is a default
 		case ArtifactEnum.File:
 			ansType = TAGS.values.ansTypes.file;
 			break;
@@ -173,7 +184,7 @@ async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string
 		associationSequence: associationSequence,
 		childAssets: null,
 		renderWith: RENDER_WITH_VALUES,
-		assetId: fileTransactionId,
+		assetId: fileTxId,
 		fileType: fileType,
 	});
 
@@ -186,12 +197,16 @@ async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string
 }
 
 async function processFile(poolClient: PoolClient, filePath: string) {
-	const subTags = [{ name: TAGS.keys.application, value: TAGS.values.application }];
-	let id = await processMediaPath(poolClient, filePath, {
-		subTags: subTags,
-		tmpdir: null,
-		path: filePath,
-		keepFile: true,
-	});
-	return id;
+	try {
+		const subTags = [{ name: TAGS.keys.application, value: TAGS.values.application }];
+		let id = await processMediaPath(poolClient, filePath, {
+			subTags: subTags,
+			tmpdir: null,
+			path: filePath,
+			keepFile: true,
+		});
+		return id;
+	} catch (e) {
+		throw new Error(e);
+	}
 }

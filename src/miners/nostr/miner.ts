@@ -1,8 +1,10 @@
-import 'websocket-polyfill';
-import { IPoolClient, PoolClient, PoolConfigType } from "arcframework";
 import * as async from 'async';
 import { throttle } from 'lodash';
 import minimist from "minimist";
+
+import { IPoolClient, PoolClient, PoolConfigType } from "arcframework";
+
+import 'websocket-polyfill';
 
 import { exitProcess, log } from "../../helpers/utils";
 

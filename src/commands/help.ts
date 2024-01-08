@@ -1,51 +1,67 @@
 import clc from 'cli-color';
-import CLI from 'clui';
 import figlet from 'figlet';
 
 import { APP_TITLE, CLI_ARGS } from '../helpers/config';
-import { ArgumentsInterface, CommandInterface } from '../helpers/interfaces';
+import { ArgumentsInterface, CommandInterface, OptionInterface } from '../helpers/interfaces';
 
 const command: CommandInterface = {
 	name: CLI_ARGS.commands.help,
 	description: `Display help text`,
 	execute: async (args: ArgumentsInterface): Promise<void> => {
-		console.log(clc.magenta(figlet.textSync(APP_TITLE)));
+		console.log(`${clc.blackBright(figlet.textSync(APP_TITLE, { font: 'Slant', width: process.stdout.columns }))}`);
+		console.log(`\nAlex Archive CLI`)
+		console.log(`\nUsage: ${clc.green('arcpool')} ${clc.green('[command]')} ${clc.green('[arguments]')}\n`);
 
-		console.log(`\nUsage: arcpool ${clc.blue('[commands]')} ${clc.green('[options]')}\n`);
+		console.log(`${clc.blackBright('Commands')}`);
+		args.commands.forEach((command) => {
+			let args: string;
+			if (command.args && command.args.length) {
+				args = '<';
+				command.args.forEach((arg: string) => {
+					args += arg;
+				});
+				args += '>';
+			}
+			console.log(`${clc.green(command.name)}${args ? ` ${args}` : ''} ${clc.blackBright(`(${command.description})`)}`);
+			if (command.options && command.options.length) {
+				const spacer = (count: number) => ' '.repeat(count);
+				console.log(`${spacer(4)}${clc.blackBright('Arguments')}`);
+				{
+					command.options.forEach((option) => {
+						console.log(
+							`${spacer(4)}${clc.green(`--${option.name}`)}${option.arg ? ` ${option.arg}` : ''} ${clc.blackBright(`(${option.description})`)}`
+						);
 
-		const { options, commands } = args;
-
-		const Line = CLI.Line;
-		new Line().column('Options', 75, [clc.cyan]).column('Description', 75, [clc.blackBright]).fill().output();
-
-		const opts = Array.from(options).map(([_key, opt]) => {
-			const arg = opt.arg ? clc['blackBright'](opt.arg) : '';
-			return [`--${opt.name + ' ' + arg}`, opt.description];
-		});
-
-		for (let i = 0, j = opts.length; i < j; i++) {
-			new Line().column(opts[i][0], 75).column(opts[i][1], 75).fill().output();
-		}
-
-		console.log('\n');
-
-		const cmds = Array.from(commands).map(([_key, cmd]) => {
-			let arg = '';
-			if (cmd.args && cmd.args.length > 0) {
-				for (const a of cmd.args) {
-					arg += clc['blackBright'](`<${a}>`);
+						if (option.suboptions && option.suboptions.length) {
+							console.log(`${' '.repeat(6)}${clc.blackBright('Suboptions')}`);
+							logOptions(option.suboptions);
+						}
+					});
 				}
 			}
-
-			return [cmd.name + ' ' + arg, cmd.description];
 		});
-
-		new Line().column('Commands', 75, [clc.green]).column('Description', 75, [clc.blackBright]).fill().output();
-
-		for (let i = 0, j = cmds.length; i < j; i++) {
-			new Line().column(cmds[i][0], 75).column(cmds[i][1], 75).fill().output();
-		}
+		console.log('');
 	},
 };
+
+function logOptions(options: OptionInterface[], indent = 6) {
+	const spacer = (count: number) => ' '.repeat(count);
+	const indentIncrease = 4;
+
+	options.forEach((option) => {
+		let label = clc.green(`--${option.name}`);
+		if (option.topLevel) label = clc.white(option.name);
+
+		console.log(
+			`${spacer(indent)}${label}${option.arg ? ` ${option.arg}` : ''}${
+				option.description ? ` ${clc.blackBright(`(${option.description})`)}` : ''
+			}`
+		);
+
+		if (option.suboptions && option.suboptions.length) {
+			logOptions(option.suboptions, indent + indentIncrease);
+		}
+	});
+}
 
 export default command;

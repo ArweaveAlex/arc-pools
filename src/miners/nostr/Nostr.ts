@@ -1,6 +1,7 @@
-import 'websocket-polyfill';
 import { sha256 } from '@noble/hashes/sha256';
 import { debounce, throttle } from 'lodash';
+
+import 'websocket-polyfill';
 
 import { Event, Filter,Relay, relayInit, Sub,   } from "./nostr-tools";
 const bech32 = require('bech32-buffer');

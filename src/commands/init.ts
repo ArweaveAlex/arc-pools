@@ -1,5 +1,6 @@
-import { PoolConfigClient } from 'arcframework';
 import fs from 'fs';
+
+import { PoolConfigClient } from 'arcframework';
 
 import { CLI_ARGS, POOL_FILE, POOL_TEST_MODE } from '../helpers/config';
 import { ArgumentsInterface, CommandInterface } from '../helpers/interfaces';
@@ -9,7 +10,7 @@ const command: CommandInterface = {
 	name: CLI_ARGS.commands.init,
 	description: `Initialize ${POOL_FILE}`,
 	options: [],
-	args: ['pool id'],
+	args: ['pool'],
 	execute: async (args: ArgumentsInterface): Promise<void> => {
 		if (!args.commandValues || !args.commandValues.length) {
 			exitProcess(`Pool id Not Provided`, 1);
