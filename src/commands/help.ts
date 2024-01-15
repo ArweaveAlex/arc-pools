@@ -9,7 +9,7 @@ const command: CommandInterface = {
 	description: `Display help text`,
 	execute: async (args: ArgumentsInterface): Promise<void> => {
 		console.log(`${clc.blackBright(figlet.textSync(APP_TITLE, { font: 'Slant', width: process.stdout.columns }))}`);
-		console.log(`\nAlex Archive CLI`)
+		console.log(`\nAlex Archive CLI`);
 		console.log(`\nUsage: ${clc.green('arcpool')} ${clc.green('[command]')} ${clc.green('[arguments]')}\n`);
 
 		console.log(`${clc.blackBright('Commands')}`);
@@ -29,7 +29,9 @@ const command: CommandInterface = {
 				{
 					command.options.forEach((option) => {
 						console.log(
-							`${spacer(4)}${clc.green(`--${option.name}`)}${option.arg ? ` ${option.arg}` : ''} ${clc.blackBright(`(${option.description})`)}`
+							`${spacer(4)}${clc.green(`--${option.name}`)}${option.arg ? ` ${option.arg}` : ''} ${clc.blackBright(
+								`(${option.description})`
+							)}`
 						);
 
 						if (option.suboptions && option.suboptions.length) {

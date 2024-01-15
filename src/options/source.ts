@@ -4,7 +4,7 @@ import { OptionInterface } from '../helpers/interfaces';
 const option: OptionInterface = {
 	name: CLI_ARGS.options.source,
 	description: `Specifies the data source`,
-	arg: '<all / files / twitter / wikipedia / reddit / news-api / nostr>',
+	arg: '<all / files / twitter / wikipedia / reddit / news-api / gnews / nostr>',
 	suboptions: [
 		{
 			name: 'files',

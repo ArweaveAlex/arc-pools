@@ -13,3 +13,16 @@ export type NewsArticleType = {
 	publishedAt: string;
 	content: string;
 };
+
+export type GNewsArticleType = {
+	title: string;
+	description: string;
+	content: string;
+	image: string;
+	url: string;
+	publishedAt: string;
+	source: {
+		name: string;
+		url: string;
+	};
+};

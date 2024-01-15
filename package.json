@@ -22,7 +22,7 @@
 		"@scure/bip32": "^1.1.5",
 		"@scure/bip39": "^1.2.0",
 		"@types/fs-extra": "^8.1.0",
-		"arcframework": "1.2.34",
+		"arcframework": "1.2.39",
 		"axios": "^0.26.1",
 		"bech32-buffer": "^0.2.1",
 		"bip39-web-crypto": "^4.0.1",
