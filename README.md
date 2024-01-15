@@ -1,11 +1,7 @@
-# Alex. CLI
+#### Alex Archive CLI Repo
 
-[Alex](https://alex.arweave.dev). is a decentralized archival platform that leverages the immutable and permanent data storage of Arweave and includes a mechanism that encourages end user participation.
+<a href="https://alex.arweave.dev">https://alex.arweave.dev</a>
 
-Users contribute to pools and they receive “artifacts” back into their wallet as they are minted. Artifacts are NFTs of items that the pool is storing. Since the artifacts are stored on Arweave, they cannot be changed or removed in any way by anyone.
+###### Documentation
 
-This repository is the client tool for creating the pools and mining artifacts. For installation and usage of this tool please visit our documentation.
-
-## Documentation
-
-https://alex.arweave.dev/#/docs/introduction
+<a href="https://alex.arweave.dev">https://alex.arweave.dev/#/docs/introduction</a>
