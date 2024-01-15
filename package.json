@@ -8,7 +8,8 @@
 		"format": "eslint --fix . && npx prettier --write .",
 		"start": "ts-node src/index.ts",
 		"build": "tsc",
-		"build:publish": "tsc && npm publish"
+		"build:publish": "tsc && npm publish",
+		"prepare": "husky install"
 	},
 	"bin": {
 		"arcpool": "./bin/helpers/pm2.js"
@@ -58,6 +59,7 @@
 		"@types/node": "^18.11.9",
 		"@typescript-eslint/eslint-plugin": "^5.54.0",
 		"@typescript-eslint/parser": "^5.54.0",
+		"husky": "^8.0.0",
 		"prettier": "^2.8.3",
 		"eslint": "^8.35.0",
 		"eslint-plugin-babel": "^5.3.1",
