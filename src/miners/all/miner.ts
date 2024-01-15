@@ -3,14 +3,15 @@ import { IPoolClient, PoolClient, PoolConfigType } from 'arcframework';
 import { CLI_ARGS } from '../../helpers/config';
 import { ValidatedMinerType } from '../../helpers/types';
 import { exitProcess, log, shuffleArray } from '../../helpers/utils';
-import * as newsApi from '../news-api/miner';
+import * as gnews from '../news/gnews/miner';
+import * as newsApi from '../news/news-api/miner';
 import * as reddit from '../reddit/miner';
 import * as wikipedia from '../wikipedia/miner';
 
 export async function run(poolConfig: PoolConfigType) {
 	const poolClient = new PoolClient({ poolConfig });
 
-	log(`Mining all sources...`, 0);
+	log(`Mining all available sources...`, 0);
 	log(`Checking configurations...`, null);
 	const validatedMiners: ValidatedMinerType[] = await getValidatedMiners(poolClient, poolConfig);
 	if (!validatedMiners.length) exitProcess('No valid mining sources', 1);
@@ -42,6 +43,14 @@ async function getValidatedMiners(poolClient: IPoolClient, poolConfig: PoolConfi
 			source: CLI_ARGS.sources.newsApi.name,
 			status: true,
 			run: () => newsApi.run(poolConfig),
+		});
+	}
+
+	if (poolConfig.gNewsApiKey) {
+		validatedMiners.push({
+			source: CLI_ARGS.sources.gnews.name,
+			status: true,
+			run: () => gnews.run(poolConfig),
 		});
 	}
 

@@ -6,9 +6,9 @@ import tmp from 'tmp-promise';
 
 import { ArtifactEnum, CONTENT_TYPES, IPoolClient, RENDER_WITH_VALUES, TAGS } from 'arcframework';
 
-import { createAsset } from '../../api';
-import { NewsArticleType } from '../../helpers/types';
-import { checkPath, log, processMediaPaths, processMediaURL } from '../../helpers/utils';
+import { createAsset } from '../../../api';
+import { NewsArticleType } from '../../../helpers/types';
+import { checkPath, log, processMediaPaths, processMediaURL } from '../../../helpers/utils';
 
 export async function processArticles(
 	poolClient: IPoolClient,
