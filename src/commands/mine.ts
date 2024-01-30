@@ -1,3 +1,5 @@
+import fs from 'fs';
+
 import { PoolConfigType } from 'arcframework';
 
 import { CLI_ARGS } from '../helpers/config';
@@ -31,11 +33,15 @@ const command: CommandInterface = {
 
 		const { source } = args.argv;
 		if (!source) {
-			exitProcess(`No Source Provided`, 1);
+			exitProcess(`No source provided`, 1);
 		}
 
 		if (!poolConfig.walletKey || !poolConfig.walletPath) {
-			exitProcess(`Invalid Pool Wallet Configuration`, 1);
+			exitProcess(`Invalid pool wallet configuration`, 1);
+		}
+
+		if (!fs.existsSync(poolConfig.walletPath)) {
+			exitProcess(`Pool wallet path not found, update path in pools.json (walletPath)`, 1);
 		}
 
 		if (!poolConfig.topics || !poolConfig.topics.length) {
