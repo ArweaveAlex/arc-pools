@@ -26,6 +26,7 @@ export async function processEvent(poolClient: IPoolClient, args: {
 
     if (isDup) {
         log("Skipping duplicate artifact...", 0);
+        await new Promise((r) => setTimeout(r, 500));
         return;
     }
 

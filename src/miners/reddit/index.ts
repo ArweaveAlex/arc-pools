@@ -45,6 +45,7 @@ export async function processPosts(
 			await processPost(poolClient, { post: postWithComments, contentModeration: args.contentModeration });
 		} else {
 			log(`Skipping duplicate artifact...`, null);
+			await new Promise((r) => setTimeout(r, 500));
 		}
 	}
 }

@@ -127,6 +127,7 @@ const processPage = async (poolClient: IPoolClient, query: string) => {
 			}
 		} else {
 			log(`Skipping duplicate artifact...`, null);
+			await new Promise((r) => setTimeout(r, 500));
 		}
 	} catch (e: any) {
 		console.error(e.message);

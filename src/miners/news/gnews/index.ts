@@ -30,6 +30,7 @@ export async function processArticles(
 			}
 		} else {
 			log(`Skipping duplicate artifact...`, null);
+			await new Promise((r) => setTimeout(r, 500));
 		}
 	}
 }
