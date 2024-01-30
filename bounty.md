@@ -2,7 +2,7 @@
 
 Steps to create your own mining source that can be used to mine artifacts on [Alex](https://alex.arweave.dev/#/). We are paying out bounties of up to $30 AR for successful mining source implementation and documentation.
 
-Here are the steps to search for suitable mining sources and implement them into the Alex mining tool: [arc-pools](https://github.com/ArweaveAlex/arc-pools).
+Here are the steps to search for suitable mining sources and implement them into the Alex CLI: [arc-pools](https://github.com/ArweaveAlex/arc-pools).
 
 ## Tips to consider when checking out potential artifact sources 🤔
 - [ ] Availability of a web API: An API is an interface provided by platforms like Twitter, which allows for external applications to interact with their data.
