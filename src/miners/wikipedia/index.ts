@@ -1,12 +1,12 @@
 import fs from 'fs';
 import WikiJS from 'wikijs';
 
-import { ArtifactEnum, CONTENT_TYPES, IPoolClient, RENDER_WITH_VALUES, TAGS } from 'arcframework';
+import { ArtifactEnum, CONTENT_TYPES, IPoolClient, RENDER_WITH_VALUE, TAGS } from 'arcframework';
 
 import { wikiApiEndpoint } from '../../helpers/endpoints';
 import { log, logValue } from '../../helpers/utils';
 
-let currentArticleURL = '';
+let currentArticleUrl = '';
 
 import { createAsset } from '../../api';
 export async function processWikipedia(poolClient: IPoolClient) {
@@ -56,7 +56,7 @@ const getPage = async (query: string) => {
 };
 
 function replacer(match: string, p1: string, _offset: number, _string: string) {
-	return match.replace('#' + p1, currentArticleURL + '#' + p1).replace('<a', '<a target="_blank"');
+	return match.replace('#' + p1, currentArticleUrl + '#' + p1).replace('<a', '<a target="_blank"');
 }
 
 export const parseHTML = (content: any, title: any) => {
@@ -67,12 +67,12 @@ export const parseHTML = (content: any, title: any) => {
 
 	var find2 = '<a href="#cite_note';
 	var re2 = new RegExp(find2, 'g');
-	var replace2 = '<a target="_blank" href="' + currentArticleURL + '#cite_note';
+	var replace2 = '<a target="_blank" href="' + currentArticleUrl + '#cite_note';
 	finalHtml = finalHtml.replace(re2, replace2);
 
 	var find3 = '<a href="#cite_ref';
 	var re3 = new RegExp(find3, 'g');
-	var replace3 = '<a target="_blank" href="' + currentArticleURL + '#cite_ref';
+	var replace3 = '<a target="_blank" href="' + currentArticleUrl + '#cite_ref';
 	finalHtml = finalHtml.replace(re3, replace3);
 
 	let head =
@@ -93,7 +93,7 @@ export const parseHTML = (content: any, title: any) => {
 const processPage = async (poolClient: IPoolClient, query: string) => {
 	try {
 		const content = await getPage(query);
-		currentArticleURL = content.url();
+		currentArticleUrl = content.url();
 		const html = parseHTML(await content.html(), content.title);
 		await content.categories();
 
@@ -119,8 +119,9 @@ const processPage = async (poolClient: IPoolClient, query: string) => {
 					associationId: null,
 					associationSequence: null,
 					childAssets: null,
-					renderWith: RENDER_WITH_VALUES,
+					renderWith: RENDER_WITH_VALUE,
 					assetId: content.title,
+					originalUrl: currentArticleUrl ? currentArticleUrl : null,
 				});
 			} catch (e: any) {
 				console.error(e.message);

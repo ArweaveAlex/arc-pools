@@ -2,7 +2,7 @@ import { mkdir } from 'fs/promises';
 import path from 'path';
 import tmp from 'tmp-promise';
 
-import { ArtifactEnum, CONTENT_TYPES, IPoolClient, RENDER_WITH_VALUES, TAGS } from 'arcframework';
+import { ArtifactEnum, CONTENT_TYPES, IPoolClient, RENDER_WITH_VALUE, TAGS } from 'arcframework';
 
 import { createAsset } from '../../api';
 import { ServiceClient } from '../../clients/service';
@@ -80,7 +80,7 @@ async function processPost(
 		associationId: null,
 		associationSequence: null,
 		childAssets: null,
-		renderWith: RENDER_WITH_VALUES,
+		renderWith: RENDER_WITH_VALUE,
 		assetId: args.post[0].data.id,
 	});
 

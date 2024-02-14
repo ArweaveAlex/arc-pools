@@ -4,11 +4,11 @@ import { JSDOM, VirtualConsole } from 'jsdom';
 import * as path from 'path';
 import tmp from 'tmp-promise';
 
-import { ArtifactEnum, CONTENT_TYPES, IPoolClient, RENDER_WITH_VALUES, TAGS } from 'arcframework';
+import { ArtifactEnum, CONTENT_TYPES, IPoolClient, RENDER_WITH_VALUE, TAGS } from 'arcframework';
 
 import { createAsset } from '../../../api';
 import { NewsArticleType } from '../../../helpers/types';
-import { checkPath, log, processMediaPaths, processMediaURL } from '../../../helpers/utils';
+import { checkPath, log, preocessMediaUrl, processMediaPaths } from '../../../helpers/utils';
 
 export async function processArticles(
 	poolClient: IPoolClient,
@@ -89,7 +89,7 @@ async function processArticle(
 				await mkdir(mediaDir);
 			}
 
-			await processMediaURL(finalArticle.urlToImage, mediaDir, 0);
+			await preocessMediaUrl(finalArticle.urlToImage, mediaDir, 0);
 
 			additionalMediaPaths = await processMediaPaths(poolClient, {
 				subTags: [],
@@ -120,8 +120,9 @@ async function processArticle(
 		associationId: null,
 		associationSequence: null,
 		childAssets: null,
-		renderWith: RENDER_WITH_VALUES,
+		renderWith: RENDER_WITH_VALUE,
 		assetId: finalArticle.title,
+		originalUrl: finalArticle.url ? finalArticle.url : null,
 	});
 
 	if (contractId) {

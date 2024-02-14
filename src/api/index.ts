@@ -27,10 +27,11 @@ export async function createAsset(
 		associationId: string | null;
 		associationSequence: string | null;
 		childAssets: string[] | null;
-		renderWith: string[] | null;
+		renderWith: string | null;
 		assetId: string;
 		fileType?: string;
 		dataProtocol?: string;
+		originalUrl?: string | null | undefined;
 	}
 ) {
 	const contractTags = await createContractTags(poolClient, {
@@ -50,6 +51,7 @@ export async function createAsset(
 		assetId: args.assetId,
 		fileType: args.fileType,
 		dataProtocol: args.dataProtocol,
+		originalUrl: args.originalUrl,
 	});
 
 	const assetId: string = await createTransaction(poolClient, {

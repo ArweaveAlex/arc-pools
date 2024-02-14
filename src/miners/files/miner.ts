@@ -8,7 +8,7 @@ import {
 	CONTENT_TYPES,
 	PoolClient,
 	PoolConfigType,
-	RENDER_WITH_VALUES,
+	RENDER_WITH_VALUE,
 	TAGS,
 } from 'arcframework';
 
@@ -183,7 +183,7 @@ async function archiveFile(poolClient: PoolClient, metaConfig: any, path: string
 		associationId: associationId,
 		associationSequence: associationSequence,
 		childAssets: null,
-		renderWith: RENDER_WITH_VALUES,
+		renderWith: RENDER_WITH_VALUE,
 		assetId: fileTxId,
 		fileType: fileType,
 	});

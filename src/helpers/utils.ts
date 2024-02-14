@@ -38,7 +38,7 @@ export function getExtFromURL(url: string) {
 	return ext;
 }
 
-export async function processMediaURL(url: string, dir: string, i: number) {
+export async function preocessMediaUrl(url: string, dir: string, i: number) {
 	try {
 		const ext = getExtFromURL(url);
 		const wstream = fs.createWriteStream(p.join(dir, `${i}.${ext}`));
@@ -277,7 +277,7 @@ export async function uploadFile(
 		const ext = getExtFromURL(url);
 		let fullFilePath = path.join(mediaDir, `${randomFileIndex}.${ext}`);
 
-		await processMediaURL(url, mediaDir, randomFileIndex);
+		await preocessMediaUrl(url, mediaDir, randomFileIndex);
 
 		let txId = await processMediaPath(poolClient, fullFilePath, {
 			subTags: args.tags,

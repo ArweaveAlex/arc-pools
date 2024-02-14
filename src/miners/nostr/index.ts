@@ -2,7 +2,7 @@ import { mkdir } from "fs/promises";
 import path from "path";
 import tmp from "tmp-promise";
 
-import { ArtifactEnum, CONTENT_TYPES, IPoolClient, RENDER_WITH_VALUES, TAGS } from 'arcframework';
+import { ArtifactEnum, CONTENT_TYPES, IPoolClient, RENDER_WITH_VALUE, TAGS } from 'arcframework';
 
 import { createAsset } from '../../api';
 import {
@@ -59,7 +59,7 @@ export async function processEvent(poolClient: IPoolClient, args: {
         associationSequence: args.associationSequence,
         childAssets: null,
         assetId: sha256Object(args.event.post),
-        renderWith: RENDER_WITH_VALUES
+        renderWith: RENDER_WITH_VALUE
     });
 
     if (contractId) {

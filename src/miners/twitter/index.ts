@@ -3,7 +3,7 @@ import { mkdir } from 'fs/promises';
 import * as path from 'path';
 import tmp from 'tmp-promise';
 
-import { ArtifactEnum, CONTENT_TYPES, IPoolClient, RENDER_WITH_VALUES, TAGS } from 'arcframework';
+import { ArtifactEnum, CONTENT_TYPES, IPoolClient, RENDER_WITH_VALUE, TAGS } from 'arcframework';
 
 import { createAsset } from '../../api';
 import { ServiceClient } from '../../clients/service';
@@ -16,8 +16,8 @@ import {
 	generateAssetName,
 	log,
 	logValue,
+	preocessMediaUrl,
 	processMediaPaths,
-	processMediaURL,
 } from '../../helpers/utils';
 import { shouldUploadContent } from '../moderator';
 
@@ -172,7 +172,7 @@ export async function processTweetV2(
 		associationId: args.associationId,
 		associationSequence: args.associationSequence,
 		childAssets: referencedTweets,
-		renderWith: RENDER_WITH_VALUES,
+		renderWith: RENDER_WITH_VALUE,
 		assetId: args.tweet.id,
 	});
 
@@ -293,7 +293,7 @@ async function processProfileImage(args: { tweet: any; tmpdir: any }) {
 
 	if (args.tweet?.user?.profile_image_url) {
 		try {
-			await processMediaURL(args.tweet.user.profile_image_url, profileDir, 0);
+			await preocessMediaUrl(args.tweet.user.profile_image_url, profileDir, 0);
 		} catch (e) {
 			log(e, 1);
 		}
@@ -332,7 +332,7 @@ async function processMedia(
 							return;
 						}
 					}
-					await processMediaURL(variants[0].url, mediaDir, i);
+					await preocessMediaUrl(variants[0].url, mediaDir, i);
 				} else {
 					if (mediaObject.type === 'photo' || mediaObject.type === 'image') {
 						if (args.contentModeration) {
@@ -341,7 +341,7 @@ async function processMedia(
 								return;
 							}
 						}
-						await processMediaURL(url, mediaDir, i);
+						await preocessMediaUrl(url, mediaDir, i);
 					}
 				}
 			}
